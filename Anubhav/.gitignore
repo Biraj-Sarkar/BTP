@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Datasets are downloaded, never committed
+data/
+.cache/
+.hf_cache/
+
+# Training outputs
+runs/
+*.pt

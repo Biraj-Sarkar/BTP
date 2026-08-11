@@ -1,0 +1,20 @@
+# Core pipeline
+numpy>=1.26
+opencv-python>=4.9
+pandas>=2.0
+openpyxl>=3.1          # pandas .xlsx reader for the dataset metadata sheets
+
+# Modelling
+torch>=2.2
+torchvision>=0.17
+transformers>=4.40     # Mask2Former segmentation backbone
+
+certifi>=2024.2         # macOS python often ships without a usable CA bundle
+
+# Serving
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+
+# Development
+pytest>=8.0
