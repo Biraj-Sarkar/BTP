@@ -322,6 +322,9 @@ Suggested reading order: `data.py` (what a sample is) → `preprocess.py` (what
 the model sees) → `model.py` (what it does) → `train.py` (how it learns) →
 `predict.py` (what the app calls).
 
+**See `CODE_GUIDE.md`** for what every file does in detail, and for the full
+account of what changed from the inherited implementation.
+
 ---
 
 ## 8. What is verified, and what is not
@@ -356,6 +359,9 @@ the model sees) → `model.py` (what it does) → `train.py` (how it learns) →
 ---
 
 ## Appendix: defects found in the inherited implementation
+
+Summarised below. `CODE_GUIDE.md` covers each one in full, along with a
+file-by-file reference for the codebase.
 
 | Defect | Consequence |
 |---|---|

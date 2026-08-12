@@ -1,5 +1,9 @@
 # BTP — Non-Invasive Anemia Detection
 
+> **Documentation:** `PIPELINE.md` explains how the method works, stage by
+> stage. `CODE_GUIDE.md` explains what every file does and what changed from
+> the inherited implementation.
+
 Estimate haemoglobin from a photograph of the palpebral conjunctiva, and screen
 for anemia against the patient's WHO threshold.
 
