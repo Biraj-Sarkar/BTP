@@ -45,9 +45,9 @@ def pick_device() -> torch.device:
 def augment(crop_rgb: np.ndarray, rng: random.Random) -> np.ndarray:
     """Photometric and mild geometric jitter.
 
-    Rotation fills with black to match the letterbox padding — the inherited
-    code used BORDER_REFLECT_101, which mirrored padding back into the frame and
-    manufactured tissue that was never photographed.
+    Rotation fills with black to match the letterbox padding — reflective
+    padding would mirror the letterbox back into frame and manufacture tissue
+    that was never photographed.
 
     Hue is left alone deliberately: hue *is* the signal.
     """
@@ -125,7 +125,7 @@ def build_crops(
 ) -> Dict[Path, Prepared]:
     """Preprocess every sample once, reusing the on-disk cache where possible."""
 
-    backend_name = getattr(segmenter, "__name__", type(segmenter).__name__)
+    backend_name = getattr(segmenter, "cache_key", None) or getattr(segmenter, "__name__", type(segmenter).__name__)
     cache = CropCache(config.cache_root, config.preprocess, backend_name)
 
     prepared: Dict[Path, Prepared] = {}
@@ -151,11 +151,7 @@ def apply_quality_gate(
     *,
     verbose: bool = True,
 ) -> List[Sample]:
-    """Drop captures that failed QC.
-
-    The inherited pipeline computed `accepted_for_training`, wrote it to the
-    manifest, and then trained on everything regardless.
-    """
+    """Drop captures that failed QC — the gate is enforced, not just logged."""
 
     kept, rejected = [], []
     for sample in samples:
@@ -350,8 +346,8 @@ def cross_validate(
             for i, r in enumerate(fold_results)
         ],
         # Every row here is an out-of-fold prediction, so this CSV is safe to
-        # report. The inherited pipeline emitted train-set predictions in the
-        # same file as test-set ones, with no column distinguishing them.
+        # report. Mixing train-set predictions into the same file would inflate
+        # headline results without any visible sign.
         "out_of_fold_predictions": all_rows,
         "best_checkpoint": min(
             (r for r in fold_results if r.checkpoint),

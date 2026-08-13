@@ -2,8 +2,8 @@
 
 The checkpoint carries the label standardisation constants. Without them a
 saved model is useless: the network emits a standardised value, and recovering
-g/dL needs the training mean and std. The inherited script saved the weights
-alone, so its checkpoints could never be served.
+g/dL needs the training mean and std. Weights saved alone can never be
+served.
 """
 
 from __future__ import annotations
@@ -18,9 +18,8 @@ import torch
 import torch.nn as nn
 from torchvision.models import ResNet18_Weights, ResNet34_Weights, resnet18, resnet34
 
-# ImageNet statistics. The inherited pipeline scaled to [0, 1] and stopped,
-# leaving the input distribution mismatched with the pretrained weights it was
-# fine-tuning from.
+# ImageNet statistics. Scaling to [0, 1] alone would leave the input
+# distribution mismatched with the pretrained weights being fine-tuned.
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
@@ -141,8 +140,8 @@ class Checkpoint:
         missing = {"state_dict", "target_mean", "target_std"} - set(blob)
         if missing:
             raise ValueError(
-                f"{path} is missing {sorted(missing)}. Checkpoints written before the "
-                "rework cannot be served — retrain to produce a complete bundle."
+                f"{path} is missing {sorted(missing)}. Checkpoints without these fields "
+                "cannot be served — retrain to produce a complete bundle."
             )
         return cls(
             state_dict=blob["state_dict"],

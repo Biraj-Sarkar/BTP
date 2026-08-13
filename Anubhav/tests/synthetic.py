@@ -1,8 +1,9 @@
 """Synthetic eye phantoms with known ground truth.
 
 Not a substitute for the real datasets — they exist so the pipeline is testable
-before the hospital data arrives, and so the segmentation claim ("the inherited
-heuristic selects sclera, not conjunctiva") can be checked rather than asserted.
+before the hospital data arrives, and so the segmentation claim (a brightness-
+based mask selects sclera, not conjunctiva) can be checked rather than
+asserted.
 
 Layout mimics an everted lower lid: skin surround, a bright sclera band, a dark
 iris, and the red palpebral conjunctiva strip along the bottom.

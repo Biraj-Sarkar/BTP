@@ -133,9 +133,9 @@ class CropCache:
     """Disk cache of prepared crops, keyed by image content and settings.
 
     Segmentation is deterministic but expensive — a Mask2Former forward pass per
-    image. The inherited pipeline re-ran it inside `__getitem__`, so a 40-epoch
-    run segmented every image 40 times. Caching turns that into once, which is
-    most of the training-time win.
+    image. Running it inside `__getitem__` would repeat it every epoch, so a
+    40-epoch run would segment every image 40 times. Caching turns that into
+    once, which is most of the training-time win.
 
     Augmentation still happens per-epoch on the cached crop, so this costs no
     augmentation diversity.

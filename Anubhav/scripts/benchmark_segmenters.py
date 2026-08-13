@@ -1,13 +1,12 @@
 """Score every segmentation backend against the Eyes-defy-anemia ground truth.
 
 Run this the moment the dataset lands. It produces the table that justifies the
-segmentation rework on *real* photographs rather than on phantoms:
+extraction design on *real* photographs rather than on phantoms:
 
     python scripts/benchmark_segmenters.py --data ~/Desktop/data/eyes-defy-anemia
 
-The `legacy` row is the heuristic inherited from the previous implementation. It
-is included so the comparison is measured, not asserted — and so the report can
-quote a before/after number.
+The `legacy` row is a brightness-based baseline, included so the comparison is
+measured, not asserted — and so the report can quote a before/after number.
 """
 
 from __future__ import annotations
@@ -30,14 +29,16 @@ from anemia.segment import (  # noqa: E402
     grabcut_mask,
     heuristic_conjunctiva_mask,
     legacy_bright_neutral_mask,
+    refined_conjunctiva_mask,
 )
 from anemia.train_segmenter import load_mask  # noqa: E402
 
 
 def build_backends(segmenter_dir: Path | None) -> Dict[str, Callable]:
     backends: Dict[str, Callable] = {
-        "legacy (inherited)": legacy_bright_neutral_mask,
+        "brightness baseline": legacy_bright_neutral_mask,
         "redness heuristic": heuristic_conjunctiva_mask,
+        "refined (seeded grabcut)": refined_conjunctiva_mask,
         "grabcut": grabcut_mask,
     }
     if segmenter_dir:

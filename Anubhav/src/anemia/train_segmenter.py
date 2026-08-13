@@ -4,12 +4,12 @@ This is the only stage with pixel-level ground truth, so it is trained once on
 Eyes-defy-anemia and then applied to every other dataset (CP-AnemiC and the
 hospital data) to produce crops for the Hb regressor.
 
-Differences from the inherited implementation that change the outcome:
+Design points that change the outcome:
 
-* `local_files_only=True` is gone. The inherited loader could only succeed if a
-  checkpoint happened to be pre-cached, so on any clean machine it raised, got
-  caught, printed a warning, and silently fell back to the colour heuristic —
-  meaning a run that reported "trained segmentation" had trained nothing.
+* The checkpoint downloads on first use. An offline-only load
+  (`local_files_only=True`) fails on any clean machine, and if that failure is
+  swallowed the run silently degrades to the colour heuristic — reporting
+  "trained segmentation" results having trained nothing.
 * Validation is patient-grouped and drives model selection.
 * Only samples that actually carry masks are used, and the count is asserted.
 """

@@ -50,10 +50,10 @@ def anemia_threshold(
 ) -> float:
     """WHO haemoglobin cutoff in g/dL for the patient in front of you.
 
-    The inherited pipeline hardcoded 11.0, which is the cutoff for young
-    children and pregnant women only. Applied to adult men (13.0) it silently
-    labels genuinely anemic patients as normal — the exact direction of error
-    a screening tool must not make.
+    A single fixed cutoff of 11.0 would be correct for young children and
+    pregnant women only. Applied to adult men (13.0) it silently labels
+    genuinely anemic patients as normal — the exact direction of error a
+    screening tool must not make.
 
     Falls back to 12.0 when age or sex is unknown: the middle of the adult range,
     chosen so an unknown-demographic patient is not assumed healthy.
@@ -170,8 +170,8 @@ def load_eyes_defy_anemia(root: Path, subsets: Sequence[str] = ("India", "Italy"
     match the sheet's `Number` column. Each folder holds the raw JPG and the
     hand-drawn conjunctiva masks.
 
-    Unlike the inherited loader this keeps *every* capture in a patient folder
-    rather than only the first, and does not cap the record count.
+    Keeps *every* capture in a patient folder rather than only the first, and
+    does not cap the record count.
     """
 
     root = Path(root)
@@ -292,9 +292,135 @@ def load_cp_anemic(root: Path) -> List[Sample]:
     return samples
 
 
+def load_local_cohort(
+    root: Path,
+    sheet_name: str = "DATASAMPLE.csv",
+    eye_dirs: Sequence[str] = ("left_eye", "right_eye"),
+) -> List[Sample]:
+    """Loader for the locally collected cohort.
+
+    Layout: a metadata sheet keyed by `Image ID`, plus one folder per eye whose
+    filenames are that same ID (`left_eye/7.jpeg`, `right_eye/7.jpeg`).
+
+    Both eyes of a subject share a `patient_id`. This is the single most
+    important detail in this loader: the two captures of one person are highly
+    correlated, so if they land on opposite sides of a train/test split the
+    model scores well by recognising the subject rather than reading pallor.
+    Grouping is what prevents that.
+
+    Age is computed at the date of capture rather than today, so the WHO
+    threshold applied is the one that was correct when the blood was drawn.
+    """
+
+    root = Path(root)
+    sheet = root / sheet_name
+    if not sheet.exists():
+        candidates = _find_sheets(root)
+        if not candidates:
+            raise FileNotFoundError(f"No metadata sheet under {root}")
+        sheet = candidates[0]
+
+    table = _read_table(sheet)
+    id_col = _first_column(table, "image id", "id", "image")
+    hb_col = _first_column(table, "haemoglobin", "hemoglobin", "hgb", "hb")
+    dob_col = _first_column(table, "date of birth", "dob")
+    sex_col = _first_column(table, "gender", "sex")
+    taken_col = _first_column(table, "created on", "date")
+    if id_col is None or hb_col is None:
+        raise ValueError(
+            f"{sheet} needs an image-ID and a haemoglobin column. Observed: {list(table.columns)}"
+        )
+
+    samples: List[Sample] = []
+    for _, row in table.iterrows():
+        if pd.isna(row[id_col]) or pd.isna(row[hb_col]):
+            continue
+        image_id = str(row[id_col]).strip()
+        if image_id.endswith(".0"):
+            image_id = image_id[:-2]
+
+        age_years = None
+        if dob_col and not pd.isna(row[dob_col]):
+            born = pd.to_datetime(row[dob_col], errors="coerce", format="mixed")
+            taken = (
+                pd.to_datetime(str(row[taken_col])[:24], errors="coerce")
+                if taken_col and not pd.isna(row.get(taken_col))
+                else None
+            )
+            if pd.notna(born):
+                reference = taken if taken is not None and pd.notna(taken) else pd.Timestamp.now()
+                age_years = float((reference - born).days) / 365.25
+
+        for eye in eye_dirs:
+            for suffix in (".jpeg", ".jpg", ".png"):
+                image_path = root / eye / f"{image_id}{suffix}"
+                if image_path.exists():
+                    samples.append(
+                        Sample(
+                            # Both eyes share one id so grouping keeps them together.
+                            patient_id=f"local:{image_id}",
+                            source=f"local/{eye}",
+                            image_path=image_path,
+                            hb=float(row[hb_col]),
+                            age_years=age_years,
+                            sex=_normalise_sex(row[sex_col]) if sex_col else None,
+                        )
+                    )
+                    break
+
+    if not samples:
+        raise RuntimeError(f"Metadata parsed but no images matched under {root}")
+    return samples
+
+
+def load_unlabelled(root: Path, recursive: bool = True) -> List[Sample]:
+    """Load a folder of conjunctiva photographs that carry no Hb labels.
+
+    Unlabelled images cannot train or evaluate the regressor — there is nothing
+    to regress against. They are still worth a great deal for the things that
+    do not need a label:
+
+    * checking whether segmentation lands on conjunctiva in real photographs,
+      which phantoms cannot tell you;
+    * calibrating the quality-control thresholds against real captures;
+    * producing honest figures for the report.
+
+    `hb` is set to NaN so that any attempt to train on these fails loudly rather
+    than silently learning from a placeholder value.
+    """
+
+    root = Path(root)
+    glob = root.rglob if recursive else root.glob
+    images = sorted(
+        (p for p in glob("*") if _is_raw_capture(p)),
+        key=lambda p: (p.parent.name, _natural_key(p.stem)),
+    )
+
+    return [
+        Sample(
+            patient_id=f"unlabelled:{path.parent.name}/{path.stem}",
+            source=f"unlabelled/{path.parent.name}",
+            image_path=path,
+            hb=float("nan"),
+        )
+        for path in images
+    ]
+
+
+def _natural_key(stem: str):
+    """Sort `2` before `10` rather than lexicographically."""
+
+    return (0, int(stem)) if stem.isdigit() else (1, stem)
+
+
+def has_labels(samples: Sequence[Sample]) -> bool:
+    return bool(samples) and not all(np.isnan(s.hb) for s in samples)
+
+
 LOADERS = {
     "eyes-defy-anemia": load_eyes_defy_anemia,
     "cp-anemic": load_cp_anemic,
+    "unlabelled": load_unlabelled,
 }
 
 
@@ -304,13 +430,22 @@ def load_dataset(root: Path) -> List[Sample]:
     root = Path(root)
     if any((root / subset).is_dir() for subset in ("India", "Italy")):
         return load_eyes_defy_anemia(root)
+    if any((root / eye).is_dir() for eye in ("left_eye", "right_eye")):
+        return load_local_cohort(root)
     if re.search(r"(cp[-_]?anemic|ghana)", root.name, re.IGNORECASE):
         return load_cp_anemic(root)
     if list(root.glob("*.xlsx")) and any(p.is_dir() and p.name.isdigit() for p in root.iterdir()):
         return load_eyes_defy_anemia(root.parent, subsets=(root.name,))
+
+    # No metadata sheet anywhere, but images present: an unlabelled collection.
+    if not _find_sheets(root, recursive=True) and any(
+        _is_raw_capture(p) for p in root.rglob("*")
+    ):
+        return load_unlabelled(root)
+
     raise ValueError(
         f"Could not infer dataset layout for {root}. "
-        "Call load_eyes_defy_anemia or load_cp_anemic directly."
+        "Call load_eyes_defy_anemia, load_cp_anemic, or load_unlabelled directly."
     )
 
 
@@ -319,6 +454,16 @@ def summarise(samples: Sequence[Sample]) -> dict:
 
     if not samples:
         return {"images": 0, "patients": 0}
+
+    if not has_labels(samples):
+        return {
+            "images": len(samples),
+            "patients": len({s.patient_id for s in samples}),
+            "with_masks": sum(1 for s in samples if s.has_mask),
+            "sources": sorted({s.source for s in samples}),
+            "labelled": False,
+            "note": "No Hb labels — usable for segmentation and QC checks only, not training.",
+        }
 
     hb_values = np.array([s.hb for s in samples], dtype=np.float32)
     anemic = [is_anemic(s.hb, s.age_years, s.sex) for s in samples]

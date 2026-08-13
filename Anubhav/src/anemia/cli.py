@@ -132,6 +132,150 @@ def cmd_train_segmenter(args: argparse.Namespace) -> None:
     train_segmenter(samples, config, args.out, pick_device())
 
 
+def cmd_debug(args: argparse.Namespace) -> None:
+    """Dump what the pipeline sees for one photo. No trained model required.
+
+    This is the tool for checking a capture on a real eye: it shows whether the
+    segmenter found the conjunctiva or wandered onto skin, and why QC passed or
+    failed. Deliberately reports no haemoglobin value — segmentation quality is
+    judged by eye, and a number from an untrained or unrelated model would only
+    distract from that.
+    """
+
+    import numpy as np
+
+    from .config import PreprocessConfig, QualityConfig
+    from .imaging import build_overlay, read_rgb, resize, write_gray, write_rgb
+    from .preprocess import prepare
+    from .segment import heuristic_segmenter, load_segmenter
+
+    segmenter = load_segmenter(args.segmenter) if args.segmenter else heuristic_segmenter
+
+    if args.dir:
+        _debug_folder(args, segmenter)
+        return
+
+    raw = read_rgb(args.image)
+    prepared = prepare(raw, segmenter, PreprocessConfig(), QualityConfig())
+
+    out = args.out
+    out.mkdir(parents=True, exist_ok=True)
+    write_rgb(prepared.balanced, out / "1_balanced.png")
+    write_gray(prepared.mask, out / "2_mask.png")
+    write_rgb(build_overlay(prepared.balanced, prepared.mask), out / "3_overlay.png")
+    write_rgb(prepared.crop, out / "4_crop.png")
+
+    # Side-by-side sheet: original | detected region | what the model would see.
+    panels = [
+        resize(prepared.balanced, (320, 320)),
+        resize(build_overlay(prepared.balanced, prepared.mask), (320, 320)),
+        resize(prepared.crop, (320, 320)),
+    ]
+    write_rgb(np.concatenate(panels, axis=1), out / "0_contact_sheet.png")
+
+    report = prepared.quality
+    print(f"\nInput      {args.image}  {raw.shape[1]}x{raw.shape[0]}")
+    print(f"Backend    {prepared.backend}")
+    print(f"Mask       {100 * report.mask_ratio:.2f}% of frame")
+    print("\nQuality")
+    print(f"  focus    {report.focus:8.1f}   (need >= 35)")
+    print(f"  clipped  {report.clipped:8.4f}   (blown-out/black pixel fraction)")
+    print(f"  exposure {report.exposure:8.1f}")
+    print(f"  passed   {report.passed}")
+    for reason in report.reasons:
+        print(f"    - {reason}")
+
+    print(f"\nWrote {out}/")
+    print("  0_contact_sheet.png   original | detected region | model input")
+    print("  3_overlay.png         green tint = what was segmented  <- check this one")
+    print("\nIf the green tint is not on the red inner eyelid, segmentation failed")
+    print("on this capture — that is the thing worth reporting, not any number.")
+
+
+def _debug_folder(args: argparse.Namespace, segmenter) -> None:
+    """Screen a whole folder: per-image QC stats, a CSV, and an overlay sheet.
+
+    Built for unlabelled real photographs. Without ground-truth masks there is
+    no Dice to compute, so the overlay sheet is the instrument — segmentation
+    quality on real tissue is judged by eye until masks are available.
+    """
+
+    import numpy as np
+
+    from .config import PreprocessConfig, QualityConfig
+    from .data import load_unlabelled
+    from .imaging import build_overlay, read_rgb, write_rgb
+    from .preprocess import prepare
+
+    samples = load_unlabelled(args.dir)
+    if not samples:
+        raise SystemExit(f"No images found under {args.dir}")
+
+    out = args.out
+    out.mkdir(parents=True, exist_ok=True)
+    print(f"Screening {len(samples)} images from {args.dir}\n")
+
+    rows, thumbs = [], []
+    for sample in samples:
+        prepared = prepare(
+            read_rgb(sample.image_path), segmenter, PreprocessConfig(), QualityConfig()
+        )
+        report = prepared.quality
+        rows.append({
+            "folder": sample.image_path.parent.name,
+            "filename": sample.image_path.name,
+            "focus": round(report.focus, 2),
+            "exposure": round(report.exposure, 2),
+            "clipped": round(report.clipped, 5),
+            "mask_ratio": round(report.mask_ratio, 4),
+            "backend": prepared.backend,
+            "passed": report.passed,
+            "reasons": "; ".join(report.reasons),
+        })
+        if len(thumbs) < args.sheet_size:
+            thumbs.append(
+                cv2_resize(build_overlay(prepared.balanced, prepared.mask), 260)
+            )
+
+    with (out / "quality_report.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    if thumbs:
+        per_row = 4
+        grid = [
+            np.concatenate(thumbs[i : i + per_row], axis=1)
+            for i in range(0, len(thumbs) - len(thumbs) % per_row, per_row)
+        ]
+        if grid:
+            write_rgb(np.concatenate(grid, axis=0), out / "overlay_sheet.png")
+
+    passed = [r for r in rows if r["passed"]]
+    focus = np.array([r["focus"] for r in rows])
+    mask = np.array([r["mask_ratio"] for r in rows])
+
+    print(f"QC passed      {len(passed)}/{len(rows)} ({100 * len(passed) / len(rows):.0f}%)")
+    print(f"focus          min {focus.min():.1f}  median {np.median(focus):.1f}  max {focus.max():.1f}")
+    print(f"mask ratio     min {mask.min():.3f}  median {np.median(mask):.3f}  max {mask.max():.3f}")
+
+    failures = [r for r in rows if not r["passed"]]
+    if failures:
+        print("\nrejected:")
+        for row in failures:
+            print(f"  {row['folder']}/{row['filename']:<12} {row['reasons']}")
+
+    print(f"\nWrote {out}/quality_report.csv and overlay_sheet.png")
+    print("Inspect the overlay sheet: green must sit on the red inner lid, not on")
+    print("lashes or cheek skin. Mask ratio alone cannot tell you this.")
+
+
+def cv2_resize(image, size: int):
+    import cv2
+
+    return cv2.resize(image, (size, size), interpolation=cv2.INTER_AREA)
+
+
 def cmd_predict(args: argparse.Namespace) -> None:
     from .predict import AnemiaPredictor
 
@@ -164,6 +308,16 @@ def build_parser() -> argparse.ArgumentParser:
     segment.add_argument("--out", type=Path, default=REPO_ROOT / "runs" / "segmenter")
     segment.add_argument("--epochs", type=int, default=None)
     segment.set_defaults(func=cmd_train_segmenter)
+
+    debug = sub.add_parser("debug", help="dump masks/overlays; no trained model needed")
+    source = debug.add_mutually_exclusive_group(required=True)
+    source.add_argument("--image", type=Path, help="single photo")
+    source.add_argument("--dir", type=Path, help="folder of photos, screened in batch")
+    debug.add_argument("--out", type=Path, default=REPO_ROOT / "debug")
+    debug.add_argument("--segmenter", type=Path, default=None)
+    debug.add_argument("--sheet-size", type=int, default=12,
+                       help="how many overlays to place on the contact sheet")
+    debug.set_defaults(func=cmd_debug)
 
     predict = sub.add_parser("predict", help="score a single photo")
     predict.add_argument("--checkpoint", type=Path, required=True)

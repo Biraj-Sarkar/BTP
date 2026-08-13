@@ -1,8 +1,8 @@
 # BTP — Non-Invasive Anemia Detection
 
 > **Documentation:** `PIPELINE.md` explains how the method works, stage by
-> stage. `CODE_GUIDE.md` explains what every file does and what changed from
-> the inherited implementation.
+> stage. `CODE_GUIDE.md` explains what every file does and the design
+> rationale behind each stage.
 
 Estimate haemoglobin from a photograph of the palpebral conjunctiva, and screen
 for anemia against the patient's WHO threshold.
@@ -36,6 +36,7 @@ Neither dataset is redistributed here — download them yourself.
 |---|---|---|---|
 | [Eyes-defy-anemia](https://ieee-dataport.org/documents/eyes-defy-anemia) ([Kaggle mirror](https://www.kaggle.com/datasets/harshwardhanfartale/eyes-defy-anemia)) | 218 | yes | India + Italy, adults. The only source of pixel-level ground truth. |
 | [CP-AnemiC](https://data.mendeley.com/datasets/m53vz6b7fx/1) | 710 | no | Ghana, children 6–59 months. |
+| Local cohort (`left_eye/`, `right_eye/`, `DATASAMPLE.csv`) | 52 | no | 26 patients, both eyes. Hb + full blood count. Children 3–17y, 50% anemic. |
 
 The segmenter can only be trained on Eyes-defy-anemia. It is then applied to
 CP-AnemiC and to the hospital data to produce crops for the regressor.
@@ -44,6 +45,7 @@ Check any new dataset before training on it:
 
 ```bash
 python -m anemia inspect --data data/eyes-defy-anemia
+python -m anemia inspect --data .          # the local cohort
 ```
 
 If the image count does not match the published figure, the loader did not match
@@ -67,6 +69,28 @@ Quantify the segmentation rework against real ground truth:
 
 ```bash
 python scripts/benchmark_segmenters.py --data data/eyes-defy-anemia --segmenter runs/segmenter
+```
+
+## Checking segmentation on real photographs
+
+No trained model or network access needed. Works on any folder of eye photos:
+
+```bash
+python -m anemia debug --dir left_eye --out debug/left
+```
+
+Writes `quality_report.csv` (per-image focus, clipping, mask ratio, pass/fail)
+and `overlay_sheet.png`. **Look at the overlay sheet** — green must sit on the
+red inner lid, not on lashes or cheek skin. Mask ratio alone will not tell you
+this. This check exposed the plain colour heuristic bleeding onto lashes and
+skin, which is why extraction now runs through the refined seeded-grabCut
+extractor (`refined_conjunctiva_mask`); the current per-image results live in
+`figures/extraction_left_eye/` and `figures/extraction_right_eye/`.
+
+For a single image:
+
+```bash
+python -m anemia debug --image photo.jpg --out debug
 ```
 
 ## Serving
@@ -109,25 +133,6 @@ src/anemia/
 serve/app.py          FastAPI service
 scripts/              benchmarking and synthetic data
 ```
-
-## What changed from the inherited pipeline
-
-The original is preserved at `gemini_anemia_pipeline.py` on `main`. The rework
-was driven by these defects:
-
-| Defect | Consequence |
-|---|---|
-| Heuristic selected bright, low-chroma pixels | Segmented the **sclera**, not the red conjunctiva. Zero overlap with ground truth on phantoms. |
-| `local_files_only=True` on the Mask2Former load | Always failed on a clean machine, silently fell back to the heuristic; "trained segmentation" runs had trained nothing. |
-| `accepted_for_training` computed, never read | QC was decorative; blurred captures trained the model. |
-| `target_mean` / `target_std` never saved | Checkpoints could not be served — the network emits a standardised value with no way back to g/dL. |
-| `all_predictions.csv` mixed train and test rows | Headline results were ~80% training-set predictions. |
-| Segmentation re-run inside `__getitem__` | Every image re-segmented once per epoch. |
-| `/255` with no ImageNet normalisation | Input distribution mismatched the pretrained weights. |
-| `requires_grad = False` alone to freeze layers | BatchNorm running stats kept updating, drifting the frozen features. |
-| Hardcoded `Hb < 11.0` | Correct only for young children and pregnant women; misses anemic adult men (threshold 13.0). |
-| Split on images, sorted by patient number | Leakage across captures of the same eye; no shuffling. |
-| One image per patient, capped at 50 | Used ~5% of available data. |
 
 ## Honest reporting
 

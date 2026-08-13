@@ -17,7 +17,7 @@ from typing import Callable, Optional, Protocol, Tuple
 import cv2
 import numpy as np
 
-from .imaging import lightness, redness_index, smooth_mask
+from .imaging import largest_connected_component, lightness, redness_index, smooth_mask
 
 Mask = np.ndarray
 SegmentResult = Tuple[Mask, str]
@@ -89,11 +89,11 @@ def heuristic_conjunctiva_mask(
 
 
 def legacy_bright_neutral_mask(image_rgb: np.ndarray) -> Mask:
-    """The inherited heuristic, preserved verbatim for benchmarking.
+    """Brightness-based baseline, kept for benchmarking.
 
     It keeps bright, low-chroma pixels, which selects the *sclera* rather than
-    the conjunctiva. Retained so the rework can be justified with a Dice
-    comparison in the report instead of an assertion.
+    the conjunctiva — retained so redness-based extraction can be justified
+    with a measured Dice comparison instead of an assertion.
     """
 
     lab = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2LAB)
@@ -136,17 +136,122 @@ def grabcut_mask(image_rgb: np.ndarray) -> Mask:
     return smooth_mask(proposal)
 
 
-def heuristic_segmenter(image_rgb: np.ndarray) -> SegmentResult:
-    """Colour prior with a grabCut escape hatch when the mask is degenerate.
+def _fill_holes(mask: np.ndarray) -> np.ndarray:
+    """Fill enclosed holes — specular reflections punch gaps in wet tissue."""
 
-    The inherited code defined this fallback chain but bypassed it whenever a
-    segmenter was supplied, so the escape hatch never actually ran. Here it is
-    part of the segmenter itself and therefore always active.
+    height, width = mask.shape[:2]
+    flood = mask.copy()
+    border = np.zeros((height + 2, width + 2), np.uint8)
+    cv2.floodFill(flood, border, (0, 0), 255)
+    return mask | cv2.bitwise_not(flood)
+
+
+def refined_conjunctiva_mask(image_rgb: np.ndarray) -> Mask:
+    """Seeded-grabCut extraction, tuned on real conjunctiva photographs.
+
+    The plain redness threshold fails on real captures because eyelashes and
+    peri-orbital skin are red enough to pass it. This version fixes that with
+    three observations about what distinguishes the tissue:
+
+    * **Conjunctiva is smooth; the lash zone is high-frequency.** A local
+      standard-deviation map separates them cleanly, so high-texture pixels are
+      seeded as definite background.
+    * **Sclera is bright, desaturated, and not red** — seeded as definite
+      background rather than left for the colour model to decide.
+    * **Specular highlights sit on the tissue.** The wet surface reflects the
+      light source as white blobs *inside* the region we want, so they are
+      seeded as probable foreground and any remaining holes filled afterwards.
+
+    The seeds drive a mask-initialised grabCut, whose edge-aware colour model
+    stops the region growing through the lash line — the failure mode of the
+    plain threshold. Redness percentiles are computed on a morphologically
+    closed redness map so thin dark lashes crossing the tissue cannot split the
+    core seed region.
     """
+
+    lab = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2LAB).astype(np.float32)
+    l_channel = lab[:, :, 0]
+    redness = (lab[:, :, 1] - 128.0) - 0.5 * (lab[:, :, 2] - 128.0)
+    saturation = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2HSV).astype(np.float32)[:, :, 1]
+    gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY).astype(np.float32)
+
+    mean = cv2.blur(gray, (15, 15))
+    mean_sq = cv2.blur(gray * gray, (15, 15))
+    texture = np.sqrt(np.maximum(mean_sq - mean * mean, 0))
+
+    spread = float(np.ptp(redness))
+    if spread < 1e-3:
+        return np.zeros(image_rgb.shape[:2], dtype=np.uint8)
+    red_u8 = np.clip((redness - redness.min()) / spread * 255, 0, 255).astype(np.uint8)
+    red_closed = cv2.morphologyEx(
+        red_u8, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    )
+
+    specular = (l_channel > 235) & (saturation < 40)
+    sclera = (l_channel > 170) & (saturation < 60) & (redness < np.percentile(redness, 60))
+    lash_zone = texture > np.percentile(texture, 80)
+    # A brown iris is dark red — without an absolute darkness gate it wins the
+    # redness contest on wide shots. Conjunctiva is mid-lightness; iris, pupil,
+    # and deep shadow are not.
+    dark = l_channel < 80
+
+    core_threshold = np.percentile(red_closed, 92)
+    background_threshold = np.percentile(red_closed, 55)
+
+    seeds = np.full(image_rgb.shape[:2], cv2.GC_PR_BGD, np.uint8)
+    seeds[(red_closed > background_threshold) & (red_closed < core_threshold)] = cv2.GC_PR_FGD
+    seeds[red_closed <= background_threshold] = cv2.GC_BGD
+    seeds[sclera] = cv2.GC_BGD
+    seeds[lash_zone] = cv2.GC_BGD
+    seeds[dark] = cv2.GC_BGD
+    seeds[specular] = cv2.GC_PR_FGD
+
+    core = (red_closed >= core_threshold) & ~lash_zone & ~sclera & ~dark
+    seeds[core] = cv2.GC_FGD
+    if not core.any():
+        return heuristic_conjunctiva_mask(image_rgb)
+
+    try:
+        cv2.grabCut(
+            cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR),
+            seeds,
+            None,
+            np.zeros((1, 65), np.float64),
+            np.zeros((1, 65), np.float64),
+            5,
+            cv2.GC_INIT_WITH_MASK,
+        )
+    except cv2.error:
+        return heuristic_conjunctiva_mask(image_rgb)
+
+    mask = np.where(
+        (seeds == cv2.GC_FGD) | (seeds == cv2.GC_PR_FGD), 255, 0
+    ).astype(np.uint8)
+    # A wide opening shears off lash tendrils the colour model let through.
+    mask = cv2.morphologyEx(
+        mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+    )
+    mask = largest_connected_component(mask)
+    mask = cv2.morphologyEx(
+        mask, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    )
+    return _fill_holes(mask)
+
+
+def heuristic_segmenter(image_rgb: np.ndarray) -> SegmentResult:
+    """Classical extraction chain: refined grabCut, then simpler fallbacks.
+
+    The fallback chain lives inside the segmenter itself, so it is always
+    active no matter how the segmenter is invoked.
+    """
+
+    refined = refined_conjunctiva_mask(image_rgb)
+    ratio = float(np.count_nonzero(refined)) / float(refined.size)
+    if 0.01 <= ratio <= 0.90:
+        return refined, "refined"
 
     mask = heuristic_conjunctiva_mask(image_rgb)
     ratio = float(np.count_nonzero(mask)) / float(mask.size)
-
     if 0.01 <= ratio <= 0.90:
         return mask, "heuristic"
 
@@ -160,8 +265,7 @@ class Mask2FormerSegmenter:
     """Fine-tuned Mask2Former wrapper.
 
     Loads once and is reused for every call, which is what makes it viable in
-    the request path — the inherited code re-ran segmentation inside the
-    training dataloader on every epoch instead.
+    the request path.
     """
 
     def __init__(self, model_dir: Path, device: Optional[str] = None):
@@ -194,13 +298,17 @@ class Mask2FormerSegmenter:
         return smooth_mask(mask), "mask2former"
 
 
+# Bump when any classical-extraction algorithm changes: it namespaces the crop
+# cache, so stale crops from an older extractor can never leak into training.
+heuristic_segmenter.cache_key = "classical-v2"
+
+
 def load_segmenter(model_dir: Optional[Path] = None) -> Callable[[np.ndarray], SegmentResult]:
     """Return the best segmenter available, falling back loudly rather than silently.
 
-    The inherited pipeline swallowed a load failure and degraded to the colour
-    heuristic with only a print, so a run could report "trained" results that
-    were nothing of the sort. Here an explicitly requested model directory that
-    fails to load raises.
+    Swallowing a load failure and quietly degrading to the colour heuristic
+    would let a run report "trained" results that are nothing of the sort, so
+    an explicitly requested model directory that fails to load raises.
     """
 
     if model_dir is None:

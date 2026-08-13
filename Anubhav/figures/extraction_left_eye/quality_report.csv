@@ -1,0 +1,27 @@
+folder,filename,focus,exposure,clipped,mask_ratio,backend,passed,reasons
+left_eye,1.jpeg,25.37,38.3,0.0,0.1249,refined,False,blurred (focus 25.4 < 35.0)
+left_eye,2.jpeg,44.56,33.46,0.0,0.1383,refined,True,
+left_eye,3.jpeg,34.19,48.19,0.0,0.0864,refined,False,blurred (focus 34.2 < 35.0)
+left_eye,4.jpeg,67.88,28.13,0.0,0.1375,refined,True,
+left_eye,5.jpeg,107.3,25.52,0.0,0.1432,refined,True,
+left_eye,6.jpeg,213.61,32.02,0.0,0.1327,refined,True,
+left_eye,7.jpeg,46.3,35.17,0.0,0.0223,refined,True,
+left_eye,8.jpeg,86.93,48.99,1e-05,0.0573,refined,True,
+left_eye,9.jpeg,150.5,33.4,0.0,0.2519,refined,True,
+left_eye,10.jpeg,71.18,32.42,0.0,0.1132,refined,True,
+left_eye,11.jpeg,93.69,37.97,0.0,0.2213,refined,True,
+left_eye,12.jpeg,87.95,40.68,1e-05,0.0746,refined,True,
+left_eye,13.jpeg,78.42,27.78,0.0,0.1311,refined,True,
+left_eye,14.jpeg,87.9,41.32,0.00048,0.1002,refined,True,
+left_eye,15.jpeg,75.1,34.02,3e-05,0.0307,refined,True,
+left_eye,16.jpeg,50.36,33.24,0.0,0.0782,refined,True,
+left_eye,17.jpeg,67.59,44.13,0.0,0.08,refined,True,
+left_eye,18.jpeg,35.23,32.91,0.0,0.128,refined,True,
+left_eye,19.jpeg,292.16,33.77,0.0,0.121,refined,True,
+left_eye,20.jpeg,131.66,30.28,0.0,0.099,refined,True,
+left_eye,21.jpeg,159.22,38.14,0.0,0.1324,refined,True,
+left_eye,22.jpeg,233.92,40.75,0.0,0.1475,refined,True,
+left_eye,23.jpeg,131.67,38.68,0.0,0.0726,refined,True,
+left_eye,24.jpeg,60.76,33.04,0.0,0.1111,refined,True,
+left_eye,25.jpeg,79.59,30.13,0.0,0.0876,refined,True,
+left_eye,26.jpeg,34.91,37.35,0.0,0.2001,refined,False,blurred (focus 34.9 < 35.0)

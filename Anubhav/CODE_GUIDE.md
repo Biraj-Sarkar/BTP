@@ -1,142 +1,98 @@
 # Code Guide
 
-Two things: what changed from the inherited implementation, and what every file
-does. Read `PIPELINE.md` first for how the method works — this document is about
-the codebase.
+Two things: the design decisions behind the pipeline, and what every file does.
+Read `PIPELINE.md` first for how the method works — this document is about the
+codebase.
 
 ---
 
-# Part 1 — What changed from the original
+# Part 1 — Design decisions and rationale
 
-The inherited implementation was a single 1,205-line script,
-`gemini_anemia_pipeline.py`, kept unchanged in this folder for reference.
+The pipeline's design is driven by two constraints: an eventually deployed
+screening app, and small clinical cohorts. Both punish silent failure, so the
+recurring theme below is *fail loudly, measure honestly*.
 
-Its core design decisions were sound and are preserved: gray-world white
-balance, aspect-preserving square padding, Mask2Former for segmentation,
-ResNet-18 for regression, inverse-frequency weighting for imbalanced Hb, and
-Dice/IoU for segmentation quality. What changed is the parts that did not work.
+## 1.1 Extraction targets redness, not brightness
 
-## 1.1 Defects that changed results
+The haemoglobin signal lives in the red palpebral conjunctiva. A
+brightness-based mask (bright, low-chroma pixels) selects the *sclera* instead
+— measured on phantoms it has zero overlap with the target tissue. Extraction
+is therefore built on a redness score in CIELAB (`a* − 0.5·b*`), and the
+brightness approach is kept only as a benchmark baseline
+(`legacy_bright_neutral_mask`) so the choice is justified by a Dice comparison
+rather than an assertion.
 
-### Segmentation targeted the wrong tissue
+On real photographs a plain redness threshold is still not enough — lashes and
+lid skin are red enough to pass it — which is what the refined seeded-grabCut
+extractor addresses (see `segment.py` below and `PIPELINE.md` §3.2).
 
-The colour heuristic kept **bright, low-chroma** pixels. Bright and neutral is
-the *sclera* — the white of the eye. The haemoglobin signal is in the red
-palpebral conjunctiva. Measured against phantom ground truth, the original
-heuristic scores Dice **0.000**; it has no overlap with the target tissue at
-all.
+## 1.2 Model loads fail loudly
 
-Now: pixels are scored by redness in CIELAB (`a* − 0.5·b*`), with the threshold
-chosen by Otsu and an absolute (not percentile) lightness gate. See §2.2 of
-`PIPELINE.md` for why both of those details matter.
+If a trained-segmenter load fails and the pipeline silently degrades to the
+colour heuristic, a run can report "trained segmentation" results that are
+nothing of the sort. An explicitly requested model directory that fails to
+load therefore raises instead of falling back.
 
-### The trained segmenter never actually ran
+## 1.3 Quality control is a gate, not a note
 
-The Mask2Former load passed `local_files_only=True`, and no checkpoint was
-bundled. On any clean machine that raises. The exception was caught, a warning
-printed, and the pipeline silently fell back to the colour heuristic.
+QC (blur, mask area, clipping) is *enforced*: failing captures are dropped from
+training, and at serve time the API returns `usable: false` with a retake
+prompt. A confident number derived from a blurred photo is the most dangerous
+output a screening tool can produce.
 
-The consequence is worse than a crash: a run could report "trained
-segmentation" results having trained nothing, and the only sign was one line of
-console output.
+## 1.4 Checkpoints are self-describing
 
-Now: the flag is gone, and an explicitly requested model directory that fails to
-load raises instead of degrading silently.
-
-### Quality control was decorative
-
-`accepted_for_training` was computed for every image, written to the manifest,
-and **never read**. Blurred and badly framed captures trained the model exactly
-like good ones.
-
-Now: failing images are dropped from training, and at serve time the API returns
-`usable: false` with a retake prompt instead of a confident number.
-
-### Saved checkpoints could not be served
-
-The network is trained on standardised labels, so its output is a
-standardised value. Recovering g/dL requires the training mean and standard
-deviation. The original saved `model.state_dict()` alone and discarded both.
-
-That makes every checkpoint it ever wrote unusable for inference — which is a
-blocker for building an app on top of it.
-
-Now: `Checkpoint` bundles the weights, `target_mean`, `target_std`, the
-preprocessing settings, and the metrics in one file, and refuses to load an
+The network is trained on standardised labels, so its raw output needs the
+training mean and standard deviation to become g/dL. `Checkpoint` bundles the
+weights, those constants, the preprocessing settings, and the metrics in one
+file — weights saved alone can never be served, and the loader refuses an
 incomplete bundle.
 
-### Reported results mixed training and test data
+## 1.5 Reported results are out-of-fold only
 
-`all_predictions.csv` was built from `train_records + eval_records` with no
-column distinguishing them. With an 80/20 split, roughly **80% of the headline
-rows were training-set predictions**.
+The results CSV contains only predictions made on data the model did not train
+on. Mixing train-set predictions into the same file would inflate headline
+results with no visible sign.
 
-Now: the results CSV contains out-of-fold predictions only — every row is a
-prediction on data that fold did not train on.
+## 1.6 Clinical thresholds are per-patient
 
-### The anemia threshold was wrong for most adults
+WHO anemia cutoffs vary by age and sex (11.0 for under-fives, 11.5 for 5–11,
+12.0 for 12–14 and adult women, 13.0 for adult men). A single fixed cutoff
+misclassifies anyone in the wrong band — measured on the local cohort, a fixed
+11.0 g/dL rule mislabels 4 of 26 real patients, all anemic children called
+normal. The threshold is looked up per patient, defaulting to 12.0 when
+demographics are unknown so an unknown patient is not assumed healthy.
 
-`Hb < 11.0` was applied to everyone. That is the WHO cutoff for children 6–59
-months and pregnant women. For an adult man the cutoff is 13.0.
+## 1.7 Splits are patient-grouped and stratified
 
-So a man at 12.0 g/dL — genuinely anemic — was labelled **normal**. In a
-screening tool that is the dangerous direction of error.
+Multiple captures of one patient (or both eyes of one child) are highly
+correlated; letting them straddle a train/test split lets the model score by
+recognising the subject. Splits group on `patient_id` and stratify by Hb so no
+fold ends up without anemic cases.
 
-Now: the threshold is looked up per patient from age and sex, and defaults to
-12.0 when demographics are unknown rather than assuming health.
+## 1.8 Training details that are easy to get wrong
 
-### Splits leaked between train and test
-
-Splitting was `selected_images[:train_split]` on a list sorted by patient
-number: no shuffling, no grouping, no stratification.
-
-Now: patient-grouped and Hb-stratified k-fold, so no patient's captures can
-straddle the split and no fold can end up without anemic cases.
-
-## 1.2 Training defects
-
-| Defect | Effect |
+| Decision | Why |
 |---|---|
-| `/255` scaling with no ImageNet mean/std | Input distribution mismatched the pretrained weights being fine-tuned |
-| `requires_grad = False` used alone to freeze layers | BatchNorm keeps updating running statistics in train mode, drifting the frozen features |
-| Rotation augmentation used `BORDER_REFLECT_101` | Mirrored the black letterbox back into frame, inventing tissue that was never photographed |
-| Loss printed as "weighted MSE" | It was smooth-L1; `weighted_mse()` was defined and never called |
-| No seed anywhere | Runs were not reproducible |
-| One image per patient, capped at 50 | Used roughly 5% of the available data |
+| ImageNet mean/std normalisation inside `forward()` | `[0,1]` scaling alone mismatches the pretrained weights; putting it in the module means serving cannot forget it |
+| Frozen BatchNorm forced to `eval()` | `requires_grad=False` alone does not stop BN running statistics drifting the frozen features |
+| Rotation augmentation pads black, not reflected | Reflection would mirror the letterbox back into frame, inventing tissue never photographed |
+| Global seed set per run | Reproducibility |
+| Loss is smooth-L1 with inverse-frequency sample weights | Robust to label noise; rare severe-anemia cases carry larger gradients |
 
-## 1.3 Structural changes
+## 1.9 Structure
 
-**Preprocessing is cached.** Segmentation ran inside `Dataset.__getitem__`, so a
-40-epoch run re-segmented every image 40 times. Crops are now computed once and
-cached to disk, keyed on image content plus preprocessing settings. Augmentation
-still runs per-epoch on the cached crop, so no diversity is lost.
+**Preprocessing is cached** (`CropCache`): segmentation runs once per image,
+not once per epoch, keyed on image content, settings, and the extractor
+version (`cache_key`). **The serving path is isolated**: `predict.py` imports
+nothing from `train.py`. **Datasets are pluggable**: every loader emits the
+same `Sample`, so the hospital data needs one adapter, not training changes.
 
-**The serving path is isolated.** `predict.py` imports nothing from `train.py`.
-The API loads one model at startup and does one segmentation pass plus one
-forward pass per request.
+## 1.10 Known gap
 
-**Datasets are pluggable.** Loaders emit a common `Sample`, so adding the
-hospital data means writing one adapter, not editing training code.
-
-**Paths are arguments.** The original hardcoded
-`/Users/yatikajena/Desktop/AnemiaDetection/...` as CLI defaults.
-
-**Dead code removed.** `process_image()`, `weighted_mse()`, and
-`ConjunctivaDemoDataset` were all defined and never called. `run_demo()`
-duplicated `process_image()`'s body inline.
-
-**Added:** 18 tests, synthetic phantoms, a segmenter benchmark, and a FastAPI
-service.
-
-## 1.4 Things deliberately not carried over
-
-The original wrote a set of visual audit artifacts — `overlays/`, `masks/`,
-`crops/`, `contact_sheet.png`, and `manifest.csv`. These are genuinely useful
-for eyeballing whether segmentation is behaving, and for figures in the report.
-
-They are **not** currently produced. `build_overlay()` still exists in
-`imaging.py` but nothing calls it. Worth re-adding as an `export` CLI command
-before the write-up.
+Visual audit artifacts (`overlays/`, contact sheets, manifests) are produced
+by the `debug` command but not yet by training runs; worth wiring in before
+the write-up.
 
 ---
 
@@ -160,14 +116,20 @@ the training stack.
 ### `segment.py`
 All segmentation backends behind one contract: `(rgb) → (mask, name)`.
 
-- `heuristic_conjunctiva_mask` — the fixed redness prior
-- `legacy_bright_neutral_mask` — the inherited heuristic, kept so the rework can
-  be justified with a measured Dice comparison rather than an assertion
+- `refined_conjunctiva_mask` — the production classical extractor: seeded
+  grabCut with texture, sclera, and darkness gates, tuned on the 52 real
+  captures. `heuristic_segmenter` tries it first (backend name `refined`)
+- `heuristic_conjunctiva_mask` — the plain redness prior, now the first
+  fallback
+- `legacy_bright_neutral_mask` — a brightness-based baseline, kept so the
+  redness-based design can be justified with a measured Dice comparison
 - `grabcut_mask` — deterministic fallback when the colour prior degenerates
 - `Mask2FormerSegmenter` — the trained model, loaded once and reused
 
 Because everything is one callable, backends swap without touching
-preprocessing, training, or serving.
+preprocessing, training, or serving. `heuristic_segmenter.cache_key`
+(`classical-v2`) namespaces the crop cache — bump it whenever a classical
+algorithm changes, or training may silently reuse crops cut by the old one.
 
 ### `preprocess.py`
 The `prepare()` function every image passes through, at train time and at serve
@@ -181,6 +143,16 @@ Dataset adapters and clinical labelling.
 
 - `load_eyes_defy_anemia()` — India + Italy subsets, with mask discovery
 - `load_cp_anemic()` — Ghana cohort (**unverified against a real download**)
+- `load_local_cohort()` — the locally collected cohort: `DATASAMPLE.csv` keyed
+  by image ID, plus `left_eye/` and `right_eye/` folders. Assigns **both eyes of
+  a subject the same `patient_id`**, without which the grouped splitter cannot
+  stop the two correlated captures straddling train and test. Computes age at
+  the date of capture rather than today
+- `load_unlabelled()` — a plain folder of photographs with no metadata sheet,
+  such as the local `left_eye/` and `right_eye/` collection. Sets `hb` to NaN so
+  that training on unlabelled images fails loudly instead of silently fitting a
+  placeholder value
+- `has_labels()` — guard used before anything that needs a target
 - `Sample` — the common record every loader emits
 - `anemia_threshold()` / `is_anemic()` — the WHO cutoff table
 - `summarise()` — cohort description, and a sanity check that the loader
@@ -230,9 +202,17 @@ Four commands:
 | Command | Purpose |
 |---|---|
 | `inspect` | Summarise a dataset without training. Run this first on any new data. |
+| `debug` | Dump masks and overlays for one photo (`--image`) or a whole folder (`--dir`). Needs no trained model. |
 | `train-segmenter` | Fine-tune Mask2Former on ground-truth masks |
 | `train-hb` | Cross-validate the Hb regressor |
 | `predict` | Score a single photo |
+
+`debug` is the tool for unlabelled photographs. In batch mode it writes a
+`quality_report.csv` of per-image QC statistics plus an `overlay_sheet.png`.
+Without ground-truth masks there is no Dice to compute, so the overlay sheet is
+the instrument — segmentation quality on real tissue is judged by eye until
+masks are available. This is what exposed the colour heuristic's failure on
+real captures.
 
 ## Serving — `serve/app.py`
 FastAPI service. Model loaded once at startup. `POST /predict` accepts an image
@@ -259,7 +239,7 @@ Eye phantom generator: skin surround, bright sclera, dark iris, and a
 conjunctiva strip whose colour interpolates with Hb.
 
 ### `tests/test_pipeline.py`
-18 tests covering segmentation (including the explicit check that the legacy
+19 tests covering segmentation (including the explicit check that the legacy
 heuristic selects sclera), preprocessing and the QC gate, the WHO threshold
 table, split integrity, and the metrics.
 
@@ -268,8 +248,7 @@ Runs without any real data.
 ## Reference
 
 ### `gemini_anemia_pipeline.py`
-The original inherited implementation, unchanged. Kept for reference and for the
-before/after comparison in the report.
+An earlier prototype script, kept unchanged for reference.
 
 ---
 

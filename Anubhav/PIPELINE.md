@@ -122,6 +122,39 @@ because both are the same kind of mistake:
 > misses the tissue entirely. Otsu's method finds the split point from the
 > image's own histogram.
 
+> **Measured on real photographs, the plain colour prior is not good enough.**
+> Screened across 52 real captures it bled onto eyelashes and lower-lid skin —
+> both reddish-brown enough to survive the redness test. Dice 0.999 on
+> flat-colour phantoms, visibly poor on real tissue: exactly the gap a phantom
+> score cannot reveal.
+
+**The refined extractor** (`refined_conjunctiva_mask`) fixes this with a
+seeded grabCut built on three observations about what actually distinguishes
+the tissue:
+
+1. **Conjunctiva is smooth; the lash zone is high-frequency.** A local
+   standard-deviation map separates them, and high-texture pixels are seeded
+   as definite background.
+2. **Sclera is bright, desaturated, and not red; iris and pupil are dark.**
+   Both are seeded as definite background explicitly rather than left to the
+   colour model — a brown iris is dark *red*, and without an absolute darkness
+   gate it wins the redness contest on wide shots.
+3. **Specular highlights sit on the tissue.** The wet surface reflects the
+   light source as white blobs inside the region we want; they are seeded as
+   probable foreground and remaining holes are filled afterwards.
+
+The seeds drive a mask-initialised grabCut whose edge-aware model stops the
+region growing through the lash line. A wide morphological opening then shears
+off any lash tendrils, the largest component is kept, and holes are filled.
+
+Re-screened over all 52 real captures, the refined extractor produces clean,
+tissue-hugging masks on visual review; the median mask ratio halves (0.21 →
+0.10), consistent with the bleed being removed rather than the tissue. The one
+residual failure mode is a **barely-everted lid**, where almost no conjunctiva
+is exposed — a capture-quality problem, not a segmentation one. There is still
+no ground-truth Dice on real photographs; that requires the Eyes-defy-anemia
+masks.
+
 The mask is then morphologically opened and closed, and the largest connected
 component kept, to remove speckle.
 
@@ -219,9 +252,27 @@ Anemia is not one number. WHO thresholds:
 | Pregnant women | 11.0 |
 | Men 15+ | 13.0 |
 
-A single hardcoded 11.0 — as in the inherited implementation — labels an adult
-man at 12.0 g/dL as **normal** when he is anemic. That is a false negative in a
+A single hardcoded 11.0 labels an adult man at 12.0 g/dL as **normal** when he
+is anemic. That is a false negative in a
 screening tool: the error direction that sends an unwell patient home.
+
+> **Measured on the local cohort, this is not a hypothetical.** Applying a
+> fixed `Hb < 11.0` rule to the 26 real patients misclassifies **4 of them
+> (15%)**, and every one of the four is a **false negative** — an anemic child
+> labelled normal:
+>
+> | Patient | Hb | Age | WHO threshold | Correct | Fixed 11.0 rule |
+> |---|---|---|---|---|---|
+> | 10 | 11.0 | 11.1 | 11.5 | anemic | normal |
+> | 14 | 11.4 | 6.6 | 11.5 | anemic | normal |
+> | 16 | 11.3 | 8.4 | 11.5 | anemic | normal |
+> | 21 | 11.4 | 7.2 | 11.5 | anemic | normal |
+>
+> The errors cluster just below 11.5 because most of this cohort falls in the
+> 5–11 year band, where the correct cutoff is half a gram above the fixed
+> value. A screening tool that misses 15% of anemic children before the model
+> makes a single prediction is not fit for purpose, and no amount of
+> regression accuracy would recover it.
 
 When age or sex is unknown the code falls back to 12.0 rather than the lowest
 cutoff, so an unknown patient is not assumed healthy.
@@ -244,9 +295,9 @@ stratified by the patient's Hb, and results are reported as mean ± std across
 folds. A single split's MAE has a confidence interval too wide to defend.
 
 **Out-of-fold predictions only.** The results CSV contains only predictions made
-on data the model did not train on. (The inherited pipeline wrote train and test
-predictions into one file with no column distinguishing them — roughly 80% of
-its headline rows were training-set predictions.)
+on data the model did not train on. Mixing train-set predictions into the same
+file would silently inflate headline results — with an 80/20 split, four of
+every five rows would be training-set predictions.
 
 **Sensitivity over accuracy.** For screening, a missed anemic patient costs far
 more than a false alarm. Accuracy is also the metric most inflated by class
@@ -266,8 +317,8 @@ The app is meant to be deployed, so two things are structural:
 Mask2Former forward pass per image. Caching keyed on image content plus
 preprocessing settings means it runs once, not once per epoch. Augmentation
 still happens per-epoch on the cached crop, so no augmentation diversity is
-lost. (The inherited code re-segmented inside `__getitem__`; a 40-epoch run
-segmented every image 40 times.)
+lost. (Without the cache, segmentation would re-run inside `__getitem__` — a
+40-epoch run would segment every image 40 times.)
 
 **The serving path is isolated.** `predict.py` imports nothing from `train.py`.
 The API loads one model at startup and does one segmentation pass plus one
@@ -279,13 +330,56 @@ that model was trained.
 
 ## 6. Data
 
-| Dataset | Images | Masks | Population |
-|---|---|---|---|
-| Eyes-defy-anemia | 218 | yes | Adults, India + Italy |
-| CP-AnemiC | 710 | no | Children 6–59 months, Ghana |
+| Source | Images | Patients | Hb labels | Masks | Population |
+|---|---|---|---|---|---|
+| Eyes-defy-anemia | 218 | ~218 | yes | yes | Adults, India + Italy |
+| CP-AnemiC | 710 | 710 | yes | no | Children 6–59 months, Ghana |
+| Local cohort | 52 | 26 | yes | no | Children 3–17 years, India |
 
-The segmenter can only be trained on Eyes-defy-anemia. It is then applied to
-CP-AnemiC and to the hospital data to produce crops for the regressor.
+The segmenter can only be trained on Eyes-defy-anemia — it is the only source
+with pixel-level ground truth. It is then applied to the other sources to
+produce crops for the regressor.
+
+### The local cohort
+
+26 subjects, both eyes photographed, so 52 close-up captures of the everted
+lower lid. Labels come from `DATASAMPLE.csv`: haemoglobin, date of birth,
+gender, height, weight, socio-economic status, and a full blood count (HCT, RBC,
+MCV, MCH, MCHC, RDW, platelets, MPV, TLC).
+
+| | |
+|---|---|
+| Hb range | 8.1 – 14.3 g/dL (mean 11.2, sd 1.37) |
+| Anemic by WHO threshold | 13 of 26 patients (50%) |
+| Severe (Hb < 9.0) | 3 patients |
+| Age range | 3.4 – 16.7 years |
+| Captures per patient | exactly 2 (one per eye) |
+
+This is a small but genuinely usable cohort, and it has three properties that
+make it more valuable than its size suggests.
+
+**It is balanced.** A 50/50 anemic split is unusually favourable; most cohorts
+are heavily skewed toward normal, which is what makes the mean baseline hard to
+beat.
+
+**Two captures per patient make grouping mandatory.** The left and right eye of
+one child are highly correlated. Split on images and the model scores well by
+recognising the subject rather than reading pallor. `load_local_cohort()`
+assigns both eyes the same `patient_id`, so the grouped splitter keeps them
+together. Under an image-level split this dataset would produce badly inflated
+results.
+
+**The ages straddle three WHO threshold bands** (11.0 under 5, 11.5 for 5–11,
+12.0 for 12–14), which makes the per-patient threshold rule directly
+consequential rather than theoretical — see §3.6.
+
+The full blood count is not currently used. RDW and MCV distinguish iron-
+deficiency anemia from other types, so there is a possible extension here:
+predicting *which* anemia, not just whether. That is beyond the current scope
+but worth recording.
+
+Provenance and licensing are unconfirmed — worth establishing before any figure
+derived from these images appears in a published write-up.
 
 Two consequences worth stating in the report:
 
@@ -322,26 +416,43 @@ Suggested reading order: `data.py` (what a sample is) → `preprocess.py` (what
 the model sees) → `model.py` (what it does) → `train.py` (how it learns) →
 `predict.py` (what the app calls).
 
-**See `CODE_GUIDE.md`** for what every file does in detail, and for the full
-account of what changed from the inherited implementation.
+**See `CODE_GUIDE.md`** for what every file does in detail, and for the design
+rationale behind each stage.
 
 ---
 
 ## 8. What is verified, and what is not
 
 **Verified**
-- All stages run end to end; 18/18 tests pass.
-- The fixed colour heuristic reaches Dice 0.999 on phantoms where the inherited
-  heuristic reaches 0.000 — confirming the old one segmented sclera, not
-  conjunctiva.
+- All stages run end to end; 19/19 tests pass.
+- The redness-based extractor reaches Dice 0.999 on phantoms where a
+  brightness-based mask reaches 0.000 — confirming brightness selects sclera,
+  not conjunctiva.
 - Cross-validated training on phantoms: MAE 0.664 ± 0.096 g/dL, R² 0.880,
   1.45 g/dL better than the mean baseline.
 - A saved checkpoint loads and predicts; QC correctly rejects blurred captures.
+- **The pipeline runs on real, labelled photographs.** 52 captures from 26
+  patients screened end to end without error; 49 passed QC (94%). Median focus
+  85.3, median mask ratio 0.211. The three rejections were all blur, at 25.4,
+  34.2 and 34.9 against a threshold of 35.
+- **The per-patient WHO threshold is validated on real data.** A fixed 11.0
+  rule misclassifies 4 of 26 real patients, all false negatives (§3.6).
+
+**Measured and found wanting**
+- **The colour heuristic does not segment real conjunctiva reliably.** It bleeds
+  onto eyelashes and lower-lid skin on a substantial fraction of the 52 real
+  captures (§3.2). This is a real negative result, and the most useful thing
+  learned so far.
+- **Two of the three QC rejections are marginal** (34.2 and 34.9 against a
+  threshold of 35.0) on captures that are usable to the eye. The blur threshold
+  was chosen on phantoms and looks slightly too aggressive for real images; it
+  should be recalibrated once masks allow the downstream effect to be measured.
 
 **Not verified — do not claim any of this yet**
-- Any performance on real photographs. The phantoms are flat-coloured with
-  artificially clean separation; near-perfect scores there are expected and
-  mean nothing clinically.
+- Any *accuracy* on real photographs. The local cohort is labelled and could in
+  principle produce one, but at 26 patients it is far too small to give an
+  error figure with a defensible confidence interval, and segmentation on these
+  images is known to be unreliable. Train on it only after the segmenter works.
 - The Mask2Former training path has not been run (needs the real masks).
 - The CP-AnemiC loader has not been checked against a real download. Confirm it
   parses 710 images before trusting a run.
@@ -357,22 +468,3 @@ account of what changed from the inherited implementation.
 5. Only then build the app UI around the API.
 
 ---
-
-## Appendix: defects found in the inherited implementation
-
-Summarised below. `CODE_GUIDE.md` covers each one in full, along with a
-file-by-file reference for the codebase.
-
-| Defect | Consequence |
-|---|---|
-| Heuristic kept bright, low-chroma pixels | Segmented the **sclera**, not the conjunctiva |
-| `local_files_only=True` on the model load | Always failed on a clean machine, silently fell back; "trained segmentation" runs had trained nothing |
-| `accepted_for_training` computed, never read | QC was decorative; blurred images trained the model |
-| `target_mean` / `target_std` never saved | Checkpoints could not be served at all |
-| Train and test rows in one predictions CSV | Headline results were ~80% training-set predictions |
-| Segmentation re-run inside `__getitem__` | Every image re-segmented once per epoch |
-| `/255` with no ImageNet normalisation | Input distribution mismatched the pretrained weights |
-| `requires_grad = False` alone to freeze | BatchNorm running stats kept drifting |
-| Hardcoded `Hb < 11.0` | Misses anemic adult men (threshold 13.0) |
-| Split on images, sorted by patient number | Leakage across captures of the same eye |
-| One image per patient, capped at 50 | Used ~5% of available data |

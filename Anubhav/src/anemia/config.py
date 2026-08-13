@@ -37,9 +37,9 @@ class PreprocessConfig:
 class QualityConfig:
     """Thresholds for rejecting non-viable captures.
 
-    Unlike the inherited pipeline these are *enforced*: a sample failing QC is
-    dropped from training, and at serve time the API returns a retake prompt
-    rather than a confident number derived from a blurred photo.
+    These are *enforced*, not merely recorded: a sample failing QC is dropped
+    from training, and at serve time the API returns a retake prompt rather
+    than a confident number derived from a blurred photo.
     """
 
     min_focus: float = 35.0
@@ -53,8 +53,8 @@ class QualityConfig:
 @dataclass(frozen=True)
 class SegmentationConfig:
     checkpoint: str = "facebook/mask2former-swin-tiny-ade-semantic"
-    """ADE20k-semantic init. The inherited code started from a Cityscapes
-    street-scene model, which is a poorer prior for close-up tissue."""
+    """ADE20k-semantic init — a broader scene prior than street-scene
+    checkpoints, and a closer match for close-up tissue."""
 
     epochs: int = 30
     batch_size: int = 2

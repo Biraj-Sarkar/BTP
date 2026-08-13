@@ -24,6 +24,7 @@ from anemia.segment import (  # noqa: E402
     heuristic_conjunctiva_mask,
     heuristic_segmenter,
     legacy_bright_neutral_mask,
+    refined_conjunctiva_mask,
 )
 from anemia.splits import kfold  # noqa: E402
 from synthetic import make_eye  # noqa: E402
@@ -31,9 +32,9 @@ from synthetic import make_eye  # noqa: E402
 
 class TestSegmentation:
     def test_fixed_heuristic_beats_legacy_on_conjunctiva(self):
-        """The core claim of the rework, measured rather than asserted.
+        """The core segmentation claim, measured rather than asserted.
 
-        The inherited heuristic keeps bright, low-chroma pixels, which is the
+        A brightness-based mask keeps bright, low-chroma pixels, which is the
         sclera. The signal for haemoglobin is in the red conjunctiva.
         """
 
@@ -54,12 +55,22 @@ class TestSegmentation:
         legacy = legacy_bright_neutral_mask(gray_world_white_balance(image))
         assert dice_score(legacy, conjunctiva) < 0.2
 
+    def test_refined_mask_works_on_phantoms_too(self):
+        """The real-image extractor must not regress on the controlled case."""
+
+        scores = []
+        for hb in (8.0, 11.0, 14.0):
+            image, truth = make_eye(hb=hb, seed=int(hb))
+            balanced = gray_world_white_balance(image)
+            scores.append(dice_score(refined_conjunctiva_mask(balanced), truth))
+        assert np.mean(scores) > 0.6, f"refined extractor Dice on phantoms: {scores}"
+
     def test_segmenter_returns_mask_and_backend_name(self):
         image, _ = make_eye(seed=1)
         mask, backend = heuristic_segmenter(image)
         assert mask.shape == image.shape[:2]
         assert set(np.unique(mask)).issubset({0, 255})
-        assert backend in {"heuristic", "grabcut"}
+        assert backend in {"refined", "heuristic", "grabcut"}
 
 
 class TestPreprocess:
@@ -100,11 +111,11 @@ class TestClinicalLabels:
         assert anemia_threshold(age, sex) == expected
 
     def test_hardcoded_eleven_would_miss_anemic_men(self):
-        """The bug the inherited threshold introduced, made explicit."""
+        """Why a single fixed threshold fails, made explicit."""
 
         hb = 12.0
         assert is_anemic(hb, age_years=30, sex="M")   # correct: below 13.0
-        assert not hb < 11.0                          # inherited rule: missed
+        assert not hb < 11.0                          # fixed 11.0 rule: missed
 
 
 class TestSplits:
