@@ -18,3 +18,4 @@ python-multipart>=0.0.9
 
 # Development
 pytest>=8.0
+scikit-learn>=1.4    # linear baselines for the regularisation study

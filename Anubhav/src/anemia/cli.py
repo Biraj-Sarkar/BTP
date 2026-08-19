@@ -276,6 +276,120 @@ def cv2_resize(image, size: int):
     return cv2.resize(image, (size, size), interpolation=cv2.INTER_AREA)
 
 
+def cmd_stages(args: argparse.Namespace) -> None:
+    """Dump every pipeline stage for each image into its own folder.
+
+    Built as a learning tool: open a folder, scrub through the files in name
+    order, and watch the photo become the model input. File names carry a
+    stage number so they sort in pipeline order, not alphabetically.
+
+    The redness map is included even though it is an *internal* detail of the
+    extractor, because it is the single most instructive image in the set: it
+    shows what the segmentation actually "sees".
+    """
+
+    import shutil
+
+    import cv2
+    import numpy as np
+
+    from .config import PreprocessConfig, QualityConfig
+    from .imaging import (
+        apply_mask,
+        build_overlay,
+        gray_world_white_balance,
+        pad_to_square,
+        read_rgb,
+        redness_index,
+        resize,
+        tight_bbox,
+    )
+    from .preprocess import assess_quality
+    from .segment import heuristic_segmenter, load_segmenter
+
+    segmenter = load_segmenter(args.segmenter) if args.segmenter else heuristic_segmenter
+    preprocess = PreprocessConfig()
+    quality_config = QualityConfig()
+
+    if args.image:
+        files = [args.image]
+    else:
+        files = sorted(
+            (p for p in args.dir.iterdir()
+             if p.suffix.lower() in {".jpg", ".jpeg", ".png"}),
+            key=lambda p: (0, int(p.stem)) if p.stem.isdigit() else (1, p.stem),
+        )
+    if not files:
+        raise SystemExit("No images found.")
+
+    def save_rgb(image_rgb, path: Path) -> None:
+        cv2.imwrite(str(path), cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR),
+                    [cv2.IMWRITE_JPEG_QUALITY, 92])
+
+    print(f"Tracing {len(files)} image(s) -> {args.out}\n")
+    for file in files:
+        stem = file.stem
+        folder = args.out / stem
+        folder.mkdir(parents=True, exist_ok=True)
+
+        rgb = read_rgb(file)
+        shutil.copy2(file, folder / file.name)
+
+        # Stage 1: resize to the working resolution the pipeline operates at.
+        resized = resize(rgb, preprocess.work_size)
+        save_rgb(resized, folder / f"{stem}_01_resized.jpg")
+
+        # Stage 2: gray-world white balance neutralises the illuminant.
+        balanced = gray_world_white_balance(resized)
+        save_rgb(balanced, folder / f"{stem}_02_white_balance.jpg")
+
+        # Stage 3: the redness map — what the extractor actually scores.
+        redness = redness_index(balanced)
+        spread = float(np.ptp(redness)) or 1.0
+        red_u8 = np.clip((redness - redness.min()) / spread * 255, 0, 255).astype(np.uint8)
+        cv2.imwrite(str(folder / f"{stem}_03_redness_map.jpg"),
+                    cv2.applyColorMap(red_u8, cv2.COLORMAP_INFERNO))
+
+        # Stage 4-5: segmentation, as raw mask and as overlay.
+        mask, backend = segmenter(balanced)
+        cv2.imwrite(str(folder / f"{stem}_04_mask.png"), mask)
+        save_rgb(build_overlay(balanced, mask), folder / f"{stem}_05_segment_overlay.jpg")
+
+        # Stage 6: everything outside the mask blacked out.
+        masked = apply_mask(balanced, mask)
+        save_rgb(masked, folder / f"{stem}_06_masked.jpg")
+
+        # Stage 7: tight crop around the mask (still the original shape).
+        left, top, right, bottom = tight_bbox(mask, preprocess.bbox_pad_ratio)
+        cropped = masked[top:bottom, left:right]
+        if cropped.size == 0:
+            cropped = masked
+        save_rgb(cropped, folder / f"{stem}_07_crop.jpg")
+
+        # Stage 8: letterbox to a square WITHOUT stretching the crescent.
+        letterboxed = pad_to_square(cropped)
+        save_rgb(letterboxed, folder / f"{stem}_08_letterbox.jpg")
+
+        # Stage 9: the exact input the regression network would receive.
+        model_input = resize(letterboxed, preprocess.model_size)
+        save_rgb(model_input, folder / f"{stem}_09_model_input.jpg")
+
+        report = assess_quality(balanced, mask, quality_config)
+        (folder / f"{stem}_quality.json").write_text(
+            json.dumps({"backend": backend, **report.to_dict()}, indent=2),
+            encoding="utf-8",
+        )
+
+        flag = "" if report.passed else f"  QC FAIL: {'; '.join(report.reasons)}"
+        print(f"  {stem}: backend={backend} mask={report.mask_ratio:.3f} "
+              f"focus={report.focus:.0f}{flag}")
+
+    print(f"\nDone. Each folder reads in pipeline order:")
+    print("  original -> 01_resized -> 02_white_balance -> 03_redness_map ->")
+    print("  04_mask -> 05_segment_overlay -> 06_masked -> 07_crop ->")
+    print("  08_letterbox -> 09_model_input  (+ _quality.json)")
+
+
 def cmd_predict(args: argparse.Namespace) -> None:
     from .predict import AnemiaPredictor
 
@@ -318,6 +432,14 @@ def build_parser() -> argparse.ArgumentParser:
     debug.add_argument("--sheet-size", type=int, default=12,
                        help="how many overlays to place on the contact sheet")
     debug.set_defaults(func=cmd_debug)
+
+    stages = sub.add_parser("stages", help="dump every pipeline stage per image, one folder each")
+    stage_source = stages.add_mutually_exclusive_group(required=True)
+    stage_source.add_argument("--image", type=Path, help="single photo")
+    stage_source.add_argument("--dir", type=Path, help="folder of photos")
+    stages.add_argument("--out", type=Path, default=REPO_ROOT / "stages")
+    stages.add_argument("--segmenter", type=Path, default=None)
+    stages.set_defaults(func=cmd_stages)
 
     predict = sub.add_parser("predict", help="score a single photo")
     predict.add_argument("--checkpoint", type=Path, required=True)

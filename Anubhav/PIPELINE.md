@@ -8,6 +8,10 @@ unproven.
 No model has been trained on real patient data yet. No accuracy number in this
 document is a clinical result.**
 
+Abbreviations used throughout are defined in `GLOSSARY.md`. Approaches tried
+and rejected, with measured reasons, are in `RESEARCH_LOG.md`. Each stage below
+ends with a table of what it buys and what it costs.
+
 ---
 
 ## 1. The clinical idea
@@ -79,6 +83,15 @@ scale_c = mean(all channels) / mean(channel c)
 This is crude but robust and needs no calibration card. A better long-term
 option is a physical colour reference in frame (a printed card, or a sticker on
 the phone case), which is what several published systems do.
+
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| No calibration object, no training data, three multiplications | Assumes the scene averages to grey; an eyelid close-up is mostly skin, so the correction is pulled by framing |
+| Corrects the illuminant *cast*, which is what a colour measurement is most sensitive to | Does nothing about brightness or exposure |
+| Measured to improve Hb correlation (Spearman +0.30 vs +0.02) and eye-to-eye consistency | Divides by a channel mean, so a near-empty channel is amplified catastrophically (measured: ×20.8 red gain under blue light) |
+| Cheap enough to run identically in training and in the request path | A physical grey card in frame would replace the assumption with a measurement, and would be strictly better |
 
 ### 3.2 Segmentation — `segment.py`
 
@@ -158,6 +171,16 @@ masks.
 The mask is then morphologically opened and closed, and the largest connected
 component kept, to remove speckle.
 
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| GrabCut is edge-aware, so the region stops at the lash line where a threshold ploughs through | Slower than thresholding — several iterations of graph cutting per image |
+| Seeds encode non-colour evidence (texture, darkness, sclera brightness), so it succeeds where colour alone cannot | Seed rules are hand-designed constants, tuned by eye on 52 images rather than optimised |
+| Produces clean masks across all 52 real captures on visual review | **No measured Dice on real photographs** — visual review is not a number |
+| Falls back through simpler methods rather than failing outright | Fails on a barely-everted lid, though that is a capture problem |
+| Behind a one-callable interface, so the learned model swaps in without touching anything else | Collapses entirely under strongly coloured illumination (see §8) |
+
 ### 3.3 Crop and letterbox — `imaging.pad_to_square`
 
 The conjunctiva is a **crescent**: wide and short, often 3:1 or worse. Resizing
@@ -172,6 +195,14 @@ with black to 1:1**, *then* resize. Aspect ratio is preserved throughout.
 black letterbox creates severe boundary artefacts, and — more importantly — it
 normalises away the very redness difference that encodes haemoglobin. Enhancing
 contrast would destroy the signal.
+
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| Aspect ratio preserved, so vessel spacing and density are not corrupted | Black padding wastes input pixels — a 3:1 crescent fills only a third of the square |
+| Deterministic and identical at train and serve time | The network must learn to ignore the padding, which costs a little capacity |
+| No interpolation artefacts from stretching | Fixed 224×224 discards resolution on close captures |
 
 ### 3.4 Quality control — `preprocess.assess_quality`
 
@@ -192,6 +223,15 @@ field.
 Clipping deserves note: a flash fired at wet conjunctiva blows out exactly the
 region we need, and the result still looks *sharp* to the focus check. Blur
 detection alone would pass it.
+
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| Enforced, not merely recorded — a failing capture never reaches the model | Thresholds are hand-set; the blur cut-off looks slightly too aggressive on real captures (two of three rejections were marginal) |
+| Three independent checks catch three different failures | **No illuminant-neutrality check**, so a strongly tinted photo passes and yields a confident, meaningless number |
+| Converts a silent failure into an actionable retake prompt | Rejecting a capture costs a retake, which in a field setting is a real burden |
+| Cheap: a Laplacian, a pixel count and two comparisons | Mask-ratio bounds assume a framing convention that may not hold across devices |
 
 ### 3.5 Haemoglobin regression — `model.py`, `train.py`
 
@@ -222,6 +262,21 @@ meant to preserve. This is a genuinely subtle bug and it is easy to ship.
 a standardised value; recovering g/dL needs the training mean and std. A
 checkpoint without them is unusable — the weights alone cannot be served.
 
+For the full mechanism — how a 224×224 crop becomes a g/dL number, what is and
+is not provided by the libraries involved, and every evaluation metric with its
+formula and current value — see
+`experiments/06_metrics_evaluation/METRICS.md`.
+
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| Transfer learning makes ~900 images viable where training from scratch would not be | ~8.4M trainable parameters against a few hundred images is still a severe ratio |
+| Predicting a continuous value lets one model serve every population | Regression is harder to fit than classification and needs more data for the same confidence |
+| Normalisation lives inside `forward()`, so the serving path cannot forget it | ImageNet features come from everyday objects, not tissue; the transfer is useful but not ideal |
+| Checkpoint is self-describing, so a saved model is always servable | Frozen layers cap how much the model can specialise |
+| Smooth-L1 resists the influence of a mislabelled patient | Still assumes labels are broadly reliable |
+
 #### Handling imbalanced Hb
 
 Most patients in any cohort are near-normal. A network minimising average error
@@ -238,6 +293,14 @@ learning rate does not shift.
 what a model that always predicts the training mean would score. If the trained
 model does not clearly beat it, the model has learned nothing, regardless of how
 respectable the MAE looks.
+
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| Stops the model settling on the cohort mean, which is the dominant failure on skewed data | Up-weighting rare cases raises variance — the model leans harder on fewer examples |
+| Normalised to mean 1, so the effective learning rate does not shift with bin count | Bin count is a free parameter that has not been tuned |
+| `strength` interpolates smoothly between uniform and full inverse frequency | With very few severe cases, weighting cannot manufacture information that is not there |
 
 ### 3.6 Diagnosis — `data.anemia_threshold`
 
@@ -276,6 +339,16 @@ screening tool: the error direction that sends an unwell patient home.
 
 When age or sex is unknown the code falls back to 12.0 rather than the lowest
 cutoff, so an unknown patient is not assumed healthy.
+
+---
+
+**Advantages and limitations**
+
+| Advantages | Limitations |
+|---|---|
+| One model serves every age and sex; thresholds change without retraining | Requires age and sex to be collected alongside the photo |
+| Measured to matter: a fixed 11.0 cutoff mislabels 4 of 26 real patients, all false negatives | Falls back to 12.0 when demographics are unknown, which is a compromise for both adult men and young children |
+| Auditable — a lookup table anyone can check against WHO guidance | Ignores pregnancy unless explicitly flagged, and altitude and smoking adjustments are not implemented |
 
 ---
 
@@ -417,7 +490,9 @@ the model sees) → `model.py` (what it does) → `train.py` (how it learns) →
 `predict.py` (what the app calls).
 
 **See `CODE_GUIDE.md`** for what every file does in detail, and for the design
-rationale behind each stage.
+rationale behind each stage. **See `RESEARCH_LOG.md`** for the approaches that
+were tried and rejected — six failed extraction attempts alone, each with the
+measurement that killed it.
 
 ---
 

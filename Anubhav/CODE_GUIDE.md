@@ -245,6 +245,41 @@ table, split integrity, and the metrics.
 
 Runs without any real data.
 
+## Experiments — `experiments/`
+
+Exploratory studies, each self-contained with its own findings. Indexed in
+`experiments/README.md`; failed approaches are recorded separately in
+`RESEARCH_LOG.md`.
+
+| Folder | Script | Produces |
+|---|---|---|
+| `01_stage_traces/` | — | One contact sheet per capture showing every pipeline stage side by side, for both pipelines |
+| `02_extraction_check/` | via `anemia debug --dir` | Overlay sheets and per-image QC CSVs for the cohort |
+| `03_colour_normalisation/` | — | Gray-world vs CIELAB scored against laboratory Hb |
+| `04_lighting_stress/` | — | One eye under six illuminants; masks, cast ratios, capture metadata |
+| `05_representation_ablation/` | `run_ablation.py` | Four colour representations scored on Hb prediction |
+| `06_metrics_evaluation/` | `evaluate.py`, `plot_results.py` | Full metric suite on synthetic and real data (`metrics.json`), plus three-panel diagnostic plots |
+| `07_pipeline_comparison/` | `compare_pipelines.py` | Both pipelines end-to-end and shared-mask, linear models only (`comparison.json`) |
+| `08_regularisation/` | `compare_regularisers.py` | OLS vs ridge vs lasso vs elastic net, with coefficient-stability measurements |
+
+### `cielab_stages.py`
+Stage tracer for the CIELAB pipeline. Imports `cielab_pipeline.py` unmodified
+and emits one captioned contact sheet per capture, ending with the a\*/b\*
+channels that pipeline's network would receive.
+
+## Documentation map
+
+| Document | Covers |
+|---|---|
+| `README.md` | Setup, commands, data sources |
+| `PIPELINE.md` | How the method works, stage by stage, with per-stage advantages and limitations |
+| `CODE_GUIDE.md` | This file — design rationale and what every file does |
+| `RESEARCH_LOG.md` | Every approach tried and rejected, with measured reasons |
+| `GLOSSARY.md` | All abbreviations, defined once |
+| `WORKLOG.md` | Week-by-week record |
+| `experiments/README.md` | Index of the eight studies |
+| `Progress_Report.pdf` | The formal report |
+
 ## Reference
 
 ### `gemini_anemia_pipeline.py`

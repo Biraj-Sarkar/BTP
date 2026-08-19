@@ -1,8 +1,10 @@
 # BTP — Non-Invasive Anemia Detection
 
 > **Documentation:** `PIPELINE.md` explains how the method works, stage by
-> stage. `CODE_GUIDE.md` explains what every file does and the design
-> rationale behind each stage.
+> stage. `CODE_GUIDE.md` explains what every file does and the design rationale
+> behind each stage. `RESEARCH_LOG.md` records every approach tried including
+> those that failed, with reasons. `GLOSSARY.md` defines every abbreviation.
+> `WORKLOG.md` is the week-by-week record.
 
 Estimate haemoglobin from a photograph of the palpebral conjunctiva, and screen
 for anemia against the patient's WHO threshold.
@@ -11,9 +13,13 @@ The app is a thin client: the phone captures the eye and uploads it, a server
 segments the conjunctiva and runs the regressor, and the response carries an Hb
 estimate in g/dL plus an anemic / not-anemic verdict.
 
-> **Status: the pipeline runs end to end on synthetic phantoms. No model has
-> been trained on real data yet, and no accuracy figure in this repo should be
-> quoted until it has.**
+> **Status: the pipeline runs end to end on synthetic phantoms. No CNN has been
+> trained on real data yet. The only real-data predictor evaluated so far
+> (linear models over colour statistics, 26 patients) does **not** beat a
+> predict-the-mean baseline on any arm — see
+> `experiments/06_metrics_evaluation/METRICS.md` and
+> `experiments/07_pipeline_comparison/RESULTS.md`. No accuracy figure in this
+> repo is a clinical result.**
 
 ## Setup
 
@@ -85,13 +91,42 @@ red inner lid, not on lashes or cheek skin. Mask ratio alone will not tell you
 this. This check exposed the plain colour heuristic bleeding onto lashes and
 skin, which is why extraction now runs through the refined seeded-grabCut
 extractor (`refined_conjunctiva_mask`); the current per-image results live in
-`figures/extraction_left_eye/` and `figures/extraction_right_eye/`.
+`experiments/02_extraction_check/`.
 
 For a single image:
 
 ```bash
 python -m anemia debug --image photo.jpg --out debug
 ```
+
+## Stage-by-stage walkthrough
+
+To see exactly what the pipeline does to a photo, stage by stage:
+
+```bash
+python -m anemia stages --dir left_eye --out experiments/01_stage_traces/main_pipeline
+```
+
+Each capture produces **one contact sheet** (`<name>_stages.jpg`) with every
+stage side by side, so each can be compared against the one before it without
+opening separate files. Panels read left to right, top to bottom:
+
+```
+00 original capture        05 mask over photo
+01 resized to 512x512      06 outside mask removed
+02 gray-world white balance 07 tight crop
+03 redness map (a*-0.5b*)  08 letterboxed to square
+04 segmentation mask       09 model input 224x224
+```
+
+The header strip carries the filename, segmentation backend, mask ratio, focus
+score and QC verdict. Panels are letterboxed rather than stretched, so the
+crescent geometry the pipeline protects is not misrepresented in the figure.
+
+Options: `--image` for a single photo, `--segmenter` for a trained model,
+`--panel` / `--per-row` to change the layout, and `--separate` to additionally
+write each stage as its own file. Pre-generated traces live in
+`experiments/01_stage_traces/`; see `experiments/README.md` for the full index.
 
 ## Serving
 
@@ -147,3 +182,7 @@ pipeline reports these by construction:
   is the costly error.
 - **Bland–Altman limits of agreement**, the standard comparison against a lab
   reference in the clinical literature.
+
+Full metric definitions, the mechanism that produces the Hb value, and current
+numbers on both synthetic and real data:
+`experiments/06_metrics_evaluation/METRICS.md`.

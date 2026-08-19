@@ -1,0 +1,7 @@
+filename,subject,eye,illuminant,cast_ratio_srgb,notes
+Anubhav_white.jpg,volunteer_1,right,white / neutral,1.7,only realistic clinical condition
+Anubhav_green.jpg,volunteer_1,right,green (yellow-green),1.7,looks lurid but channel-balanced
+Anubhav_magenta.jpg,volunteer_1,right,magenta,22.5,green channel nearly dead (7.3/255)
+Anubhav_red.jpg,volunteer_1,right,red,138.5,green channel dead (1.3/255)
+Anubhav_purple.jpg,volunteer_1,right,purple,147.6,green channel dead (1.1/255)
+Anubhav_blue.jpg,volunteer_1,right,blue,199.6,red channel dead (0.9/255)
