@@ -190,14 +190,28 @@ Mask2Former fine-tuning on the ground-truth masks, with patient-grouped
 validation driving model selection. Only runs on Eyes-defy-anemia, the sole
 source of pixel-level ground truth.
 
+### `linear_model.py`
+The linear haemoglobin model: feature extraction, ridge fitting, and a
+self-describing model file. `extract_features` implements the five
+representations (`means`, `chroma`, `erythema`, `lab`, `a_only`) and is shared
+by fitting and serving so the two cannot drift. `LinearModel` saves and loads
+coefficients **together with** the feature specification, standardisation
+constants, extractor name and preprocessing settings — coefficients alone are
+uninterpretable.
+
 ### `predict.py`
 The serving path. `AnemiaPredictor` loads a checkpoint, reads its preprocessing
 settings from the bundle (so an older model is still conditioned the way it was
 trained), and returns Hb, verdict, threshold, and quality — or a retake message
 when QC fails.
 
+`LinearPredictor` serves the linear model with the identical interface and
+`Prediction` output as `AnemiaPredictor`, so the API cannot tell them apart.
+Useful as a PyTorch-free fallback, as the baseline any network must beat, and
+as an interpretable predictor whose equation can be read.
+
 ### `cli.py` / `__main__.py`
-Four commands:
+Commands:
 
 | Command | Purpose |
 |---|---|
@@ -205,7 +219,8 @@ Four commands:
 | `debug` | Dump masks and overlays for one photo (`--image`) or a whole folder (`--dir`). Needs no trained model. |
 | `train-segmenter` | Fine-tune Mask2Former on ground-truth masks |
 | `train-hb` | Cross-validate the Hb regressor |
-| `predict` | Score a single photo |
+| `fit-linear` | Fit and save the linear model (run once per new labelled dataset) |
+| `predict` | Score a single photo (`--checkpoint` for neural, `--linear` for linear) |
 
 `debug` is the tool for unlabelled photographs. In batch mode it writes a
 `quality_report.csv` of per-image QC statistics plus an `overlay_sheet.png`.
@@ -267,6 +282,10 @@ Stage tracer for the CIELAB pipeline. Imports `cielab_pipeline.py` unmodified
 and emits one captioned contact sheet per capture, ending with the a\*/b\*
 channels that pipeline's network would receive.
 
+### `predict_folder.py` (repository root)
+Batch entry point. Loads a fitted model and scores a folder of patients laid
+out as `left_eye/` + `right_eye/` plus an optional metadata sheet. No training.
+
 ## Documentation map
 
 | Document | Covers |
@@ -276,6 +295,7 @@ channels that pipeline's network would receive.
 | `CODE_GUIDE.md` | This file — design rationale and what every file does |
 | `RESEARCH_LOG.md` | Every approach tried and rejected, with measured reasons |
 | `GLOSSARY.md` | All abbreviations, defined once |
+| `CONTRIBUTING.md` | How to add an extractor, representation, metric or dataset |
 | `WORKLOG.md` | Week-by-week record |
 | `experiments/README.md` | Index of the eight studies |
 | `Progress_Report.pdf` | The formal report |

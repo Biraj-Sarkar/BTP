@@ -221,6 +221,31 @@ def main() -> None:
           f"{'TP%d FP%d FN%d TN%d' % (mA['tp'], mA['fp'], mA['fn'], mA['tn']):>16}"
           f"{'TP%d FP%d FN%d TN%d' % (mB['tp'], mB['fp'], mB['fn'], mB['tn']):>16}")
 
+    # ---------- fitted on all patients (the deployed model) ----------
+    print("\n" + "=" * 78)
+    print("2b. FITTED ON ALL 26 PATIENTS — the deployed model, scored in-sample")
+    print("=" * 78)
+    print("\nThis is the model that ships: every patient contributes to the fit.")
+    print("Scored on the same patients, so it describes the FIT, not what to")
+    print("expect from a new patient (section 2 has the held-out numbers).\n")
+    fitted = {}
+    for pipeline, key in (("A", best_a), ("B", best_b)):
+        X = stack(data, patients, pipeline, key)
+        b0, b, mu, sd = ridge(X, y)
+        fitted[pipeline] = score(apply_model(X, b0, b, mu, sd), y, meta)
+    fA, fB = fitted["A"], fitted["B"]
+    print(f"{'metric':<18}{'Pipeline A':>16}{'Pipeline B':>16}{'baseline':>14}")
+    print("-" * 64)
+    for key, label in [("mse", "MSE (g/dL)2"), ("rmse", "RMSE (g/dL)"), ("mae", "MAE (g/dL)"),
+                       ("r2", "R2"), ("bias", "bias (g/dL)"), ("pearson_r", "Pearson r"),
+                       ("accuracy", "Accuracy"), ("precision", "Precision"),
+                       ("recall", "Recall"), ("specificity", "Specificity"), ("f1", "F1")]:
+        print(f"{label:<18}{fA[key]:>16.3f}{fB[key]:>16.3f}{base.get(key, float('nan')):>14.3f}")
+    print("-" * 64)
+    print(f"{'confusion':<18}"
+          f"{'TP%d FP%d FN%d TN%d' % (fA['tp'], fA['fp'], fA['fn'], fA['tn']):>16}"
+          f"{'TP%d FP%d FN%d TN%d' % (fB['tp'], fB['fp'], fB['fn'], fB['tn']):>16}")
+
     # ---------- nested CV: the honest number ----------
     print("\n" + "=" * 78)
     print("3. NESTED CV — honest estimate when the pipeline picks its own features")
@@ -281,7 +306,8 @@ def main() -> None:
     Path(Path(__file__).resolve().parent / "head_to_head.json").write_text(json.dumps({
         "exploratory": {k: {"A": results[k]["A"], "B": results[k]["B"]} for k in REPRESENTATIONS},
         "best": {"A": best_a, "B": best_b},
-        "full_comparison": {"A": mA, "B": mB, "baseline": base},
+        "full_comparison_heldout": {"A": mA, "B": mB, "baseline": base},
+        "fitted_on_all": {"A": fitted["A"], "B": fitted["B"], "baseline": base},
         "nested": nested,
         "paired": {"mean_advantage_A": float(diff.mean()), "ci95": [float(lo), float(hi)],
                    "wins_A": wins, "n": n, "p_value": float(p_value)},

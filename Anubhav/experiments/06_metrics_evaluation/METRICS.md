@@ -168,12 +168,12 @@ recall is perfect. On phantoms, this is expected rather than impressive.
 
 ## 3.2 Evaluation B — real cohort
 
-> **Note.** The figures below use channel means, the representation available
-> when this was written. Experiment 11 later found illumination-invariant
-> features materially better: the erythema index lifts pipeline A to MAE 1.062,
-> R² −0.094, F1 0.727. The conclusions are unchanged — still at baseline — but
-> `../11_head_to_head/RESULTS.md` carries the current best numbers and the
-> full two-pipeline comparison.
+> **Superseded numbers.** The figures below use channel means and leave-one-out.
+> The current best configuration is the erythema index, and the deployed model
+> is fitted on all 26 patients: **pipeline A reaches MAE 0.944, R² 0.133,
+> F1 0.727, accuracy 0.654**; held out it gives MAE 1.062, R² −0.094. See
+> `../11_head_to_head/RESULTS.md` for the full two-pipeline comparison in both
+> framings.
 
 
 26 patients, laboratory Hb, ridge regression over channel means,

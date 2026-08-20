@@ -223,6 +223,22 @@ The training loader dropped every incomplete final batch, throwing away up to
 15 of 47 images per fold on a small cohort. **Fixed:** only a trailing batch of
 exactly one is dropped (which would break BatchNorm).
 
+### B.10a "age" matched "image id" — wrong clinical thresholds
+
+Column lookup in the metadata reader fell back to a bare substring test, and
+**`"age"` is a substring of `"im*age* id"`**. The reader therefore selected the
+patient-ID column as the age, so patient 1 was treated as one year old,
+patient 12 as twelve, and each got the WHO threshold for that fake age.
+
+**Why it was dangerous.** Nothing crashed and nothing looked wrong: the
+thresholds were all valid WHO values (11.0, 11.5, 12.0), just assigned to the
+wrong patients. It was caught only because the thresholds in a batch run
+tracked the patient numbers too neatly to be a coincidence.
+
+**Fixed** by matching on word boundaries (`\bage\b`) rather than substrings,
+in both the batch predictor and the shared loader `_first_column`, where the
+same trap was latent for any dataset with an "Image ID" column.
+
 ### B.10 Colour profile mismatch in the lighting test
 The iPhone captures are Display P3. The first export preserved that profile,
 which OpenCV then read as if it were sRGB — a systematic colour shift against

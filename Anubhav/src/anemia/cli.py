@@ -276,15 +276,66 @@ def cv2_resize(image, size: int):
     return cv2.resize(image, (size, size), interpolation=cv2.INTER_AREA)
 
 
-def cmd_stages(args: argparse.Namespace) -> None:
-    """Dump every pipeline stage for each image into its own folder.
+def _letterbox_panel(image, label: str, box: int = 300, bar: int = 30):
+    """One captioned panel: image fitted into `box`x`box` without distortion.
 
-    Built as a learning tool: open a folder, scrub through the files in name
-    order, and watch the photo become the model input. File names carry a
-    stage number so they sort in pipeline order, not alphabetically.
+    Aspect ratio is preserved by padding rather than stretching, because the
+    stages being compared differ in shape (full frame, square working image,
+    crescent crop) and stretching them would misrepresent exactly the geometry
+    this pipeline takes care to protect.
+    """
+
+    import cv2
+    import numpy as np
+
+    if image.ndim == 2:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+
+    height, width = image.shape[:2]
+    scale = min(box / width, box / height)
+    resized = cv2.resize(image, (max(int(width * scale), 1), max(int(height * scale), 1)),
+                         interpolation=cv2.INTER_AREA)
+
+    canvas = np.full((box + bar, box, 3), 28, dtype=np.uint8)
+    y0 = (box - resized.shape[0]) // 2
+    x0 = (box - resized.shape[1]) // 2
+    canvas[y0:y0 + resized.shape[0], x0:x0 + resized.shape[1]] = resized
+
+    cv2.putText(canvas, label, (6, box + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.42,
+                (235, 235, 235), 1, cv2.LINE_AA)
+    cv2.rectangle(canvas, (0, 0), (box - 1, box + bar - 1), (70, 70, 70), 1)
+    return canvas
+
+
+def _contact_sheet(panels, header: str, per_row: int = 5):
+    """Grid of captioned panels with a header strip."""
+
+    import cv2
+    import numpy as np
+
+    rows = []
+    for start in range(0, len(panels), per_row):
+        chunk = list(panels[start:start + per_row])
+        while len(chunk) < per_row:                      # pad the last row
+            chunk.append(np.full_like(chunk[0], 28))
+        rows.append(np.concatenate(chunk, axis=1))
+    grid = np.concatenate(rows, axis=0)
+
+    strip = np.full((34, grid.shape[1], 3), 18, dtype=np.uint8)
+    cv2.putText(strip, header, (8, 23), cv2.FONT_HERSHEY_SIMPLEX, 0.55,
+                (245, 245, 245), 1, cv2.LINE_AA)
+    return np.concatenate([strip, grid], axis=0)
+
+
+def cmd_stages(args: argparse.Namespace) -> None:
+    """Trace every pipeline stage for each image onto one contact sheet.
+
+    Built as a learning tool: one image per capture showing the whole
+    progression side by side, so each stage can be compared against the one
+    before it without opening separate files.
 
     The redness map is included even though it is an *internal* detail of the
-    extractor, because it is the single most instructive image in the set: it
+    extractor, because it is the single most instructive panel in the set: it
     shows what the segmentation actually "sees".
     """
 
@@ -326,74 +377,187 @@ def cmd_stages(args: argparse.Namespace) -> None:
         cv2.imwrite(str(path), cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR),
                     [cv2.IMWRITE_JPEG_QUALITY, 92])
 
+    args.out.mkdir(parents=True, exist_ok=True)
     print(f"Tracing {len(files)} image(s) -> {args.out}\n")
+
     for file in files:
         stem = file.stem
-        folder = args.out / stem
-        folder.mkdir(parents=True, exist_ok=True)
-
         rgb = read_rgb(file)
-        shutil.copy2(file, folder / file.name)
 
         # Stage 1: resize to the working resolution the pipeline operates at.
         resized = resize(rgb, preprocess.work_size)
-        save_rgb(resized, folder / f"{stem}_01_resized.jpg")
 
         # Stage 2: gray-world white balance neutralises the illuminant.
         balanced = gray_world_white_balance(resized)
-        save_rgb(balanced, folder / f"{stem}_02_white_balance.jpg")
 
         # Stage 3: the redness map — what the extractor actually scores.
         redness = redness_index(balanced)
         spread = float(np.ptp(redness)) or 1.0
         red_u8 = np.clip((redness - redness.min()) / spread * 255, 0, 255).astype(np.uint8)
-        cv2.imwrite(str(folder / f"{stem}_03_redness_map.jpg"),
-                    cv2.applyColorMap(red_u8, cv2.COLORMAP_INFERNO))
+        redness_view = cv2.cvtColor(
+            cv2.applyColorMap(red_u8, cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
 
         # Stage 4-5: segmentation, as raw mask and as overlay.
         mask, backend = segmenter(balanced)
-        cv2.imwrite(str(folder / f"{stem}_04_mask.png"), mask)
-        save_rgb(build_overlay(balanced, mask), folder / f"{stem}_05_segment_overlay.jpg")
+        overlay = build_overlay(balanced, mask)
 
         # Stage 6: everything outside the mask blacked out.
         masked = apply_mask(balanced, mask)
-        save_rgb(masked, folder / f"{stem}_06_masked.jpg")
 
-        # Stage 7: tight crop around the mask (still the original shape).
+        # Stage 7: tight crop around the mask (still the crescent shape).
         left, top, right, bottom = tight_bbox(mask, preprocess.bbox_pad_ratio)
         cropped = masked[top:bottom, left:right]
         if cropped.size == 0:
             cropped = masked
-        save_rgb(cropped, folder / f"{stem}_07_crop.jpg")
 
         # Stage 8: letterbox to a square WITHOUT stretching the crescent.
         letterboxed = pad_to_square(cropped)
-        save_rgb(letterboxed, folder / f"{stem}_08_letterbox.jpg")
 
         # Stage 9: the exact input the regression network would receive.
         model_input = resize(letterboxed, preprocess.model_size)
-        save_rgb(model_input, folder / f"{stem}_09_model_input.jpg")
 
         report = assess_quality(balanced, mask, quality_config)
-        (folder / f"{stem}_quality.json").write_text(
-            json.dumps({"backend": backend, **report.to_dict()}, indent=2),
-            encoding="utf-8",
-        )
+
+        stages = [
+            (rgb, "00  original capture"),
+            (resized, "01  resized to 512x512"),
+            (balanced, "02  gray-world white balance"),
+            (redness_view, "03  redness map (a*-0.5b*)"),
+            (mask, "04  segmentation mask"),
+            (overlay, "05  mask over photo"),
+            (masked, "06  outside mask removed"),
+            (cropped, "07  tight crop"),
+            (letterboxed, "08  letterboxed to square"),
+            (model_input, "09  model input 224x224"),
+        ]
+        header = (f"{file.name}   backend={backend}   "
+                  f"mask={report.mask_ratio:.3f}   focus={report.focus:.0f}   "
+                  f"QC={'pass' if report.passed else 'FAIL: ' + '; '.join(report.reasons)}")
+
+        sheet = _contact_sheet(
+            [_letterbox_panel(image, label, box=args.panel) for image, label in stages],
+            header, per_row=args.per_row)
+        save_rgb(sheet, args.out / f"{stem}_stages.jpg")
+
+        if args.separate:
+            folder = args.out / stem
+            folder.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(file, folder / file.name)
+            for index, (image, label) in enumerate(stages[1:], start=1):
+                name = label.split("  ", 1)[1].replace(" ", "_").replace("*", "")
+                if image.ndim == 2:
+                    cv2.imwrite(str(folder / f"{stem}_{index:02d}_{name}.png"), image)
+                else:
+                    save_rgb(image, folder / f"{stem}_{index:02d}_{name}.jpg")
+            (folder / f"{stem}_quality.json").write_text(
+                json.dumps({"backend": backend, **report.to_dict()}, indent=2),
+                encoding="utf-8")
 
         flag = "" if report.passed else f"  QC FAIL: {'; '.join(report.reasons)}"
         print(f"  {stem}: backend={backend} mask={report.mask_ratio:.3f} "
               f"focus={report.focus:.0f}{flag}")
 
-    print(f"\nDone. Each folder reads in pipeline order:")
-    print("  original -> 01_resized -> 02_white_balance -> 03_redness_map ->")
-    print("  04_mask -> 05_segment_overlay -> 06_masked -> 07_crop ->")
-    print("  08_letterbox -> 09_model_input  (+ _quality.json)")
+    print(f"\nDone. One sheet per capture: <name>_stages.jpg")
+    print("Panels read left to right, top to bottom:")
+    print("  original -> resized -> white balance -> redness map -> mask ->")
+    print("  overlay -> masked -> crop -> letterbox -> model input")
+    print("Pass --separate to also write each stage as its own file.")
+
+
+def cmd_fit_linear(args: argparse.Namespace) -> None:
+    """Fit the linear model and save it as a servable file.
+
+    Reports leave-one-patient-out performance against a predict-the-mean
+    baseline before saving, so a model that has learned nothing cannot be
+    written out silently.
+    """
+
+    import numpy as np
+
+    from .config import PreprocessConfig, QualityConfig
+    from .imaging import read_rgb
+    from .linear_model import extract_features, fit_linear_model
+    from .metrics import regression_metrics
+    from .preprocess import prepare
+    from .segment import get_extractor
+
+    segmenter = get_extractor(args.extractor, args.segmenter)
+    preprocess, quality = PreprocessConfig(), QualityConfig()
+    print(f"Extractor: {args.extractor if not args.segmenter else args.segmenter}")
+
+    samples = _collect(list(args.data))
+    by_patient: dict = {}
+    skipped = 0
+    for sample in samples:
+        prepared = prepare(read_rgb(sample.image_path), segmenter, preprocess, quality)
+        if not (prepared.mask > 0).any() or not prepared.quality.passed:
+            skipped += 1
+            continue
+        by_patient.setdefault(sample.patient_id, {"hb": sample.hb, "f": []})["f"].append(
+            extract_features(prepared.balanced, prepared.mask, args.representation))
+
+    if len(by_patient) < 5:
+        raise SystemExit(f"Only {len(by_patient)} usable patients — too few to fit.")
+
+    patients = sorted(by_patient)
+    X = np.array([np.mean(by_patient[p]["f"], axis=0) for p in patients])
+    y = np.array([by_patient[p]["hb"] for p in patients])
+    print(f"\n{len(patients)} patients usable ({skipped} images skipped)")
+
+    # The DEPLOYED model is fitted on every patient — standard practice, since
+    # the shipped model should use all available data.
+    model = fit_linear_model(X, y, args.representation, args.alpha,
+                             preprocess.work_size, preprocess.gray_world,
+                             args.extractor)
+    in_sample = np.array([model.predict_features(row) for row in X])
+    fitted = regression_metrics(in_sample, y, baseline=float(y.mean()))
+
+    # Held-out estimate, kept alongside. In-sample metrics describe how well the
+    # model fits data it has already seen; only held-out numbers estimate how it
+    # will behave on a new patient, so both are stored and clearly labelled.
+    predictions = np.zeros(len(y))
+    for i in range(len(y)):
+        keep = np.ones(len(y), bool)
+        keep[i] = False
+        fold = fit_linear_model(X[keep], y[keep], args.representation, args.alpha)
+        predictions[i] = fold.predict_features(X[i])
+
+    baseline = np.array([np.delete(y, i).mean() for i in range(len(y))])
+    held_out = regression_metrics(predictions, y, baseline=float(y.mean()))
+    base = regression_metrics(baseline, y)
+
+    print(f"\nFitted on all {len(patients)} patients "
+          f"({args.representation}, alpha={args.alpha})")
+    print(f"\n  {'metric':<8}{'in-sample':>12}{'held-out':>12}{'baseline':>12}")
+    print("  " + "-" * 44)
+    for key, label in (("mae", "MAE"), ("rmse", "RMSE"), ("r2", "R2")):
+        print(f"  {label:<8}{fitted[key]:>12.3f}{held_out[key]:>12.3f}{base[key]:>12.3f}")
+    print("  " + "-" * 44)
+    print("  in-sample = fit and scored on the same patients (describes the fit)")
+    print("  held-out  = leave-one-patient-out (estimates a new patient)")
+    if held_out["mae"] >= base["mae"]:
+        print("\n  NOTE: held-out performance does not beat predicting the mean.")
+
+    model.metrics = {"in_sample": fitted, "held_out": held_out,
+                     "baseline": base, "patients": len(patients),
+                     "extractor": args.extractor}
+    model.save(args.out)
+    print(f"\n{model.equation_string()}")
+    print(f"\nSaved {args.out}")
 
 
 def cmd_predict(args: argparse.Namespace) -> None:
-    from .predict import AnemiaPredictor
+    if args.linear:
+        from .predict import LinearPredictor
 
-    predictor = AnemiaPredictor(args.checkpoint, segmenter_dir=args.segmenter)
+        predictor = LinearPredictor(args.linear, segmenter_dir=args.segmenter)
+    else:
+        from .predict import AnemiaPredictor
+
+        if not args.checkpoint:
+            raise SystemExit("Pass --checkpoint for the neural model or --linear for the linear one.")
+        predictor = AnemiaPredictor(args.checkpoint, segmenter_dir=args.segmenter)
+
     result = predictor.predict_path(args.image, age_years=args.age, sex=args.sex)
     print(json.dumps(result.to_dict(), indent=2))
 
@@ -439,10 +603,30 @@ def build_parser() -> argparse.ArgumentParser:
     stage_source.add_argument("--dir", type=Path, help="folder of photos")
     stages.add_argument("--out", type=Path, default=REPO_ROOT / "stages")
     stages.add_argument("--segmenter", type=Path, default=None)
+    stages.add_argument("--panel", type=int, default=300, help="panel size in pixels")
+    stages.add_argument("--per-row", type=int, default=5, help="panels per row")
+    stages.add_argument("--separate", action="store_true",
+                        help="also write each stage as its own file")
     stages.set_defaults(func=cmd_stages)
 
+    fit_linear = sub.add_parser("fit-linear", help="fit and save the linear Hb model")
+    fit_linear.add_argument("--data", type=Path, action="append", required=True)
+    fit_linear.add_argument("--out", type=Path, default=REPO_ROOT / "runs" / "linear_model.json")
+    fit_linear.add_argument("--representation", default="erythema",
+                            choices=["means", "chroma", "erythema", "lab", "a_only"])
+    fit_linear.add_argument("--alpha", type=float, default=1.0)
+    fit_linear.add_argument("--extractor", default="refined",
+                            choices=["refined", "redness", "brightness", "grabcut", "cielab"],
+                            help="which conjunctiva extractor to use")
+    fit_linear.add_argument("--segmenter", type=Path, default=None,
+                            help="trained segmenter directory (overrides --extractor)")
+    fit_linear.set_defaults(func=cmd_fit_linear)
+
     predict = sub.add_parser("predict", help="score a single photo")
-    predict.add_argument("--checkpoint", type=Path, required=True)
+    predict.add_argument("--checkpoint", type=Path, default=None,
+                         help="neural checkpoint (.pt)")
+    predict.add_argument("--linear", type=Path, default=None,
+                         help="linear model (.json) — use instead of --checkpoint")
     predict.add_argument("--image", type=Path, required=True)
     predict.add_argument("--segmenter", type=Path, default=None)
     predict.add_argument("--age", type=float, default=None, help="patient age in years")

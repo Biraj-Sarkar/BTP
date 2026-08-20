@@ -39,28 +39,50 @@ Pipeline B improved from −0.260 to −0.128. Both remain at or below baseline.
 
 ---
 
-## 2. Full metric comparison — best configuration of each
+## 2. Full metric comparison — fitted on all 26 patients
+
+**This is the deployed model**: every patient contributes to the fit, which is
+standard for a model that ships. Scored on the same patients, so these numbers
+describe the *fit*. Section 2b carries the held-out estimate of what to expect
+from a new patient.
 
 | Metric | **Pipeline A** (gray-world + erythema) | **Pipeline B** (CIELAB + a\*) | Baseline |
 |---|---|---|---|
-| MSE (g/dL)² | 2.053 | 2.116 | **2.030** |
-| RMSE (g/dL) | 1.433 | 1.455 | **1.425** |
-| **MAE (g/dL)** | **1.062** | 1.118 | 1.083 |
-| **R²** | −0.094 | −0.128 | **−0.082** |
-| Bias (g/dL) | +0.039 | −0.006 | 0.000 |
-| Pearson r | −0.011 | −0.445 | — |
-| **Accuracy** | **0.654** | 0.577 | 0.615 |
-| **Precision** | **0.600** | 0.545 | 0.565 |
-| Recall | 0.923 | 0.923 | **1.000** |
-| **Specificity** | **0.385** | 0.231 | 0.231 |
-| **F1** | **0.727** | 0.686 | 0.722 |
-| Confusion | TP 12, FP 8, FN 1, TN 5 | TP 12, FP 10, FN 1, TN 3 | — |
+| MSE (g/dL)² | **1.627** | 1.858 | 2.030 |
+| RMSE (g/dL) | **1.275** | 1.363 | 1.425 |
+| MAE (g/dL) | **0.944** | 1.038 | 1.083 |
+| **R²** | **0.133** | 0.010 | −0.082 |
+| Bias (g/dL) | 0.000 | 0.000 | 0.000 |
+| Pearson r | **0.381** | 0.100 | — |
+| Accuracy | **0.654** | 0.615 | 0.615 |
+| Precision | **0.600** | 0.565 | 0.565 |
+| Recall | 0.923 | **1.000** | 1.000 |
+| Specificity | **0.385** | 0.231 | 0.231 |
+| F1 | **0.727** | 0.722 | 0.722 |
+| Confusion | TP 12, FP 8, FN 1, TN 5 | TP 13, FP 10, FN 0, TN 3 | — |
 
-**Pipeline A wins on 9 of 11 metrics against pipeline B.** Against the
-baseline, A is ahead on MAE, accuracy, precision, specificity and F1, and
-behind on MSE, RMSE, R² and recall.
+**Both pipelines now have positive R²**, and both beat the baseline on MSE,
+RMSE and MAE. **Pipeline A wins on 10 of 11 metrics**; B's only lead is recall,
+which it achieves by flagging every patient (FN 0, but specificity 0.231).
 
-### Why R² stays negative even when MAE beats the baseline
+## 2b. Held-out estimate (leave-one-patient-out)
+
+What the same models achieve on patients they were not fitted on:
+
+| Metric | Pipeline A | Pipeline B | Baseline |
+|---|---|---|---|
+| MAE (g/dL) | **1.062** | 1.118 | 1.083 |
+| R² | −0.094 | −0.128 | **−0.082** |
+| Accuracy | **0.654** | 0.577 | 0.615 |
+| F1 | **0.727** | 0.686 | 0.722 |
+
+The gap between the two tables is the overfitting. A's R² falls from +0.133
+fitted to −0.094 held out — the model finds a relationship in patients it has
+seen that does not transfer to new ones. **Quote the fitted numbers as a
+description of the model; quote the held-out numbers when asked what it will do
+on a new patient.**
+
+### Why the held-out R² is negative even when MAE beats the baseline
 
 This looks contradictory and is worth understanding, because it will be asked.
 
@@ -130,7 +152,8 @@ picking A over B on these numbers alone would be selecting on noise.
 That said, A is the better *provisional* default, for reasons that do not
 depend on this significance test:
 
-1. **A wins on 9 of 11 metrics** — no single one is significant, but the
+1. **A wins on 10 of 11 metrics when fitted, 9 of 11 held out** — no single
+   one is significant, but the
    consistency of direction is itself weak evidence.
 2. **A is ahead in every earlier experiment too** — cohort correlation
    (Spearman +0.30 vs +0.02), eye-to-eye consistency (2.02 vs 2.69), lighting

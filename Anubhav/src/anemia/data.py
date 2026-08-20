@@ -132,13 +132,21 @@ def _read_table(path: Path) -> pd.DataFrame:
 
 
 def _first_column(table: pd.DataFrame, *candidates: str) -> Optional[str]:
+    """Find a column by name, exact match first, then whole-word match.
+
+    The fallback matches on **word boundaries**, not bare substrings. A naive
+    `"age" in "image id"` is true, which silently selects the patient-ID column
+    as the age and produces plausible-looking but wrong clinical thresholds.
+    """
+
     lowered = {str(col).strip().lower(): col for col in table.columns}
     for candidate in candidates:
         if candidate in lowered:
             return lowered[candidate]
     for candidate in candidates:
+        pattern = re.compile(rf"\b{re.escape(candidate)}\b")
         for key, original in lowered.items():
-            if candidate in key:
+            if pattern.search(key):
                 return original
     return None
 

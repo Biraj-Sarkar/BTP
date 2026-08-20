@@ -314,3 +314,69 @@ def load_segmenter(model_dir: Optional[Path] = None) -> Callable[[np.ndarray], S
     if model_dir is None:
         return heuristic_segmenter
     return Mask2FormerSegmenter(model_dir)
+
+
+# ---------------------------------------------------------------- registry
+
+def _named(fn, name):
+    """Wrap a bare mask function into the (mask, name) segmenter contract."""
+
+    def segmenter(image_rgb: np.ndarray) -> SegmentResult:
+        return fn(image_rgb), name
+
+    segmenter.__name__ = f"{name}_segmenter"
+    segmenter.cache_key = f"extractor-{name}-v1"
+    return segmenter
+
+
+def cielab_segmenter(image_rgb: np.ndarray) -> SegmentResult:
+    """The CIELAB pipeline's own extractor, imported rather than reimplemented.
+
+    Kept behind a lazy import so this module has no hard dependency on a file
+    that lives outside the package.
+    """
+
+    import sys
+    from pathlib import Path as _Path
+
+    root = _Path(__file__).resolve().parents[2]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    import cielab_pipeline as cp
+
+    normalised, _ = cp.cielab_normalization(image_rgb)
+    mask, backend = cp.segment_conjunctiva(normalised)
+    return mask, f"cielab-{backend}"
+
+
+cielab_segmenter.cache_key = "extractor-cielab-v1"
+
+
+EXTRACTORS = {
+    # the production chain: refined seeded grabCut, then simpler fallbacks
+    "refined": heuristic_segmenter,
+    # plain redness prior with Otsu, no seeding
+    "redness": _named(heuristic_conjunctiva_mask, "redness"),
+    # brightness / low-chroma baseline — selects sclera, kept for comparison
+    "brightness": _named(legacy_bright_neutral_mask, "brightness"),
+    # unseeded grabCut from a centre rectangle
+    "grabcut": _named(grabcut_mask, "grabcut"),
+    # the CIELAB pipeline's extractor
+    "cielab": cielab_segmenter,
+}
+
+
+def get_extractor(name: str = "refined", model_dir: Optional[Path] = None):
+    """Resolve an extractor by name, or load a trained segmenter directory.
+
+    Recording *which* extractor produced a model's features matters as much as
+    the coefficients: features measured inside a different mask are not
+    comparable, so a model served with the wrong extractor is silently wrong.
+    `LinearModel` therefore stores this name and the predictor reads it back.
+    """
+
+    if model_dir is not None:
+        return Mask2FormerSegmenter(model_dir)
+    if name not in EXTRACTORS:
+        raise ValueError(f"Unknown extractor {name!r}; choose from {sorted(EXTRACTORS)}")
+    return EXTRACTORS[name]

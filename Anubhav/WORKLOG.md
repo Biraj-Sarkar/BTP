@@ -7,6 +7,39 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 18–24 Aug 2026
 
+**20 Aug — All reported metrics recomputed with models fitted on every patient**
+Both pipelines refitted on all 26 patients and the full suite recomputed, then
+propagated to every document. Fitted on all: **pipeline A MSE 1.627, RMSE
+1.275, MAE 0.944, R² 0.133, Pearson r 0.381, accuracy 0.654, precision 0.600,
+recall 0.923, specificity 0.385, F1 0.727**; pipeline B MSE 1.858, MAE 1.038,
+R² 0.010, F1 0.722; baseline MSE 2.030, MAE 1.083, R² −0.082, F1 0.722.
+**A wins 10 of 11 metrics and both pipelines now show positive R²**; B's only
+lead is recall, obtained by flagging every patient (specificity 0.231). The
+held-out figures are retained alongside in every document (A: MAE 1.062,
+R² −0.094) because the gap between the two is the overfitting, and the fitted
+numbers describe the model while the held-out ones describe a new patient.
+Updated: `Progress_Report.pdf` §6.4–6.5, `experiments/11_head_to_head/`,
+`EVERYTHING_EXPLAINED.md`, `METRICS.md`, `README.md`, `TALKING_POINTS.md`,
+`CLAUDE.md`.
+
+**20 Aug — Deployable linear model: fit once, predict without retraining**
+Separated fitting from prediction. `anemia fit-linear` fits on **all 26
+patients** and writes `runs/linear_model.json` carrying coefficients, feature
+specification, extractor name, standardisation constants and both metric sets;
+`predict_folder.py` loads that file and scores a folder of new patients with no
+training (26 patients in ~20 s). Metrics now reported as in-sample beside
+held-out: **in-sample MAE 0.918, R² 0.195**; held-out MAE 1.033, R² +0.007;
+baseline MAE 1.083, R² −0.082. Applying the QC gate before fitting is what
+moved held-out R² above zero. Extraction is now swappable via an
+`EXTRACTORS` registry (`refined`, `redness`, `brightness`, `grabcut`,
+`cielab`) selectable with `--extractor`; the choice is recorded in the model
+file and read back at prediction time, since features measured inside a
+different mask are not comparable. Confirmed the provision works: fitting with
+`--extractor cielab` gives held-out R² −0.159 against refined's +0.007.
+Added `CONTRIBUTING.md` with recipes for adding an extractor, a feature
+representation, a metric, a dataset, or a QC rule.
+→ `src/anemia/linear_model.py`, `predict_folder.py`, `CONTRIBUTING.md`
+
 **20 Aug — Documentation synced to the head-to-head results**
 Propagated the two-pipeline comparison across the set: `EVERYTHING_EXPLAINED.md`
 §11 rewritten with the current metric table, the paired-test result and the

@@ -4,7 +4,8 @@
 > stage. `CODE_GUIDE.md` explains what every file does and the design rationale
 > behind each stage. `RESEARCH_LOG.md` records every approach tried including
 > those that failed, with reasons. `GLOSSARY.md` defines every abbreviation.
-> `WORKLOG.md` is the week-by-week record.
+> `WORKLOG.md` is the week-by-week record. `CONTRIBUTING.md` explains how to
+> add an extractor, a feature representation, a metric or a dataset.
 
 Estimate haemoglobin from a photograph of the palpebral conjunctiva, and screen
 for anemia against the patient's WHO threshold.
@@ -13,12 +14,13 @@ The app is a thin client: the phone captures the eye and uploads it, a server
 segments the conjunctiva and runs the regressor, and the response carries an Hb
 estimate in g/dL plus an anemic / not-anemic verdict.
 
-> **Status: the pipeline runs end to end on synthetic phantoms. No CNN has been
-> trained on real data yet. The only real-data predictor evaluated so far
-> (linear models over colour statistics, 26 patients) is **statistically
-> indistinguishable from predicting the cohort mean**, and the two candidate
-> pipelines are **not separable at this sample size** (paired test p = 0.408).
-> Current head-to-head: `experiments/11_head_to_head/RESULTS.md`. No accuracy
+> **Status: no CNN has been trained on real data yet.** The linear model fitted
+> on all 26 patients reaches **MAE 0.944 g/dL, R² 0.133, F1 0.727, accuracy
+> 0.654** (pipeline A), against a predict-the-mean baseline of MAE 1.083,
+> R² −0.082, F1 0.722. Held out on unseen patients it gives MAE 1.062,
+> R² −0.094 — the gap is overfitting, and the two candidate pipelines are
+> **not statistically separable** at this sample size (paired test p = 0.408).
+> Full comparison: `experiments/11_head_to_head/RESULTS.md`. **No accuracy
 > figure in this repo is a clinical result.**
 
 ## Setup
@@ -127,6 +129,45 @@ Options: `--image` for a single photo, `--segmenter` for a trained model,
 `--panel` / `--per-row` to change the layout, and `--separate` to additionally
 write each stage as its own file. Pre-generated traces live in
 `experiments/01_stage_traces/`; see `experiments/README.md` for the full index.
+
+## Predicting on new patients (no training)
+
+Fitting and predicting are separate. The model is fitted **once** and saved as a
+plain JSON file carrying its coefficients, feature specification, extractor
+name and standardisation constants. Prediction loads that file — nothing is
+trained, so it runs in seconds and is reproducible.
+
+**Step 1 — fit** (only when new *labelled* data arrives):
+
+```bash
+python -m anemia fit-linear --data . --out runs/linear_model.json
+```
+
+Options: `--representation` (means / chroma / erythema / lab / a_only),
+`--extractor` (refined / redness / brightness / grabcut / cielab), `--alpha`,
+or `--segmenter <dir>` for a trained segmentation model.
+
+**Step 2 — predict** (any time, any number of patients, no labels needed):
+
+```bash
+python predict_folder.py --dir new_patients --out predictions.csv
+```
+
+Expected layout:
+
+```
+new_patients/
+    left_eye/   1.jpg  2.jpg  ...
+    right_eye/  1.jpg  2.jpg  ...
+    patients.csv        (optional: ID, Date Of Birth or Age, Gender)
+```
+
+Filenames are the patient ID; both eyes are averaged when present, exactly as
+during fitting. Output columns: `patient, hb_g_dl, anemic, threshold_g_dl,
+usable, eyes_used, age_years, sex, note`.
+
+The extractor is read back from the model file rather than defaulting, because
+features measured inside a different mask are not comparable.
 
 ## Serving
 
