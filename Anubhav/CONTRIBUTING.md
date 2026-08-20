@@ -215,6 +215,11 @@ so the app cannot tell them apart.
 If you add a field, add it to `to_dict` and tell whoever builds the UI. Do not
 remove `usable` — the app branches on it.
 
+Any change here is a change to a published contract: `UI_INTEGRATION.md`
+documents the response shape field by field and carries a mock server that
+mirrors it. Update both, or the client is built against a contract the server
+no longer honours.
+
 ---
 
 ## 7. Retrain the model
@@ -255,3 +260,4 @@ file so the distinction survives.
 | Abbreviations | `GLOSSARY.md` |
 | Experiment results | `experiments/README.md` |
 | Weekly progress | `WORKLOG.md` |
+| How to build the app against the API | `UI_INTEGRATION.md` |

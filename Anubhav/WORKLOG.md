@@ -7,6 +7,31 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 18–24 Aug 2026
 
+**20 Aug — Client integration guide written; API contract documented and frozen**
+Added `UI_INTEGRATION.md` so the app can be built without reading the research
+code: the five files that matter, the `POST /predict` and `GET /health`
+contract, both success shapes field by field, the three quality-control
+rejection strings, screen-by-screen requirements, and a checklist. Two points
+are stated as requirements rather than suggestions — the client branches on
+`usable` and not on the HTTP status (a rejected capture is a 200), and it never
+renders a number when `usable` is false. Also documented that the pipeline is
+deliberately **not** a user-facing choice: extraction method and colour
+representation are fixed when the model is fitted and recorded in the model
+file, because measurements taken inside a different mask are not comparable, so
+the client displays provenance rather than offering a selector.
+
+Included a runnable mock server in the guide so client work is not blocked on a
+fitted model file. Its threshold function was checked against
+`anemia_threshold()` across all six WHO bands plus the unknown-demographics
+fallback (13 cases, no mismatches), and its payload keys against
+`Prediction.to_dict()`. Recorded three gaps the guide has to work around for
+now: the service loads a neural checkpoint only, so the linear model cannot yet
+be served over HTTP; `LinearPredictor` does not read the extractor name back
+out of the model file the way `predict_folder.py` does; and `/health` does not
+report which extractor and representation are active. Propagated to
+`README.md`, `CODE_GUIDE.md` and `CONTRIBUTING.md` §6.
+→ `UI_INTEGRATION.md`
+
 **20 Aug — Report made reproducible from a cold checkout**
 The report generator was being pointed at a figure living in a temporary
 session directory, which has since been deleted — meaning the report could not

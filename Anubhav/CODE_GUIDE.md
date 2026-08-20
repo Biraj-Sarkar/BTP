@@ -296,6 +296,7 @@ out as `left_eye/` + `right_eye/` plus an optional metadata sheet. No training.
 | `RESEARCH_LOG.md` | Every approach tried and rejected, with measured reasons |
 | `GLOSSARY.md` | All abbreviations, defined once |
 | `CONTRIBUTING.md` | How to add an extractor, representation, metric or dataset |
+| `UI_INTEGRATION.md` | Step-by-step guide for building the client against the API |
 | `WORKLOG.md` | Week-by-week record |
 | `experiments/README.md` | Index of the eight studies |
 | `Progress_Report.pdf` | The formal report |

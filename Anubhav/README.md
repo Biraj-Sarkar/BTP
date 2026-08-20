@@ -6,6 +6,8 @@
 > those that failed, with reasons. `GLOSSARY.md` defines every abbreviation.
 > `WORKLOG.md` is the week-by-week record. `CONTRIBUTING.md` explains how to
 > add an extractor, a feature representation, a metric or a dataset.
+> `UI_INTEGRATION.md` is the step-by-step guide for building the client
+> against the API, and is the only document the app developer needs.
 
 Estimate haemoglobin from a photograph of the palpebral conjunctiva, and screen
 for anemia against the patient's WHO threshold.
@@ -179,6 +181,10 @@ ANEMIA_CHECKPOINT=runs/hb/best.pt ANEMIA_SEGMENTER=runs/segmenter uvicorn serve.
 returns `hb_g_dl`, `anemic`, `threshold_g_dl`, `usable`, and a `quality` block.
 A capture that fails QC returns `usable: false` with a retake message — the app
 should show that rather than a number.
+
+Building the client: **`UI_INTEGRATION.md`** carries the full contract, both
+response shapes, a runnable mock server so the app can be built before a model
+file is available, and the screen-by-screen requirements.
 
 ## Developing without the datasets
 
