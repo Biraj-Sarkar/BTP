@@ -7,6 +7,15 @@ so combining them should beat either alone.
 
 Run with `python experiments/05_representation_ablation/run_ablation.py`.
 
+
+> **Superseded in part.** This experiment used channel means only. Experiment
+> 11 later added illumination-invariant representations (chromaticity, erythema
+> index) which score materially better, and ran a paired test showing the two
+> pipelines are not statistically separable at n = 26. See
+> `../11_head_to_head/RESULTS.md` for the current head-to-head. The findings
+> below about *direction* still hold; the specific numbers are no longer the
+> best available.
+
 ## Method
 
 26 patients, both eyes, laboratory Hb. Segmentation is computed **once per

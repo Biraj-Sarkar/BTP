@@ -15,11 +15,11 @@ estimate in g/dL plus an anemic / not-anemic verdict.
 
 > **Status: the pipeline runs end to end on synthetic phantoms. No CNN has been
 > trained on real data yet. The only real-data predictor evaluated so far
-> (linear models over colour statistics, 26 patients) does **not** beat a
-> predict-the-mean baseline on any arm — see
-> `experiments/06_metrics_evaluation/METRICS.md` and
-> `experiments/07_pipeline_comparison/RESULTS.md`. No accuracy figure in this
-> repo is a clinical result.**
+> (linear models over colour statistics, 26 patients) is **statistically
+> indistinguishable from predicting the cohort mean**, and the two candidate
+> pipelines are **not separable at this sample size** (paired test p = 0.408).
+> Current head-to-head: `experiments/11_head_to_head/RESULTS.md`. No accuracy
+> figure in this repo is a clinical result.**
 
 ## Setup
 

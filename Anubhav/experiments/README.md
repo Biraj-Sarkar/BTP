@@ -18,6 +18,10 @@ produces them lives at the top level (`src/`, `serve/`, `scripts/`).
 
 | `09_train_test_protocol/` | In-sample vs out-of-sample performance, protocol agreement, and the instability of a single split at n=26 | Training works (in-sample R² **+0.103**) but does not generalise (out-of-sample **−0.166**); a single 60/20/20 split reports test R² anywhere from **−2.43 to +0.78** on identical data |
 
+| `10_fitted_equation/` | The actual fitted equation in both standardised and raw form, bootstrap confidence intervals, and a training-size comparison | `Hb = 12.5311 + 0.0102·R − 0.0587·G + 0.0356·B`. **The coefficients are physiologically backwards** — red is the weakest term, so the model is reading a blue-minus-green contrast, not haemoglobin |
+
+| `11_head_to_head/` | **The deployment decision.** Both pipelines trained and scored on identical patients: five feature representations, full metric suite, nested CV, and a paired test of the difference | A wins 9 of 11 metrics, but **p = 0.408 — the two are not statistically separable at n=26**. Illumination-invariant features (erythema index) materially improved both |
+
 ## Reproducing
 
 Most folders contain their outputs directly. Two are regenerable:
@@ -31,6 +35,8 @@ python experiments/06_metrics_evaluation/plot_results.py
 python experiments/07_pipeline_comparison/compare_pipelines.py
 python experiments/08_regularisation/compare_regularisers.py
 python experiments/09_train_test_protocol/protocol_comparison.py
+python experiments/10_fitted_equation/fit_equation.py
+python experiments/11_head_to_head/head_to_head.py
 ```
 
 ## Conventions

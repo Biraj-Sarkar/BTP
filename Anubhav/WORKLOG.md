@@ -7,6 +7,63 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 18–24 Aug 2026
 
+**20 Aug — Documentation synced to the head-to-head results**
+Propagated the two-pipeline comparison across the set: `EVERYTHING_EXPLAINED.md`
+§11 rewritten with the current metric table, the paired-test result and the
+explanation of why R² stays negative while MAE beats baseline; `README.md`
+status line updated to "statistically indistinguishable from predicting the
+cohort mean"; experiments 05 and 07 marked as superseded in part, with pointers
+to 11; `METRICS.md` flagged that its real-cohort figures predate the
+illumination-invariant representations. Added `RESEARCH_LOG.md` entry A.9b
+recording a partial miss of our own — concluding "feature richness is not the
+constraint" from two data points was premature, and physically motivated
+representations (chromaticity, erythema index) later improved both pipelines.
+
+**20 Aug — HEAD-TO-HEAD PIPELINE COMPARISON (principal work of the week)**
+Both pipelines trained and scored as models on identical patients under an
+identical protocol: five feature representations each, the full metric suite
+(MSE, RMSE, MAE, R², bias, Pearson r, accuracy, precision, recall, specificity,
+F1, confusion), nested cross-validation, and a paired test of the difference.
+Added two illumination-invariant representations not previously tried —
+chromaticity coordinates R/(R+G+B) and the erythema index log(R/G) — which
+**materially improved both pipelines**: A's R² rose from −0.166 to −0.094 and
+F1 from 0.688 to 0.727; B's R² from −0.260 to −0.128. Best configurations:
+A = gray-world + erythema (MAE 1.062, R² −0.094, F1 0.727, accuracy 0.654);
+B = CIELAB + a\* alone (MAE 1.118, R² −0.128, F1 0.686). **A wins 9 of 11
+metrics**, and beats the baseline on MAE, accuracy, precision, specificity and
+F1. However the paired permutation test gives **p = 0.408** with a bootstrap CI
+of [−0.067, +0.181] spanning zero: **the pipelines are not statistically
+separable at n = 26**, and A wins on only 15 of 26 patients. Under nested
+selection neither beats baseline. Also documented why R² stays negative while
+MAE beats baseline: the leave-one-out baseline cannot use the full-sample mean,
+so the practical floor is ≈ −0.08, not 0 — the correct statement is
+"indistinguishable from predicting the mean", not "catastrophically wrong".
+Recommendation: A as provisional default on non-statistical grounds (leads in
+all five earlier experiments; higher specificity at equal recall; B's
+segmentation lands off-tissue in 50 of 52 captures), with the comparison to be
+repeated on ~900 patients once the segmenter is trained.
+→ `experiments/11_head_to_head/`, report §6.3–6.6
+
+**20 Aug — Fitted equation extracted; uncertainty quantified; coefficients fail a physiological check**
+Wrote out the actual linear model rather than only its scores:
+`Hb = 12.5311 + 0.010191·(mean R) − 0.058732·(mean G) + 0.035552·(mean B)`,
+with the standardised form, inputs and cohort statistics, and a worked example
+(patient 1 → 11.142 g/dL against a laboratory 12.0). **The coefficients are
+physiologically backwards**: haemoglobin makes tissue red, so red should
+dominate positively, but it is the weakest term (+0.137 standardised) while the
+model runs on green negatively (−0.977) and blue positively (+0.647) — a
+blue-minus-green contrast closer to residual colour cast than to blood. This
+corroborates the negative metrics from an independent direction and gives a
+concrete check for the next iteration: re-fit after training the segmenter and
+inspect coefficient signs before the metrics. Also added bootstrap confidence
+intervals over patients (MAE [0.708, 1.490], R² [−0.512, **+0.021**], F1
+[0.462, 0.850]) — the R² interval reaches above zero, so the defensible claim
+is "no better than the mean" rather than a precise −0.166. Documented why
+leave-one-out yields one pooled metric rather than 26, and verified training
+size is not driving results (2-fold 1.063, 5-fold 1.034, 13-fold 1.070, LOO
+1.073).
+→ `experiments/10_fitted_equation/`
+
 **20 Aug — Training protocol verified; negative R² explained**
 Confirmed the model does train and characterised why held-out R² is negative.
 Fitting on all 26 and scoring in-sample gives R² **+0.103**; scoring only on

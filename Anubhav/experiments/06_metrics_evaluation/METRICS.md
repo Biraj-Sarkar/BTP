@@ -168,6 +168,14 @@ recall is perfect. On phantoms, this is expected rather than impressive.
 
 ## 3.2 Evaluation B — real cohort
 
+> **Note.** The figures below use channel means, the representation available
+> when this was written. Experiment 11 later found illumination-invariant
+> features materially better: the erythema index lifts pipeline A to MAE 1.062,
+> R² −0.094, F1 0.727. The conclusions are unchanged — still at baseline — but
+> `../11_head_to_head/RESULTS.md` carries the current best numbers and the
+> full two-pipeline comparison.
+
+
 26 patients, laboratory Hb, ridge regression over channel means,
 leave-one-patient-out. No CNN has been trained on real data.
 
@@ -203,13 +211,61 @@ Bland–Altman limits of −2.94 to +2.98 g/dL, far too wide to screen with.
 *Right*: residuals rise steeply with the prediction (slope +2.02), the classic
 pattern of regression toward the mean.
 
+
+### The fitted equation
+
+Three inputs per patient — the mean red, green and blue values of the
+**conjunctiva pixels only**, from the white-balanced image, both eyes averaged.
+Fitted by ridge regression on all 26 patients:
+
+```
+Hb = 12.5311 + 0.010191·(mean R) − 0.058732·(mean G) + 0.035552·(mean B)   [g/dL]
+```
+
+Equivalently on standardised inputs, which is what the solver optimises:
+
+```
+Hb = 11.2038 + 0.1373·z(R) − 0.9771·z(G) + 0.6473·z(B)
+where z(x) = (x − cohort mean) / cohort sd
+```
+
+The intercept 11.2038 is the cohort mean haemoglobin — all inputs at average
+returns the average.
+
+**Worked example, patient 1:** R = 156.13, G = 164.55, B = 188.01
+
+```
+Hb = 12.5311 + (0.010191 × 156.13) − (0.058732 × 164.55) + (0.035552 × 188.01)
+   = 11.142 g/dL          (laboratory value 12.0 g/dL)
+```
+
+**And here is the problem with it.** Haemoglobin makes tissue *red*, so if the
+model had found real physiology the red coefficient should dominate and be
+positive. Instead red is the **weakest** term (+0.137 standardised), and the
+model runs on green negatively (−0.977) and blue positively (+0.647) —
+effectively a blue-minus-green contrast. That is not a haemoglobin signal; it
+looks like residual colour cast the white balance did not fully remove. The
+coefficients therefore agree with the metrics from a completely independent
+direction: nothing physiological was learned.
+
+Full derivation, uncertainty and interpretation:
+`experiments/10_fitted_equation/`.
+
 ### Reading this honestly
+
+All figures carry wide intervals at n = 26. Bootstrap 95% CIs over patients:
+MAE [0.708, 1.490], R² [−0.512, +0.021], F1 [0.462, 0.850]. Read every number
+below as "no better than baseline" rather than as a precise value.
 
 **The model does not work on real data.** Three independent signs:
 
 1. **R² is negative** (−0.166). It explains less variance than a constant.
 2. **Pearson r is negative** (−0.238) — predictions trend *opposite* to truth.
 3. **F1 is below the trivial baseline** (0.688 vs 0.722).
+
+A fourth, from the coefficients rather than the metrics: the fitted equation is
+driven by green and blue, not red, which is physiologically backwards for a
+haemoglobin measurement (see the equation above).
 
 MAE looks competitive only because a near-constant predictor always scores
 reasonably on MAE when the cohort is tightly clustered. This is exactly the

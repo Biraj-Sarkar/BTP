@@ -131,6 +131,29 @@ range. Ridge on the same features gained nothing (1.102 vs 1.073).
 feature poverty**, and produced the concrete warning for the network stage,
 where ~8.4M parameters will be trainable.
 
+### A.9b Channel means were not the best representation — a partial miss
+
+**What happened.** Early experiments tested only mean R, G, B, and one
+deliberately over-rich 24-feature set. Concluding from those two points that
+"feature richness is not the constraint" was too quick: the space *between*
+them — small, physically motivated representations — had not been tried.
+
+**What fixed it.** Adding chromaticity coordinates, R/(R+G+B), and the erythema
+index, log(R/G), both of which are invariant to illumination intensity by
+construction. Measured improvement:
+
+| Pipeline | with channel means | with erythema index |
+|---|---|---|
+| A | MAE 1.073, R² −0.166, F1 0.688 | **MAE 1.062, R² −0.094, F1 0.727** |
+| B | MAE 1.163, R² −0.260, F1 0.562 | MAE 1.143, R² −0.192, F1 0.647 |
+
+**What it changed.** The conclusion held — both remain at baseline — but the
+margin narrowed materially, and pipeline A now beats the baseline on MAE,
+accuracy, precision, specificity and F1. The lesson is that "we tried features
+and it didn't help" was true of the features tried, not of features in general.
+Choosing representations for a *physical* reason beat choosing them for
+convenience.
+
 ### A.9 Lasso — zeroed every coefficient
 
 **Idea.** Try L1 regularisation as an alternative to ridge; it might select the
@@ -229,9 +252,12 @@ Recorded because they cost real time and will recur.
 
 Null results, kept deliberately.
 
-- **Mean colour does not predict haemoglobin** in this cohort. Every linear arm
-  — raw RGB, gray-world RGB, raw a\*/b\*, gray-world a\*/b\* — has negative R²
-  and F1 at or below the trivial baseline.
+- **Mean colour does not predict haemoglobin** in this cohort. Across ten
+  configurations (two pipelines × five representations) every one has negative
+  R², and under nested selection neither pipeline beats the baseline.
+- **The two pipelines cannot be separated at n = 26.** Paired permutation test
+  p = 0.408, bootstrap CI on the difference [−0.067, +0.181] spanning zero. A
+  wins on 15 of 26 patients, close to a coin flip.
 - **Mask ratio cannot detect wrong-tissue segmentation.** Masks landing on
   skin had entirely normal area fractions. Only visual inspection of overlays
   caught it, which is why the overlay sheet exists.
