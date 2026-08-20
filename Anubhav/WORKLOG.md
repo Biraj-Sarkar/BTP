@@ -7,6 +7,20 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 18–24 Aug 2026
 
+**20 Aug — Baseline corrected to match the framing**
+The fitted-on-all comparison was reporting a **leave-one-out** baseline
+alongside models fitted on every patient — two different framings in one table.
+Corrected: the fitted comparison now uses the full-sample mean, whose
+**R² is exactly 0 by definition** (predicting the mean makes numerator equal
+denominator), giving MSE 1.877, RMSE 1.370, MAE 1.041. The previous −0.082 is
+now shown to be exactly `1 − (n/(n−1))² = 1 − (26/25)²`, an artefact of the
+leave-one-out protocol rather than a property of the data, and is reported only
+alongside leave-one-out results. **This changes the reading of pipeline B**: its
+margin over the correct baseline is negligible (MSE 1.858 vs 1.877, MAE 1.038
+vs 1.041, R² 0.010), so only pipeline A is meaningfully ahead. Propagated to
+report §6.4, `experiments/11_head_to_head/`, `EVERYTHING_EXPLAINED.md`,
+`METRICS.md`, `README.md`, `TALKING_POINTS.md`, `CLAUDE.md`.
+
 **20 Aug — All reported metrics recomputed with models fitted on every patient**
 Both pipelines refitted on all 26 patients and the full suite recomputed, then
 propagated to every document. Fitted on all: **pipeline A MSE 1.627, RMSE

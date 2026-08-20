@@ -228,6 +228,12 @@ def main() -> None:
     print("\nThis is the model that ships: every patient contributes to the fit.")
     print("Scored on the same patients, so it describes the FIT, not what to")
     print("expect from a new patient (section 2 has the held-out numbers).\n")
+    # The baseline must match the framing: a model fitted on all patients is
+    # compared against the FULL-SAMPLE mean, not the leave-one-out mean. The
+    # leave-one-out baseline scores exactly 1 - (n/(n-1))^2 = -0.0816 at n=26,
+    # which is an artefact of predicting patient i from the other n-1, not a
+    # property of the data. Mixing the two framings understates the baseline.
+    fitted_base = score(np.full(n, y.mean()), y, meta)
     fitted = {}
     for pipeline, key in (("A", best_a), ("B", best_b)):
         X = stack(data, patients, pipeline, key)
@@ -240,11 +246,14 @@ def main() -> None:
                        ("r2", "R2"), ("bias", "bias (g/dL)"), ("pearson_r", "Pearson r"),
                        ("accuracy", "Accuracy"), ("precision", "Precision"),
                        ("recall", "Recall"), ("specificity", "Specificity"), ("f1", "F1")]:
-        print(f"{label:<18}{fA[key]:>16.3f}{fB[key]:>16.3f}{base.get(key, float('nan')):>14.3f}")
+        print(f"{label:<18}{fA[key]:>16.3f}{fB[key]:>16.3f}{fitted_base.get(key, float('nan')):>14.3f}")
     print("-" * 64)
     print(f"{'confusion':<18}"
           f"{'TP%d FP%d FN%d TN%d' % (fA['tp'], fA['fp'], fA['fn'], fA['tn']):>16}"
           f"{'TP%d FP%d FN%d TN%d' % (fB['tp'], fB['fp'], fB['fn'], fB['tn']):>16}")
+    print("\nBaseline here is the full-sample mean, so its R2 is exactly 0 by")
+    print("definition. The leave-one-out baseline in section 2b scores")
+    print(f"1-(n/(n-1))^2 = {1-(n/(n-1))**2:+.4f}, an artefact of the protocol.")
 
     # ---------- nested CV: the honest number ----------
     print("\n" + "=" * 78)
@@ -307,7 +316,7 @@ def main() -> None:
         "exploratory": {k: {"A": results[k]["A"], "B": results[k]["B"]} for k in REPRESENTATIONS},
         "best": {"A": best_a, "B": best_b},
         "full_comparison_heldout": {"A": mA, "B": mB, "baseline": base},
-        "fitted_on_all": {"A": fitted["A"], "B": fitted["B"], "baseline": base},
+        "fitted_on_all": {"A": fitted["A"], "B": fitted["B"], "baseline": fitted_base},
         "nested": nested,
         "paired": {"mean_advantage_A": float(diff.mean()), "ci95": [float(lo), float(hi)],
                    "wins_A": wins, "n": n, "p_value": float(p_value)},

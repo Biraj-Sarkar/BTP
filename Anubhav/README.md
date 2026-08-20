@@ -16,8 +16,8 @@ estimate in g/dL plus an anemic / not-anemic verdict.
 
 > **Status: no CNN has been trained on real data yet.** The linear model fitted
 > on all 26 patients reaches **MAE 0.944 g/dL, R² 0.133, F1 0.727, accuracy
-> 0.654** (pipeline A), against a predict-the-mean baseline of MAE 1.083,
-> R² −0.082, F1 0.722. Held out on unseen patients it gives MAE 1.062,
+> 0.654** (pipeline A), against a predict-the-mean baseline of MAE 1.041,
+> R² 0.000, F1 0.722. Held out on unseen patients it gives MAE 1.062,
 > R² −0.094 — the gap is overfitting, and the two candidate pipelines are
 > **not statistically separable** at this sample size (paired test p = 0.408).
 > Full comparison: `experiments/11_head_to_head/RESULTS.md`. **No accuracy

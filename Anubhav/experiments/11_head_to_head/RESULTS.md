@@ -48,10 +48,10 @@ from a new patient.
 
 | Metric | **Pipeline A** (gray-world + erythema) | **Pipeline B** (CIELAB + a\*) | Baseline |
 |---|---|---|---|
-| MSE (g/dL)² | **1.627** | 1.858 | 2.030 |
-| RMSE (g/dL) | **1.275** | 1.363 | 1.425 |
-| MAE (g/dL) | **0.944** | 1.038 | 1.083 |
-| **R²** | **0.133** | 0.010 | −0.082 |
+| MSE (g/dL)² | **1.627** | 1.858 | 1.877 |
+| RMSE (g/dL) | **1.275** | 1.363 | 1.370 |
+| MAE (g/dL) | **0.944** | 1.038 | 1.041 |
+| **R²** | **0.133** | 0.010 | 0.000 |
 | Bias (g/dL) | 0.000 | 0.000 | 0.000 |
 | Pearson r | **0.381** | 0.100 | — |
 | Accuracy | **0.654** | 0.615 | 0.615 |
@@ -61,9 +61,30 @@ from a new patient.
 | F1 | **0.727** | 0.722 | 0.722 |
 | Confusion | TP 12, FP 8, FN 1, TN 5 | TP 13, FP 10, FN 0, TN 3 | — |
 
-**Both pipelines now have positive R²**, and both beat the baseline on MSE,
-RMSE and MAE. **Pipeline A wins on 10 of 11 metrics**; B's only lead is recall,
-which it achieves by flagging every patient (FN 0, but specificity 0.231).
+**Pipeline A wins on 10 of 11 metrics** and is clearly ahead of the baseline
+(MSE 1.627 vs 1.877, MAE 0.944 vs 1.041, R² 0.133 vs 0). **Pipeline B is
+essentially at the baseline** — MSE 1.858 vs 1.877, MAE 1.038 vs 1.041,
+R² 0.010 — so its apparent margin is negligible. B's only lead is recall,
+achieved by flagging every patient (FN 0, but specificity 0.231).
+
+**Why the baseline R² is exactly 0 here.** The baseline is the full-sample
+mean, and R² is defined as `1 − Σ(pred−true)² / Σ(true−mean)²`. When the
+prediction *is* the mean, numerator and denominator are identical, so R² = 0 by
+construction. This is the correct comparison for a model also fitted on all
+patients.
+
+The leave-one-out baseline in §2b is different: it must predict patient *i*
+from the mean of the *other* 25, which is systematically pulled away from
+`y_i`. Its error is inflated by exactly `n/(n−1)`, giving
+
+```
+R²_baseline(LOO) = 1 − (n/(n−1))² = 1 − (26/25)² = −0.0816
+```
+
+That −0.082 is therefore an artefact of the protocol, not a property of the
+data — and it is why a fitted model and a leave-one-out baseline must never be
+put in the same table.
+
 
 ## 2b. Held-out estimate (leave-one-patient-out)
 
