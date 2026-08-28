@@ -16,6 +16,10 @@ fastapi>=0.110
 uvicorn[standard]>=0.29
 python-multipart>=0.0.9
 
+# Figures and the progress report
+matplotlib>=3.8        # diagnostic plots (experiments/06)
+reportlab>=4.1         # scripts/make_progress_report.py
+
 # Development
 pytest>=8.0
 scikit-learn>=1.4    # linear baselines for the regularisation study

@@ -83,12 +83,10 @@ India/
 
 `India.xlsx` must contain:
 
-  Column     Meaning
-
----
-
-  `Number`   Sample identifier
-  `Hgb`      Ground-truth hemoglobin
+| Column | Meaning |
+|---|---|
+| `Number` | Sample identifier |
+| `Hgb` | Ground-truth hemoglobin |
 
 The script sorts by `Number`, takes the first `--train-limit` records,
 and then uses the first 80% for training and the remaining 20% as the
@@ -353,12 +351,12 @@ Image size:   224 x 224
 ```
 
 The model uses AdamW and a ReduceLROnPlateau scheduler.
-fileciteturn0file0L73-L79 fileciteturn0file0L561-L569
+ 
 
 The training loss is weighted Smooth L1 loss. Sample weights are derived
 from Hb-value histogram frequencies to give more weight to less
-represented Hb ranges. fileciteturn0file0L825-L836
-fileciteturn0file0L574-L594
+represented Hb ranges. 
+
 
 Training augmentation can include:
 
@@ -366,7 +364,7 @@ Training augmentation can include:
 - Rotation, probability 0.35, between -8° and +8°
 - Gaussian blur, probability 0.2
 
-fileciteturn0file0L759-L781
+
 
 ---
 
@@ -404,7 +402,7 @@ The trained model is saved to:
 <output-root>/hb_regression_model.pt
 ```
 
-fileciteturn0file0L619-L652
+
 
 ---
 
@@ -453,35 +451,20 @@ cielab_pipeline_outputs/
 
 Important outputs:
 
----
-
-  File                                             Purpose
-
----
-
-  `pipeline_config.json`                           Configuration used for the run
-
-  `evaluation_metrics.json`                        Segmentation Dice/IoU
-
-  `hb_regression_model.pt`                         Hb regression model weights
-
-  `hb_regression_metrics.json`                     Held-out Hb MAE/RMSE
-
-  `hb_regression_predictions.csv`                  Held-out Hb predictions
-
-  `manifest.csv`                                   Demo preprocessing and quality
-                                                   information
-
-  `contact_sheet.png`                              Visual summary of demo
-                                                   preprocessing
-
-`final_prediction_package/all_predictions.csv`   Predictions for all regression
-                                                   records
-----------------------------------------------------------
+| File | Purpose |
+|---|---|
+| `pipeline_config.json` | Configuration used for the run |
+| `evaluation_metrics.json` | Segmentation Dice/IoU |
+| `hb_regression_model.pt` | Hb regression model weights |
+| `hb_regression_metrics.json` | Held-out Hb MAE/RMSE |
+| `hb_regression_predictions.csv` | Held-out Hb predictions |
+| `manifest.csv` | Demo preprocessing and quality information |
+| `contact_sheet.png` | Visual summary of demo preprocessing |
+| `final_prediction_package/all_predictions.csv` | Predictions for all regression records |
 
 The output paths are created and populated by the pipeline during
-execution. fileciteturn0file0L689-L710
-fileciteturn0file0L1103-L1118
+execution. 
+
 
 ---
 
@@ -510,7 +493,7 @@ pip install numpy pandas opencv-python torch torchvision transformers
 ```
 
 The script imports NumPy, pandas, OpenCV, PyTorch, torchvision, and
-Hugging Face Transformers. fileciteturn0file0L30-L59
+Hugging Face Transformers. 
 
 ---
 
@@ -531,7 +514,7 @@ The script accepts these command-line arguments:
 ```
 
 The defaults are defined in the script.
-fileciteturn0file0L1121-L1163
+
 
 ### Basic run
 
@@ -563,43 +546,33 @@ python cielab_pipeline.py \
 ```
 
 The script saves the effective configuration to `pipeline_config.json`.
-fileciteturn0file0L689-L710
+
 
 ---
 
 ## 16. CLI defaults
 
----
+| Argument | Default |
+|---|---|
+| `--dataset-root` | *(path to the India dataset — set this)* |
+| `--output-root` | *(path for pipeline outputs — set this)* |
+| `--train-limit` | `50` |
+| `--demo-limit` | `5` |
+| `--segmentation-checkpoint` | `facebook/mask2former-swin-tiny-cityscapes-semantic` |
+| `--train-epochs` | `3` |
+| `--train-batch-size` | `2` |
+| `--learning-rate` | `5e-5` |
+| `--blur-threshold` | `35.0` |
 
-  Argument                            Default
-
----
-
-  `--dataset-root`                    `/Users/yatikajena/Desktop/AnemiaDetection/dataset anemia/India`
-
-  `--output-root`                     `/Users/yatikajena/Desktop/AnemiaDetection/cielab_pipeline_outputs_v1`
-
-  `--train-limit`                     `50`
-
-  `--demo-limit`                      `5`
-
-  `--segmentation-checkpoint`         `facebook/mask2former-swin-tiny-cityscapes-semantic`
-
-  `--train-epochs`                    `3`
-
-  `--train-batch-size`                `2`
-
-  `--learning-rate`                   `5e-5`
-
-`--blur-threshold`                  `35.0`
-------------------
+The two path defaults are absolute paths from the machine the script was
+written on, so **both must be supplied explicitly** on any other machine.
 
 These are the command-line defaults currently implemented in
-`parse_args()`. fileciteturn0file0L1121-L1146
+`parse_args()`. 
 
 Note that the Hb regression settings (25 epochs, batch size 8, learning
 rate `1e-4`) are currently part of `PipelineConfig` and are **not
-exposed as command-line arguments**. fileciteturn0file0L61-L79
+exposed as command-line arguments**. 
 
 ---
 
@@ -613,7 +586,7 @@ Hb regression: MPS if available, otherwise CPU
 ```
 
 This is explicitly selected in `run_demo()`.
-fileciteturn0file0L1016-L1024
+
 
 ---
 
@@ -633,12 +606,12 @@ HUGGINGFACE_HUB_CACHE=.hf_cache/hub
 ```
 
 This keeps the model cache inside the workspace.
-fileciteturn0file0L26-L28
+
 
 Because Mask2Former loading uses `local_files_only=True`, a suitable
 local checkpoint or previously saved model must be available for the
 learned segmentation path. Otherwise, the implemented fallback is
-heuristic segmentation. fileciteturn0file0L400-L425
+heuristic segmentation. 
 
 ---
 

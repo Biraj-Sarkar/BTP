@@ -19,7 +19,7 @@ from .imaging import read_rgb
 from .linear_model import LinearModel
 from .model import Checkpoint, to_tensor
 from .preprocess import prepare
-from .segment import heuristic_segmenter, load_segmenter
+from .segment import get_extractor, heuristic_segmenter, load_segmenter
 
 
 @dataclass
@@ -152,12 +152,18 @@ class LinearPredictor:
         )
         self.quality_config = quality or QualityConfig()
 
-        try:
+        # The extractor is read back from the model file rather than defaulting.
+        # Features measured inside a different mask are not comparable, so
+        # serving with the wrong one is silently wrong rather than obviously
+        # broken — the same rule `predict_folder.py` follows. An explicitly
+        # passed `segmenter_dir` still wins, since a trained segmenter is a
+        # deliberate override rather than a drifted default.
+        self.extractor = self.model.extractor
+        if segmenter_dir is not None:
             self.segmenter = load_segmenter(segmenter_dir)
-        except (FileNotFoundError, ImportError):
-            if segmenter_dir is not None:
-                raise
-            self.segmenter = heuristic_segmenter
+            self.extractor = str(segmenter_dir)
+        else:
+            self.segmenter = get_extractor(self.model.extractor)
 
     def predict_array(
         self,

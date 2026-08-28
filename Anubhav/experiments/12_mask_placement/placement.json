@@ -1,0 +1,496 @@
+{
+  "threshold": 0.0,
+  "summary": {
+    "Pipeline A (refined)": {
+      "median": 9.533205509185791,
+      "min": 5.364392280578613,
+      "max": 19.803730010986328,
+      "off_tissue": 0,
+      "n": 52
+    },
+    "Pipeline B (CIELAB)": {
+      "median": -3.673225998878479,
+      "min": -9.480050086975098,
+      "max": 4.5587944984436035,
+      "off_tissue": 46,
+      "n": 52
+    },
+    "brightness baseline": {
+      "median": -3.6581262350082397,
+      "min": -8.059064865112305,
+      "max": 2.268415927886963,
+      "off_tissue": 47,
+      "n": 52
+    }
+  },
+  "per_capture": [
+    {
+      "capture": "left_eye/1.jpeg",
+      "A_redness": 8.404387474060059,
+      "B_redness": -3.5484416484832764,
+      "legacy_redness": -3.697164535522461,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/1.jpeg",
+      "A_redness": 8.95732307434082,
+      "B_redness": -2.7069437503814697,
+      "legacy_redness": -1.8975045680999756,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/2.jpeg",
+      "A_redness": 11.982879638671875,
+      "B_redness": -4.9908599853515625,
+      "legacy_redness": -5.388449192047119,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/2.jpeg",
+      "A_redness": 11.902698516845703,
+      "B_redness": 0.23254823684692383,
+      "legacy_redness": 1.9062374830245972,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.07647559591373439
+    },
+    {
+      "capture": "left_eye/3.jpeg",
+      "A_redness": 10.621115684509277,
+      "B_redness": -1.7563406229019165,
+      "legacy_redness": 2.268415927886963,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.015013096531016418
+    },
+    {
+      "capture": "right_eye/3.jpeg",
+      "A_redness": 7.560723781585693,
+      "B_redness": 0.06265563517808914,
+      "legacy_redness": 1.0813040733337402,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.23761853258545665
+    },
+    {
+      "capture": "left_eye/4.jpeg",
+      "A_redness": 7.450258255004883,
+      "B_redness": -3.7904956340789795,
+      "legacy_redness": -3.834131956100464,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/4.jpeg",
+      "A_redness": 6.042445182800293,
+      "B_redness": -2.8430681228637695,
+      "legacy_redness": -4.639510631561279,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/5.jpeg",
+      "A_redness": 11.446919441223145,
+      "B_redness": -4.84187650680542,
+      "legacy_redness": -5.092276573181152,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/5.jpeg",
+      "A_redness": 9.755046844482422,
+      "B_redness": -8.301363945007324,
+      "legacy_redness": -8.04151439666748,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/6.jpeg",
+      "A_redness": 11.383270263671875,
+      "B_redness": -3.6894755363464355,
+      "legacy_redness": -3.5020554065704346,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/6.jpeg",
+      "A_redness": 8.475526809692383,
+      "B_redness": -4.830769062042236,
+      "legacy_redness": -5.295773029327393,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/7.jpeg",
+      "A_redness": 16.121435165405273,
+      "B_redness": -4.187633037567139,
+      "legacy_redness": -4.271174907684326,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/7.jpeg",
+      "A_redness": 10.439433097839355,
+      "B_redness": -4.140869617462158,
+      "legacy_redness": -4.13252592086792,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/8.jpeg",
+      "A_redness": 11.19933795928955,
+      "B_redness": -3.2540078163146973,
+      "legacy_redness": -3.269698143005371,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/8.jpeg",
+      "A_redness": 9.31136417388916,
+      "B_redness": -4.056788444519043,
+      "legacy_redness": -0.8509878516197205,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/9.jpeg",
+      "A_redness": 6.462111949920654,
+      "B_redness": -9.480050086975098,
+      "legacy_redness": -8.059064865112305,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/9.jpeg",
+      "A_redness": 8.762828826904297,
+      "B_redness": 0.6618577241897583,
+      "legacy_redness": -4.822716236114502,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.08069742323715476
+    },
+    {
+      "capture": "left_eye/10.jpeg",
+      "A_redness": 8.743197441101074,
+      "B_redness": -4.533265113830566,
+      "legacy_redness": -5.102411270141602,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/10.jpeg",
+      "A_redness": 7.846620559692383,
+      "B_redness": -4.432117938995361,
+      "legacy_redness": -5.462482929229736,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/11.jpeg",
+      "A_redness": 11.439269065856934,
+      "B_redness": -6.468064785003662,
+      "legacy_redness": -6.901951313018799,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/11.jpeg",
+      "A_redness": 7.108401298522949,
+      "B_redness": -5.011320114135742,
+      "legacy_redness": -2.5691165924072266,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/12.jpeg",
+      "A_redness": 12.170624732971191,
+      "B_redness": -4.247100830078125,
+      "legacy_redness": -5.629568576812744,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/12.jpeg",
+      "A_redness": 10.003289222717285,
+      "B_redness": -1.5464184284210205,
+      "legacy_redness": -1.4168081283569336,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/13.jpeg",
+      "A_redness": 12.192917823791504,
+      "B_redness": -2.8208041191101074,
+      "legacy_redness": -3.489229440689087,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/13.jpeg",
+      "A_redness": 12.493303298950195,
+      "B_redness": -4.861507415771484,
+      "legacy_redness": -4.909050941467285,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/14.jpeg",
+      "A_redness": 12.182817459106445,
+      "B_redness": -3.905271291732788,
+      "legacy_redness": -3.2968838214874268,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/14.jpeg",
+      "A_redness": 11.250496864318848,
+      "B_redness": -1.1234627962112427,
+      "legacy_redness": -1.8297162055969238,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/15.jpeg",
+      "A_redness": 16.286521911621094,
+      "B_redness": -0.8540408611297607,
+      "legacy_redness": -0.7667780518531799,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/15.jpeg",
+      "A_redness": 13.296889305114746,
+      "B_redness": -0.8605154156684875,
+      "legacy_redness": -1.373388409614563,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/16.jpeg",
+      "A_redness": 19.171463012695312,
+      "B_redness": -5.662806987762451,
+      "legacy_redness": -5.779442310333252,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/16.jpeg",
+      "A_redness": 16.030136108398438,
+      "B_redness": -4.688539028167725,
+      "legacy_redness": -4.829153060913086,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/17.jpeg",
+      "A_redness": 19.803730010986328,
+      "B_redness": -4.805063247680664,
+      "legacy_redness": -4.306353569030762,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/17.jpeg",
+      "A_redness": 16.564697265625,
+      "B_redness": -6.9101881980896,
+      "legacy_redness": -6.468245506286621,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/18.jpeg",
+      "A_redness": 12.199722290039062,
+      "B_redness": 1.085861086845398,
+      "legacy_redness": 1.2166423797607422,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.09902231135622963
+    },
+    {
+      "capture": "right_eye/18.jpeg",
+      "A_redness": 8.29375171661377,
+      "B_redness": -3.6569764614105225,
+      "legacy_redness": -3.6190879344940186,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/19.jpeg",
+      "A_redness": 9.011846542358398,
+      "B_redness": -3.5327281951904297,
+      "legacy_redness": -4.151995658874512,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/19.jpeg",
+      "A_redness": 9.934288024902344,
+      "B_redness": -2.937443256378174,
+      "legacy_redness": -3.074094533920288,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/20.jpeg",
+      "A_redness": 5.364392280578613,
+      "B_redness": -1.2927765846252441,
+      "legacy_redness": -1.860669732093811,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/20.jpeg",
+      "A_redness": 6.462520599365234,
+      "B_redness": 2.183037757873535,
+      "legacy_redness": -3.032168388366699,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.5049888598275695
+    },
+    {
+      "capture": "left_eye/21.jpeg",
+      "A_redness": 10.84199047088623,
+      "B_redness": -3.8365142345428467,
+      "legacy_redness": -4.7294840812683105,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/21.jpeg",
+      "A_redness": 13.10369873046875,
+      "B_redness": -2.6661572456359863,
+      "legacy_redness": -3.0278420448303223,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/22.jpeg",
+      "A_redness": 8.698392868041992,
+      "B_redness": -6.066633701324463,
+      "legacy_redness": -6.614474296569824,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/22.jpeg",
+      "A_redness": 8.279422760009766,
+      "B_redness": -1.7527984380722046,
+      "legacy_redness": -1.5302058458328247,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/23.jpeg",
+      "A_redness": 8.714578628540039,
+      "B_redness": -1.434491515159607,
+      "legacy_redness": -1.8206409215927124,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/23.jpeg",
+      "A_redness": 8.22538948059082,
+      "B_redness": 4.5587944984436035,
+      "legacy_redness": 1.2405551671981812,
+      "A_backend": "refined",
+      "B_backend": "grabcut",
+      "overlap": 0.35801271114144345
+    },
+    {
+      "capture": "left_eye/24.jpeg",
+      "A_redness": 9.133401870727539,
+      "B_redness": -4.059275150299072,
+      "legacy_redness": -4.621883869171143,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/24.jpeg",
+      "A_redness": 7.063602924346924,
+      "B_redness": -3.283167600631714,
+      "legacy_redness": -3.554034948348999,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/25.jpeg",
+      "A_redness": 6.614811420440674,
+      "B_redness": -1.538812518119812,
+      "legacy_redness": -1.7979249954223633,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/25.jpeg",
+      "A_redness": 7.608665466308594,
+      "B_redness": -2.2318649291992188,
+      "legacy_redness": -2.5257365703582764,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "left_eye/26.jpeg",
+      "A_redness": 8.211861610412598,
+      "B_redness": -4.24284553527832,
+      "legacy_redness": -5.0290327072143555,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    },
+    {
+      "capture": "right_eye/26.jpeg",
+      "A_redness": 7.073456287384033,
+      "B_redness": -5.568192005157471,
+      "legacy_redness": -4.869019508361816,
+      "A_backend": "refined",
+      "B_backend": "heuristic",
+      "overlap": 0.0
+    }
+  ]
+}

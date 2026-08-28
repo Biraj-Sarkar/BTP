@@ -206,13 +206,22 @@ contrast would destroy the signal.
 
 ### 3.4 Quality control — `preprocess.assess_quality`
 
-Three checks:
+Four checks:
 
 | Check | Method | Catches |
 |---|---|---|
 | Focus | variance of the Laplacian | motion blur, misfocus |
 | Mask area | fraction of frame segmented | lid not everted, camera too far or too close |
 | Clipping | fraction of pixels at 0 or 255 | flash blowout on wet tissue |
+| Illuminant neutrality | brightest ÷ dimmest channel mean, **before** white balance | strongly coloured lighting |
+
+**Every one of these is enforced.** That is worth stating explicitly because
+for a period it was not true: clipping and illuminant colour were computed,
+written into the quality report, and then never consulted, so a blown-out or
+strongly tinted capture returned a confident number. Measuring a statistic and
+gating on it are separate acts, and the gap between them is invisible in any
+output. Each check now has a threshold in `QualityConfig` and a test that a
+failing capture is rejected.
 
 **This gate is enforced.** A capture that fails is dropped from training, and at
 serve time the API returns `usable: false` with a retake prompt rather than a
@@ -224,12 +233,23 @@ Clipping deserves note: a flash fired at wet conjunctiva blows out exactly the
 region we need, and the result still looks *sharp* to the focus check. Blur
 detection alone would pass it.
 
+The illuminant check is the cheapest of the four and the best separated. Under
+strongly coloured light the information is **absent from the file** rather than
+distorted — under blue light the red channel averages 0.9 out of 255, so tissue
+redness was never recorded, and gray-world then divides by that near-zero mean
+and amplifies sensor noise. The ratio of brightest to dimmest channel mean
+separates the two populations by an order of magnitude on each side: the 52
+cohort captures span **1.07–1.50** and a neutral test capture scores 1.7,
+against **22.6–206.0** for five unusable coloured illuminants. The threshold
+sits at 3.0. It must be measured *before* white balance, which exists precisely
+to remove the cast and would drive the ratio to ~1.0 on any input.
+
 **Advantages and limitations**
 
 | Advantages | Limitations |
 |---|---|
 | Enforced, not merely recorded — a failing capture never reaches the model | Thresholds are hand-set; the blur cut-off looks slightly too aggressive on real captures (two of three rejections were marginal) |
-| Three independent checks catch three different failures | **No illuminant-neutrality check**, so a strongly tinted photo passes and yields a confident, meaningless number |
+| Four independent checks catch four different failures, and each is enforced rather than merely recorded | The clipping threshold is **not calibrated against a real blown-out capture** — the cohort contains none, so it is set generously at 5% of pixels |
 | Converts a silent failure into an actionable retake prompt | Rejecting a capture costs a retake, which in a field setting is a real burden |
 | Cheap: a Laplacian, a pixel count and two comparisons | Mask-ratio bounds assume a framing convention that may not hold across devices |
 

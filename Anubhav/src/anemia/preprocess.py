@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -39,6 +39,9 @@ class QualityReport:
     mask_ratio: float
     passed: bool
     reasons: list = field(default_factory=list)
+    cast_ratio: float = float("nan")
+    """Brightest/dimmest channel mean before white balance. NaN when the
+    pre-balance image was not supplied, in which case the check is skipped."""
 
     def to_dict(self) -> dict:
         return {
@@ -46,6 +49,9 @@ class QualityReport:
             "exposure": round(self.exposure, 3),
             "clipped": round(self.clipped, 5),
             "mask_ratio": round(self.mask_ratio, 5),
+            "cast_ratio": (
+                None if np.isnan(self.cast_ratio) else round(self.cast_ratio, 3)
+            ),
             "passed": self.passed,
             "reasons": list(self.reasons),
         }
@@ -62,15 +68,35 @@ class Prepared:
     quality: QualityReport
 
 
+def cast_ratio(image_rgb: np.ndarray) -> float:
+    """Brightest channel mean over dimmest — how far the illuminant is from neutral.
+
+    Must be measured *before* gray-world white balance, which exists precisely
+    to remove this and would drive the ratio to ~1.0 on any input.
+    """
+
+    means = image_rgb.reshape(-1, 3).mean(axis=0)
+    return float(means.max() / max(float(means.min()), 1e-6))
+
+
 def assess_quality(
     image_rgb: np.ndarray,
     mask: np.ndarray,
     config: QualityConfig,
+    raw_rgb: Optional[np.ndarray] = None,
 ) -> QualityReport:
+    """Gate a capture. Every statistic computed here is also enforced.
+
+    `raw_rgb` is the working image *before* white balance, needed for the
+    illuminant-neutrality check. When it is omitted that one check is skipped
+    rather than silently passing on a meaningless value.
+    """
+
     focus = focus_score(image_rgb)
     exposure = exposure_score(image_rgb)
     clipped = clipped_fraction(image_rgb)
     mask_ratio = float(np.count_nonzero(mask)) / float(mask.size)
+    cast = cast_ratio(raw_rgb) if raw_rgb is not None else float("nan")
 
     reasons = []
     if focus < config.min_focus:
@@ -79,12 +105,19 @@ def assess_quality(
         reasons.append(f"conjunctiva too small ({mask_ratio:.3f})")
     if mask_ratio > config.max_mask_ratio:
         reasons.append(f"mask implausibly large ({mask_ratio:.3f})")
+    if clipped > config.max_clipped_fraction:
+        reasons.append(
+            f"over- or under-exposed ({100 * clipped:.1f}% of pixels clipped)"
+        )
+    if not np.isnan(cast) and cast > config.max_cast_ratio:
+        reasons.append(f"strongly coloured lighting (cast ratio {cast:.1f})")
 
     return QualityReport(
         focus=focus,
         exposure=exposure,
         clipped=clipped,
         mask_ratio=mask_ratio,
+        cast_ratio=cast,
         passed=not reasons,
         reasons=reasons,
     )
@@ -108,7 +141,8 @@ def prepare(
     balanced = gray_world_white_balance(working) if preprocess.gray_world else working
 
     mask, backend = segmenter(balanced)
-    report = assess_quality(balanced, mask, quality)
+    # `working` is pre-white-balance, which the illuminant check needs.
+    report = assess_quality(balanced, mask, quality, raw_rgb=working)
 
     masked = apply_mask(balanced, mask)
     left, top, right, bottom = tight_bbox(mask, preprocess.bbox_pad_ratio)
@@ -141,8 +175,18 @@ class CropCache:
     augmentation diversity.
     """
 
-    def __init__(self, root: Path, preprocess: PreprocessConfig, backend: str):
+    def __init__(
+        self,
+        root: Path,
+        preprocess: PreprocessConfig,
+        backend: str,
+        quality: Optional[QualityConfig] = None,
+    ):
         self.root = Path(root)
+        # The cached QualityReport was produced under a specific set of
+        # thresholds, so those thresholds belong in the key. Without them,
+        # tightening a gate would silently reuse verdicts computed under the
+        # old one — the same trap as reusing crops cut by an old extractor.
         signature = json.dumps(
             {
                 "work_size": list(preprocess.work_size),
@@ -150,6 +194,7 @@ class CropCache:
                 "bbox_pad_ratio": preprocess.bbox_pad_ratio,
                 "gray_world": preprocess.gray_world,
                 "backend": backend,
+                "quality": asdict(quality) if quality is not None else None,
             },
             sort_keys=True,
         )
@@ -172,7 +217,13 @@ class CropCache:
         if crop_bgr is None:
             return None
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        report = QualityReport(**{**meta["quality"], "reasons": meta["quality"].get("reasons", [])})
+        quality_meta = dict(meta["quality"])
+        quality_meta["reasons"] = quality_meta.get("reasons", [])
+        # to_dict() writes JSON null for an unmeasured cast ratio; NaN is the
+        # in-memory representation, and json cannot carry it.
+        if quality_meta.get("cast_ratio") is None:
+            quality_meta["cast_ratio"] = float("nan")
+        report = QualityReport(**quality_meta)
         return Prepared(
             crop=cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB),
             mask=np.empty((0, 0), dtype=np.uint8),

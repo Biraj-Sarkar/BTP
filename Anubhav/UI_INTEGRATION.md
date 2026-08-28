@@ -61,7 +61,7 @@ A usable capture:
   "usable": true,
   "quality": {
     "focus": 85.3, "exposure": 42.1, "clipped": 0.0021,
-    "mask_ratio": 0.211, "passed": true, "reasons": []
+    "mask_ratio": 0.211, "cast_ratio": 1.066, "passed": true, "reasons": []
   },
   "message": "Estimated haemoglobin 11.4 g/dL. Below the 11.5 g/dL screening threshold for this patient. This is a screening estimate, not a diagnosis — confirm with a lab test."
 }
@@ -77,7 +77,7 @@ A capture that failed quality control:
   "usable": false,
   "quality": {
     "focus": 25.4, "exposure": 38.9, "clipped": 0.0009,
-    "mask_ratio": 0.187, "passed": false,
+    "mask_ratio": 0.187, "cast_ratio": 1.300, "passed": false,
     "reasons": ["blurred (focus 25.4 < 35.0)"]
   },
   "message": "Could not read this photo clearly: blurred (focus 25.4 < 35.0). Please retake with the lower eyelid pulled down and steady lighting."
@@ -94,26 +94,36 @@ A capture that failed quality control:
 | `usable` | bool | **Branch on this.** False means the capture was rejected |
 | `quality.focus` | float | Variance of the Laplacian. Below 35 rejects the capture |
 | `quality.mask_ratio` | float | Fraction of the frame identified as conjunctiva. Outside 0.015–0.85 rejects |
-| `quality.clipped` | float | Fraction of blown-out or crushed pixels. Reported only — see step 5 |
-| `quality.exposure` | float | Spread of the lightness channel. Reported only |
+| `quality.clipped` | float | Fraction of blown-out or crushed pixels. Above 0.05 rejects |
+| `quality.cast_ratio` | float \| null | Brightest ÷ dimmest channel mean before white balance. Above 3.0 rejects. `null` when not measured |
+| `quality.exposure` | float | Spread of the lightness channel. Reported, not gated |
 | `quality.passed` | bool | Mirrors `usable` |
 | `quality.reasons` | string[] | Human-readable rejection reasons. Empty when passed |
 | `message` | string | Ready-to-display text. Already contains the required disclaimer |
 
-`reasons` currently takes one of three forms, which you can pattern-match if you
-want tailored guidance per failure:
+`reasons` takes one of five forms, which you can pattern-match for tailored
+guidance:
 
-- `blurred (focus 25.4 < 35.0)` → "hold still, tap to focus"
-- `conjunctiva too small (0.008)` → "move closer, pull the lid down further"
-- `mask implausibly large (0.910)` → "move back, frame just the lower lid"
+| Reason text | Suggested prompt |
+|---|---|
+| `blurred (focus 25.4 < 35.0)` | "Hold steady and tap to focus" |
+| `conjunctiva too small (0.008)` | "Move closer, and pull the lid down further" |
+| `mask implausibly large (0.910)` | "Move back — frame just the lower lid" |
+| `over- or under-exposed (7.2% of pixels clipped)` | "Turn off the flash and avoid direct glare" |
+| `strongly coloured lighting (cast ratio 22.6)` | "Move to neutral white light" |
+
+The last one is worth explaining in the UI rather than just retrying: under
+strongly coloured light the tissue colour is **absent from the photograph**,
+not merely distorted, so no amount of retrying in the same lighting will help.
 
 ---
 
 ## Step 3 — Build against a mock now
 
-The server needs a fitted model file, which is produced separately. You do not
-have to wait for it: the contract above is settled, so build the whole client
-against this stand-in and switch the base URL later.
+The real service runs today against the fitted linear model (step 7), so you
+can point at it as soon as someone hands you `runs/linear_model.json`. Until
+then the contract is settled, so build the whole client against this stand-in
+and switch the base URL later — nothing else changes.
 
 Save as `mock_server.py`, then `pip install fastapi uvicorn python-multipart`
 and `uvicorn mock_server:app --port 8000`:
@@ -127,6 +137,16 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 app = FastAPI()
 MAX_UPLOAD_BYTES = 12 * 1024 * 1024
+
+# All five rejection strings the real server can return, so the client's
+# retake screen gets exercised on every one rather than only on blur.
+REJECTIONS = [
+    "blurred (focus 25.4 < 35.0)",
+    "conjunctiva too small (0.008)",
+    "mask implausibly large (0.910)",
+    "over- or under-exposed (7.2% of pixels clipped)",
+    "strongly coloured lighting (cast ratio 22.6)",
+]
 
 
 def threshold(age, sex, pregnant=False):
@@ -151,7 +171,12 @@ def threshold(age, sex, pregnant=False):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "backbone": "mock", "metrics": {}}
+    return {
+        "status": "ok",
+        "model": {"kind": "linear", "extractor": "refined",
+                  "representation": "erythema", "equation": "mock", "metrics": {}},
+        "backbone": None, "metrics": {},
+    }
 
 
 @app.post("/predict")
@@ -171,12 +196,13 @@ async def predict(
 
     # One capture in four is rejected, so the retake path gets exercised.
     if random.random() < 0.25:
+        reason = random.choice(REJECTIONS)
         return {
             "hb_g_dl": None, "anemic": None, "threshold_g_dl": cutoff, "usable": False,
             "quality": {"focus": 25.4, "exposure": 38.9, "clipped": 0.0009,
-                        "mask_ratio": 0.187, "passed": False,
-                        "reasons": ["blurred (focus 25.4 < 35.0)"]},
-            "message": "Could not read this photo clearly: blurred (focus 25.4 < 35.0). "
+                        "mask_ratio": 0.187, "cast_ratio": 1.3, "passed": False,
+                        "reasons": [reason]},
+            "message": "Could not read this photo clearly: " + reason + ". "
                        "Please retake with the lower eyelid pulled down and steady lighting.",
         }
 
@@ -185,7 +211,7 @@ async def predict(
     return {
         "hb_g_dl": hb, "anemic": anemic, "threshold_g_dl": cutoff, "usable": True,
         "quality": {"focus": 85.3, "exposure": 42.1, "clipped": 0.0021,
-                    "mask_ratio": 0.211, "passed": True, "reasons": []},
+                    "mask_ratio": 0.211, "cast_ratio": 1.066, "passed": True, "reasons": []},
         "message": f"Estimated haemoglobin {hb:.1f} g/dL. "
                    f"{'Below' if anemic else 'At or above'} the {cutoff:.1f} g/dL "
                    "screening threshold for this patient. This is a screening estimate, "
@@ -253,11 +279,11 @@ already entered.
 4. **Do not compute the verdict client-side.** Use the server's `anemic` and
    `threshold_g_dl`. If the threshold rules are ever revised, a client that
    re-derives them silently disagrees with the server.
-5. **`usable: true` does not mean the photo was well lit.** `clipped` and
-   `exposure` are measured and returned but do not currently gate a capture,
-   and there is no illuminant-colour check yet, so a flash-blown or strongly
-   tinted photo can pass. If you want to warn the user client-side, `clipped`
-   above roughly 0.02 is a reasonable trigger. Treat this as advisory only.
+5. **Handle all five rejection reasons, not just blur.** Every statistic the
+   server computes is now enforced, so a capture can be rejected for blur, a
+   mask that is too small or implausibly large, over-exposure, or strongly
+   coloured lighting. Match on the text and give tailored guidance; do not
+   assume the reason is always blur.
 
 ---
 
@@ -272,9 +298,24 @@ plausible number that means nothing.
 What the client *should* do is display provenance — the extractor and
 representation the active model was fitted with — on an "about" or debug
 screen, so any result on screen can be traced to the configuration that
-produced it. Those fields are not exposed by `/health` yet; they are being
-added. Until then, leave a placeholder in the layout rather than designing it
-in later.
+produced it. **`GET /health` now returns this** under `model`:
+
+```json
+{
+  "status": "ok",
+  "model": {
+    "kind": "linear",
+    "extractor": "refined",
+    "representation": "erythema",
+    "equation": "Hb = 9.8308 + 15.101390*(log(R/G)) - 12.790747*(log(R/B))   [g/dL]",
+    "metrics": { "in_sample": {...}, "held_out": {...}, "baseline": {...} }
+  }
+}
+```
+
+`kind` is `"linear"` or `"neural"`. `representation` and `equation` are present
+only for the linear model; `backbone` is present only for the neural one. Read
+them defensively.
 
 Two axes are recorded in every model file, for reference:
 
@@ -288,14 +329,23 @@ Two axes are recorded in every model file, for reference:
 The service is started with the model path in the environment and read by
 `serve/app.py`:
 
+The linear model is servable today and needs no PyTorch:
+
+```bash
+ANEMIA_LINEAR_MODEL=runs/linear_model.json uvicorn serve.app:app --port 8000
+```
+
+Once a network is trained, the same service takes a checkpoint instead — same
+routes, same response shape, nothing in the client changes:
+
 ```bash
 ANEMIA_CHECKPOINT=runs/hb/best.pt ANEMIA_SEGMENTER=runs/segmenter \
   uvicorn serve.app:app --host 0.0.0.0 --port 8000
 ```
 
-Model files are produced by the training and fitting workflow and are not
-carried in the repository, so ask for the current one rather than expecting a
-clone to contain it. When you switch over:
+Model files are produced by the fitting workflow and are not carried in the
+repository, so ask for the current one rather than expecting a clone to
+contain it. When you switch over:
 
 1. Point the base URL at the real host.
 2. Poll `GET /health` and confirm it returns 200 rather than 503.

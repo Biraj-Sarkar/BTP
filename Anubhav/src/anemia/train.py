@@ -126,7 +126,7 @@ def build_crops(
     """Preprocess every sample once, reusing the on-disk cache where possible."""
 
     backend_name = getattr(segmenter, "cache_key", None) or getattr(segmenter, "__name__", type(segmenter).__name__)
-    cache = CropCache(config.cache_root, config.preprocess, backend_name)
+    cache = CropCache(config.cache_root, config.preprocess, backend_name, config.quality)
 
     prepared: Dict[Path, Prepared] = {}
     for position, sample in enumerate(samples, start=1):
@@ -189,20 +189,51 @@ def train_fold(
     verbose: bool = True,
 ) -> FoldResult:
     reg = config.regression
-    train_hb = [s.hb for s in split.train]
+
+    # Early stopping and best-epoch selection must not look at the test fold.
+    # Scoring every epoch on the test set and keeping the best one is model
+    # selection on the evaluation data: the reported metrics come out
+    # optimistically biased even though every prediction is technically
+    # out-of-fold. So a patient-grouped validation set is carved out of the
+    # training fold and drives both decisions; the test fold is scored exactly
+    # once, after training has finished.
+    inner = holdout(
+        split.train,
+        config.split.holdout_fraction,
+        config.split.stratify_bins,
+        config.split.seed,
+    )
+    fit_samples, val_samples = inner.train, inner.test
+    if not val_samples or not fit_samples:
+        # Too few patients in this fold to spare any. Train for the full
+        # schedule with no early stopping rather than peeking at the test set.
+        fit_samples, val_samples = list(split.train), []
+        if verbose:
+            print("    fold too small for a validation split — early stopping disabled")
+
+    train_hb = [s.hb for s in fit_samples]
     target_mean = float(np.mean(train_hb))
     target_std = float(np.std(train_hb)) or 1.0
 
     weights = inverse_frequency_weights(train_hb, reg.imbalance_bins, reg.imbalance_strength)
 
     train_loader = DataLoader(
-        HbDataset(split.train, crops, target_mean, target_std, weights, reg.augment, config.seed),
+        HbDataset(fit_samples, crops, target_mean, target_std, weights, reg.augment, config.seed),
         batch_size=reg.batch_size,
         shuffle=True,
         # Only drop a trailing batch of exactly one sample, which would crash
         # the trainable BatchNorm layers. Dropping every short batch would throw
         # away real images on a cohort this small.
-        drop_last=(len(split.train) % reg.batch_size == 1),
+        drop_last=(len(fit_samples) % reg.batch_size == 1),
+    )
+    val_loader = (
+        DataLoader(
+            HbDataset(val_samples, crops, target_mean, target_std),
+            batch_size=reg.batch_size,
+            shuffle=False,
+        )
+        if val_samples
+        else None
     )
     test_loader = DataLoader(
         HbDataset(split.test, crops, target_mean, target_std),
@@ -241,25 +272,29 @@ def train_fold(
             batches += 1
         scheduler.step()
 
-        evaluation = _evaluate(model, test_loader, target_mean, target_std, device)
-        mae = evaluation["metrics"].get("mae", float("inf"))
+        # Validation only — the test fold is not touched until training ends.
+        mae = float("nan")
+        if val_loader is not None:
+            evaluation = _evaluate(model, val_loader, target_mean, target_std, device)
+            mae = evaluation["metrics"].get("mae", float("inf"))
 
-        if mae < best_mae - 1e-4:
-            best_mae = mae
-            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
-            patience = 0
-        else:
-            patience += 1
+            if mae < best_mae - 1e-4:
+                best_mae = mae
+                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                patience = 0
+            else:
+                patience += 1
 
         if verbose and (epoch % 5 == 0 or epoch == reg.epochs - 1):
+            suffix = "" if val_loader is None else f" val_mae={mae:.4f}"
             print(
                 f"    epoch {epoch + 1:>3}/{reg.epochs} "
-                f"loss={epoch_loss / max(batches, 1):.4f} test_mae={mae:.4f}"
+                f"loss={epoch_loss / max(batches, 1):.4f}{suffix}"
             )
 
-        if patience >= reg.early_stopping_patience:
+        if val_loader is not None and patience >= reg.early_stopping_patience:
             if verbose:
-                print(f"    early stop at epoch {epoch + 1} (best MAE {best_mae:.4f})")
+                print(f"    early stop at epoch {epoch + 1} (best val MAE {best_mae:.4f})")
             break
 
     if best_state is not None:

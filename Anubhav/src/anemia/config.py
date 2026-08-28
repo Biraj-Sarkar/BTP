@@ -47,6 +47,30 @@ class QualityConfig:
 
     min_mask_ratio: float = 0.015
     max_mask_ratio: float = 0.85
+
+    max_clipped_fraction: float = 0.05
+    """Share of pixels crushed to black or blown to white before the capture is
+    rejected. A flash fired at wet conjunctiva blows out exactly the region we
+    need and the result still looks *sharp*, so the focus check passes it.
+
+    Deliberately generous: the cohort's worst capture clips 0.003 of the frame,
+    so 0.05 is ~17x headroom and will not cost a retake on a usable photo.
+    Unlike the cast threshold below, this one is **not calibrated against a
+    real blown-out capture** — the repository contains none. Tighten it once a
+    genuine flash-blowout example exists."""
+
+    max_cast_ratio: float = 3.0
+    """Ratio of brightest to dimmest channel mean, measured *before* white
+    balance. Rejects strongly coloured illumination, where the information is
+    absent from the file rather than merely distorted: under blue light the red
+    channel averages 0.9/255, so tissue redness was never captured, and
+    gray-world then divides by that near-zero mean and amplifies sensor noise.
+
+    Measured separation is an order of magnitude on each side — the 52 cohort
+    captures span 1.07-1.50 and the neutral stress captures 1.7, against
+    22.6-206.0 for the five unusable coloured illuminants (see
+    `experiments/04_lighting_stress/`)."""
+
     enforce: bool = True
 
 

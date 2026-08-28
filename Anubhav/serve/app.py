@@ -7,6 +7,12 @@ so a request costs one segmentation pass plus one ResNet forward pass.
     ANEMIA_CHECKPOINT=runs/hb/best.pt \
     ANEMIA_SEGMENTER=runs/segmenter \
     uvicorn serve.app:app --host 0.0.0.0 --port 8000
+
+Until a network is trained, the fitted linear model serves the same contract
+and needs no PyTorch:
+
+    ANEMIA_LINEAR_MODEL=runs/linear_model.json \
+    uvicorn serve.app:app --host 0.0.0.0 --port 8000
 """
 
 from __future__ import annotations
@@ -24,7 +30,7 @@ from fastapi.responses import JSONResponse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from anemia.predict import AnemiaPredictor  # noqa: E402
+from anemia.predict import AnemiaPredictor, LinearPredictor  # noqa: E402
 
 MAX_UPLOAD_BYTES = 12 * 1024 * 1024
 
@@ -34,21 +40,61 @@ app = FastAPI(
     version="0.2.0",
 )
 
-_predictor: Optional[AnemiaPredictor] = None
+_predictor: Optional[object] = None
 
 
-def get_predictor() -> AnemiaPredictor:
+def get_predictor():
+    """Load whichever model is configured.
+
+    Either predictor returns the same `Prediction`, so the API and the app
+    cannot tell them apart. `ANEMIA_CHECKPOINT` takes precedence when both are
+    set; `ANEMIA_LINEAR_MODEL` serves the interpretable linear model, which
+    needs no PyTorch and is the baseline any network has to beat.
+    """
+
     global _predictor
     if _predictor is None:
         checkpoint = os.environ.get("ANEMIA_CHECKPOINT")
-        if not checkpoint:
-            raise RuntimeError("Set ANEMIA_CHECKPOINT to a trained .pt bundle")
+        linear = os.environ.get("ANEMIA_LINEAR_MODEL")
         segmenter = os.environ.get("ANEMIA_SEGMENTER")
-        _predictor = AnemiaPredictor(
-            Path(checkpoint),
-            segmenter_dir=Path(segmenter) if segmenter else None,
-        )
+        segmenter_dir = Path(segmenter) if segmenter else None
+
+        if checkpoint:
+            _predictor = AnemiaPredictor(Path(checkpoint), segmenter_dir=segmenter_dir)
+        elif linear:
+            _predictor = LinearPredictor(Path(linear), segmenter_dir=segmenter_dir)
+        else:
+            raise RuntimeError(
+                "No model configured. Set ANEMIA_CHECKPOINT to a trained .pt "
+                "bundle, or ANEMIA_LINEAR_MODEL to a fitted linear model JSON "
+                "(produced by `python -m anemia fit-linear`)."
+            )
     return _predictor
+
+
+def describe_model(predictor) -> dict:
+    """What produced the number — so the client can display provenance.
+
+    Features measured inside a different mask are not comparable, so which
+    extractor and representation a served model was fitted with is part of
+    what the answer means, not an implementation detail.
+    """
+
+    if isinstance(predictor, LinearPredictor):
+        return {
+            "kind": "linear",
+            "extractor": predictor.extractor,
+            "representation": predictor.model.representation,
+            "equation": predictor.model.equation_string(),
+            "metrics": predictor.model.metrics,
+        }
+    return {
+        "kind": "neural",
+        "backbone": predictor.checkpoint.backbone,
+        "extractor": getattr(predictor, "extractor", "refined"),
+        "representation": None,
+        "metrics": predictor.checkpoint.metrics,
+    }
 
 
 @app.on_event("startup")
@@ -67,10 +113,13 @@ def health() -> dict:
         predictor = get_predictor()
     except Exception as exc:  # noqa: BLE001
         return JSONResponse({"status": "unhealthy", "detail": str(exc)}, status_code=503)
+    described = describe_model(predictor)
     return {
         "status": "ok",
-        "backbone": predictor.checkpoint.backbone,
-        "metrics": predictor.checkpoint.metrics,
+        "model": described,
+        # Kept at the top level for clients written against the earlier shape.
+        "backbone": described.get("backbone"),
+        "metrics": described.get("metrics", {}),
     }
 
 

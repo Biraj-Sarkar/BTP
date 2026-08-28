@@ -5,6 +5,14 @@ squares" on this cohort, rather than a textbook one.
 
 Run: `python experiments/08_regularisation/compare_regularisers.py`
 
+> **Numbers superseded, conclusion unchanged.** This compares regularisers over
+> **six channel means** (R, G, B, L\*, a\*, b\*) with no quality gate, so its
+> MAEs sit around the leave-one-out baseline of 1.083. The deployed model uses
+> two erythema-index features with the QC gate and reaches held-out MAE 1.033.
+> The finding this experiment exists for — the predictors are near-collinear
+> (max \|r\| = 0.993), which is exactly where lasso becomes unstable and ridge
+> does not — is a property of colour features in general and is unaffected.
+
 ## Setup
 
 26 patients, 6 features (mean R, G, B, L\*, a\*, b\* inside the conjunctiva

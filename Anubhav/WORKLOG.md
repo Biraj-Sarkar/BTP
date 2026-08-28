@@ -7,6 +7,187 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 18–24 Aug 2026
 
+**20 Aug — Quality control now gates on everything it measures**
+`assess_quality` computed focus, mask ratio, clipping and exposure, but only
+the first two could reject a capture: `QualityConfig` had no clipping threshold
+at all, so a flash-blown photo returned a confident number while `PIPELINE.md`
+claimed three enforced checks. The same shape as B.1, one layer down. Added a
+clipping gate and the illuminant-neutrality check that had been proposed since
+the lighting stress test, so **all four statistics are now enforced** and each
+has a test that a failing capture is rejected (19 → 25 tests).
+
+Both thresholds were calibrated by measurement first. The cast ratio separates
+by an order of magnitude on each side — the 52 cohort captures span 1.07–1.50
+and a neutral test capture 1.7, against 22.6–206.0 for the five unusable
+coloured illuminants — so the threshold sits at 3.0, and it is measured
+**before** white balance, which exists to remove the cast and would otherwise
+drive the ratio to ~1.0. Clipping is set generously at 5% because the cohort's
+worst capture clips 0.3%, and it is recorded as **not calibrated against a real
+blown-out capture**: the repository contains none.
+
+Verified the change costs nothing: refitting the deployed model under the new
+gates returns byte-identical results (26 patients, 3 captures skipped, same
+equation, same metrics). Also added `QualityConfig` to the crop-cache key —
+without it, tightening a gate would silently reuse verdicts computed under the
+old thresholds, which is the B.8 trap applied to quality rather than extraction.
+→ `src/anemia/config.py`, `preprocess.py`, `PIPELINE.md` §3.4
+
+**20 Aug — "50 of 52" was wrong; the measured figure is 46, and the argument got stronger**
+The claim that pipeline B's masks land off-tissue on 50 of 52 captures was the
+decisive non-statistical argument for deploying A, quoted in the report and four
+documents, and rested on visual review with no artifact behind it. Built one.
+Measuring redness index inside each mask across all 52 captures gives **46 of
+52**, not 50 — corrected everywhere.
+
+Two findings came out of it that are stronger than the original claim.
+**Pipeline B's placement is statistically indistinguishable from the brightness
+baseline** (median redness −3.67 against −3.66; 46 off-tissue against 47) — the
+baseline measured at Dice 0.000 against ground truth, which selects sclera. And
+**the two masks overlap by a median of exactly 0.000**: on more than half the
+captures they share no pixels, so the pipelines are reading different parts of
+the photograph rather than treating the same tissue differently. That reframes
+experiment 11's paired test, which compares two models one of which was largely
+not looking at conjunctiva.
+
+A follow-up question — *are the six on-tissue captures meaningful, given the
+model was fitted on them?* — sharpened it further, and corrected a claim made
+in the first write-up. They are not an existence proof. They are marginal
+(median redness +0.87 against A's +8.49 on the same six images) and vanish as
+the threshold tightens: 3 survive at +1.0 and none at +5.0, while A holds 52 of
+52 across that whole range. More importantly, **no patient has both eyes
+on-tissue**, and features are averaged per patient before fitting — so of B's
+26 feature vectors, 20 average two off-tissue captures and 6 average one
+on-tissue with one off-tissue. **Not one is a clean conjunctiva measurement.**
+That is worse than being uniformly wrong: a consistently misplaced mask at
+least measures the same thing every time, whereas this gives each patient a
+different mixture of tissue types. B's count is now always quoted with its
+threshold attached.
+→ `experiments/12_mask_placement/`
+
+**20 Aug — Serving path completed: linear model servable, extractor honoured, provenance exposed**
+Three defects in the serving path, all of which would have surfaced as silently
+wrong answers rather than errors:
+
+- **`LinearPredictor` ignored the extractor recorded in the model file**, always
+  using `refined`. `predict_folder.py` was the only consumer of that field.
+  Serving a cielab-fitted model applied refined masks, and features measured
+  inside a different mask are not comparable. It now reads the name back, as
+  the documentation had claimed all along.
+- **`serve/app.py` could only load a neural checkpoint**, and no network exists,
+  so the API was unrunnable. `ANEMIA_LINEAR_MODEL` now serves the fitted linear
+  model over the identical contract, with no PyTorch dependency.
+- **`/health` reported nothing about which model produced a number.** It now
+  returns extractor, representation and the equation, so the client can display
+  provenance — the placeholder `UI_INTEGRATION.md` was holding open.
+
+Verified end to end against the real service: `/health` 200 with provenance, a
+good capture scoring 11.05 g/dL, a blurred capture returning `usable: false`
+with its reason, and 400 on both an empty upload and a non-image.
+→ `src/anemia/predict.py`, `serve/app.py`, `UI_INTEGRATION.md`
+
+**20 Aug — Training no longer selects its model on the test fold**
+`train_fold` scored the test fold every epoch, kept the best-scoring weights,
+early-stopped on it, and then reported that fold's metrics. Every prediction was
+out-of-fold, so nothing looked wrong, but the *model* had been selected using
+the evaluation data and the reported figures were optimistically biased. A
+patient-grouped validation set is now carved out of the training fold and drives
+both early stopping and best-epoch selection; the test fold is scored exactly
+once, after training ends. When a fold is too small to spare a validation split
+the run trains the full schedule with no early stopping rather than peeking.
+No CNN has been trained on real data, so no published number changes — this
+protects the first one.
+→ `src/anemia/train.py`
+
+**20 Aug — Diagnostics figure regenerated for the deployed model**
+`linear_model_diagnostics.png` still plotted the channel-mean model while
+appearing in the report as the current diagnostic. Regenerated from the
+deployed configuration. Prediction spread rises from **23% to 33%** of the
+actual spread, Bland–Altman limits narrow from −2.94/+2.98 to **−2.68/+2.77**,
+and the residual slope falls from **+2.02 to +0.46** — regression toward the
+mean is weaker, not absent. Propagated to the report caption, `METRICS.md`,
+`EVERYTHING_EXPLAINED.md` and `TALKING_POINTS.md`.
+
+**20 Aug — Housekeeping across shared files**
+`matplotlib` and `reportlab` added to `requirements.txt` — both were imported by
+scripts and absent from the install, so `plot_results.py` and the report
+generator failed on a clean environment. Cleaned 16 stray citation tokens and
+repaired three collapsed tables in `README_cielab_pipeline.md`, and replaced two
+absolute paths that only resolve on one machine with an explicit note that both
+must be supplied. Fixed unescaped pipes in the Dice/IoU and `mean(|e|)` formula
+cells of `GLOSSARY.md` and `METRICS.md`, which were splitting those table rows
+on render. Corrected `LIGHTING_STRESS_TEST.md` §6, which described its own
+spread ratios as "3× and 1.5×" where §2 reports 1.9× and 1.7×.
+
+**20 Aug — Documentation audit: three generations of numbers separated, and the deployed model finally documented**
+An audit found **three** different models in circulation across the documents,
+all described as "fitted on all 26 patients": channel means under leave-one-out
+(in-sample +0.103 / held-out −0.166), the head-to-head erythema model
+(+0.133 / −0.094), and the model that actually ships. The last of these —
+erythema index with the **QC gate applied before fitting** — appeared in no
+shared document at all:
+
+```
+Hb = 9.8308 + 15.101390·log(R/G) − 12.790747·log(R/B)     [g/dL]
+```
+
+in-sample MAE 0.918 / R² **+0.195**, held out MAE 1.033 / R² **+0.007**,
+against a leave-one-out baseline of 1.083 / −0.082. Applying the gate is what
+lifted held-out R² above zero, making this **the only configuration in the
+project that beats its baseline on unseen patients**. Reproduced from the images
+independently; matches `runs/linear_model.json` to four decimals. It is now the
+headline in `README.md`, the report §6.8, and `experiments/README.md`.
+
+The report was the worst affected: §6.8 presented the *channel-mean* equation
+under the heading "fitted on all 26 patients", four pages after §6.4's table for
+a different model with the same caption. §6.9's physiological-check conclusion
+and §6.10's protocol table were both channel-mean results read as current.
+All three rewritten.
+
+Added supersession banners to experiments **08**, **09** and **10**, matching
+the ones already on 05 and 07, each naming the representation it used. Rebuilt
+`experiments/README.md`, whose index table had also fragmented into four
+separate tables. Retired the stale figures from `TALKING_POINTS.md`'s crib sheet
+and `EVERYTHING_EXPLAINED.md` §10.
+
+**The physiological check now passes.** The "coefficients are backwards"
+finding is true of channel means only; the deployed model's dominant
+standardised coefficient is **+1.049 on log(R/G)** — red over green, positive.
+The check was specified while it was failing and reversed when re-applied
+unchanged, which is what makes it a test rather than a narrative.
+→ `RESEARCH_LOG.md` A.9d
+
+**20 Aug — Fitted-on-all comparisons corrected: measured against noise, not against zero**
+The fitted table was being read as "pipeline A is clearly ahead of the
+baseline (R² 0.133 vs 0)". That inference does not hold: in-sample the baseline
+is the full-sample mean, whose R² is 0 by definition, and a fitted model with a
+free intercept essentially cannot fall below it — the comparison is unlosable.
+Measured against a permutation null instead (Hb shuffled against the same
+features, refitted 20,000 times), **two free parameters on 26 patients score
+R² ≈ +0.075 on pure noise**. A's +0.133 gives p = 0.172; B's +0.010 is *below*
+the one-parameter noise mean of +0.041; the deployed model's +0.195 gives
+p = 0.074, and p = 0.067 held out — the best in the project and still short of
+significance.
+
+Two confounds found alongside: **A carries one more free parameter than B**
+(erythema 2 features vs `a_only` 1), so adjusted R² is +0.058 vs −0.031 and the
+matched-at-k=1 pair is +0.060 vs +0.010; and **B's fitted classification is
+identical to the baseline's**, patient for patient, while A's entire
+accuracy/F1/specificity margin rests on **one net patient** of 26. A still leads
+on every matched framing, so the deployment recommendation is unchanged — the
+claim is what narrowed. Propagated to the report §1, §6.4, §6.7, §6.10,
+`experiments/11_head_to_head/`, `README.md`, `EVERYTHING_EXPLAINED.md`,
+`TALKING_POINTS.md`, `CLAUDE.md`.
+→ `RESEARCH_LOG.md` A.9c
+
+**20 Aug — Report generator was not the one producing the report**
+`scripts/make_progress_report.py` in the deliverable had gone stale: 17 KB and
+eight sections, with no `--diagnostics-figure` argument, so the documented
+regeneration command **failed outright** and would in any case have produced a
+report predating the colour-normalisation and quantitative-evaluation sections.
+The working copy held the real generator (56 KB, ten sections). Synced, then
+corrected and re-rendered. Report now 14 pages. Worth checking `diff` between
+the two folders on this file before trusting any future regeneration.
+
 **20 Aug — Client integration guide written; API contract documented and frozen**
 Added `UI_INTEGRATION.md` so the app can be built without reading the research
 code: the five files that matter, the `POST /predict` and `GET /health`
@@ -120,7 +301,7 @@ so the practical floor is ≈ −0.08, not 0 — the correct statement is
 "indistinguishable from predicting the mean", not "catastrophically wrong".
 Recommendation: A as provisional default on non-statistical grounds (leads in
 all five earlier experiments; higher specificity at equal recall; B's
-segmentation lands off-tissue in 50 of 52 captures), with the comparison to be
+segmentation lands off-tissue in 46 of 52 captures), with the comparison to be
 repeated on ~900 patients once the segmenter is trained.
 → `experiments/11_head_to_head/`, report §6.3–6.6
 

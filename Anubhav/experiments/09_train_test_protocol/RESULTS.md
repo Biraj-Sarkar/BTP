@@ -4,6 +4,18 @@ Two questions that look like bugs but are results.
 
 Run: `python experiments/09_train_test_protocol/protocol_comparison.py`
 
+> **The protocol conclusions hold; the specific numbers are superseded.**
+> This experiment fits **channel means** (mean R, G, B) with no quality gate,
+> so its in-sample/out-of-sample pair is **+0.103 / −0.166**. The deployed
+> model uses the erythema index with the QC gate applied before fitting and
+> reaches **+0.195 / +0.007** on the same 26 patients — so it no longer
+> illustrates a *negative* held-out R², though the fitted-versus-held-out gap
+> it exists to explain is unchanged and, if anything, larger.
+>
+> Everything in §2 (three protocols agree), §3 (a single 60/20/20 split at
+> n = 26 reports which patients landed where) and §4 is about evaluation
+> method, not about this model, and stands as written.
+
 ---
 
 ## 1. Yes, the model trains

@@ -16,11 +16,30 @@ The app is a thin client: the phone captures the eye and uploads it, a server
 segments the conjunctiva and runs the regressor, and the response carries an Hb
 estimate in g/dL plus an anemic / not-anemic verdict.
 
-> **Status: no CNN has been trained on real data yet.** The linear model fitted
-> on all 26 patients reaches **MAE 0.944 g/dL, R² 0.133, F1 0.727, accuracy
-> 0.654** (pipeline A), against a predict-the-mean baseline of MAE 1.041,
-> R² 0.000, F1 0.722. Held out on unseen patients it gives MAE 1.062,
-> R² −0.094 — the gap is overfitting, and the two candidate pipelines are
+> **Status: no CNN has been trained on real data yet.** The deployed model is a
+> ridge regression on the erythema index, fitted on all 26 patients with the
+> quality gate applied first (`runs/linear_model.json`):
+>
+> ```
+> Hb = 9.8308 + 15.101390·log(R/G) − 12.790747·log(R/B)     [g/dL]
+> ```
+>
+> | | in-sample | held out (unseen patients) | baseline |
+> |---|---|---|---|
+> | MAE (g/dL) | **0.918** | 1.033 | 1.083 |
+> | R² | **+0.195** | **+0.007** | −0.082 |
+>
+> Read those two columns differently: in-sample describes the *fit*, held-out
+> estimates a *new patient*, and the gap between them is the overfitting.
+> Applying the QC gate before fitting is what lifted held-out R² above zero,
+> making this the only configuration here that beats its baseline on patients
+> it has not seen.
+>
+> **It is still not significant at n = 26.** A permutation test — shuffling Hb
+> against the same features and refitting — gives p = 0.067 held out and
+> p = 0.074 in-sample. Two free parameters fitted to 26 patients score R² ≈
+> +0.075 on pure noise, so any fitted R² in this repository must be read
+> against that floor rather than against zero. The two candidate pipelines are
 > **not statistically separable** at this sample size (paired test p = 0.408).
 > Full comparison: `experiments/11_head_to_head/RESULTS.md`. **No accuracy
 > figure in this repo is a clinical result.**

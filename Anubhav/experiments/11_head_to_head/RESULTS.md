@@ -61,11 +61,57 @@ from a new patient.
 | F1 | **0.727** | 0.722 | 0.722 |
 | Confusion | TP 12, FP 8, FN 1, TN 5 | TP 13, FP 10, FN 0, TN 3 | — |
 
-**Pipeline A wins on 10 of 11 metrics** and is clearly ahead of the baseline
-(MSE 1.627 vs 1.877, MAE 0.944 vs 1.041, R² 0.133 vs 0). **Pipeline B is
-essentially at the baseline** — MSE 1.858 vs 1.877, MAE 1.038 vs 1.041,
-R² 0.010 — so its apparent margin is negligible. B's only lead is recall,
+**Pipeline A leads B on 10 of these 11 metrics.** B's only lead is recall,
 achieved by flagging every patient (FN 0, but specificity 0.231).
+
+**But do not read this table as A beating the baseline.** It cannot show that,
+for two structural reasons, and both are easy to miss:
+
+*The comparison is unlosable.* An in-sample baseline is the full-sample mean,
+whose R² is 0 by definition; a fitted model with a free intercept essentially
+cannot score below 0. The model is guaranteed to win before any data is
+involved. The right question is not "does it beat 0" but "does it beat what
+*noise* would score", and that has to be measured.
+
+*A has one more free parameter than B.* A is erythema (2 features), B is
+`a_only` (1). More parameters fit better in-sample mechanically, so part of
+A's margin here is arithmetic rather than signal.
+
+### 2a. The noise floor — what these fitted R² values are worth
+
+Shuffling Hb against the same real features, refitting, and rescoring
+in-sample gives the distribution of R² under "these features carry nothing".
+20,000 permutations:
+
+| | features | observed R² | null mean | null 95th | p |
+|---|---|---|---|---|---|
+| Pipeline A | 2 | +0.133 | +0.075 | +0.217 | **0.172** |
+| Pipeline B | 1 | +0.010 | +0.041 | +0.153 | **0.630** |
+
+**Neither fitted R² clears its own noise floor.** Two free parameters on 26
+patients score ≈ +0.075 on pure noise, so A's +0.133 sits inside the null.
+And B's +0.010 is *below* the noise mean for one parameter — random numbers
+would have fitted better, which is a sharper statement than "B is at the
+baseline".
+
+Correcting for the parameter mismatch two ways:
+
+| | adjusted R² (in-sample) | both at k = 1 (`a_only`), fitted | both at k = 1, held out |
+|---|---|---|---|
+| Pipeline A | **+0.058** | **+0.060** | **−0.084** |
+| Pipeline B | −0.031 | +0.010 | −0.128 |
+
+**A still leads B on every matched framing**, so the recommendation in §4
+stands — but the honest size of the gap is +0.060 vs +0.010, not +0.133 vs
++0.010.
+
+> **The deployed model does better than either row above.** `anemia fit-linear`
+> applies the QC gate before fitting, which this comparison deliberately does
+> not (both pipelines must see identical patients). With the gate, pipeline A's
+> erythema model reaches in-sample R² **+0.195** (p = 0.074) and held-out
+> **+0.007** (p = 0.067) — the only configuration in the project that beats its
+> baseline on unseen patients. See `runs/linear_model.json` and
+> `../README.md`.
 
 **Why the baseline R² is exactly 0 here.** The baseline is the full-sample
 mean, and R² is defined as `1 − Σ(pred−true)² / Σ(true−mean)²`. When the
@@ -173,16 +219,20 @@ picking A over B on these numbers alone would be selecting on noise.
 That said, A is the better *provisional* default, for reasons that do not
 depend on this significance test:
 
-1. **A wins on 10 of 11 metrics when fitted, 9 of 11 held out** — no single
-   one is significant, but the
+1. **A leads B on 10 of 11 metrics fitted, 9 of 11 held out, and on every
+   parameter-matched framing in §2a** — no single one is significant, but the
    consistency of direction is itself weak evidence.
 2. **A is ahead in every earlier experiment too** — cohort correlation
    (Spearman +0.30 vs +0.02), eye-to-eye consistency (2.02 vs 2.69), lighting
    robustness (SD 1.63 vs 2.74). Five independent measurements, same direction.
-3. **A's extraction demonstrably works and B's does not.** On the 52 real
-   captures, B's segmentation lands on non-conjunctiva tissue in 50 of 52
-   images. B's model is reading mostly skin. This is the strongest argument and
-   it is not statistical: it is visible in the overlays.
+3. **A's extraction demonstrably works and B's does not.** Measured across the
+   52 real captures (`../12_mask_placement/`), the redness index inside A's
+   mask has a median of **+9.53** and never falls below the on-tissue
+   threshold; inside B's mask it is **−3.67**, off-tissue on **46 of 52**.
+   B's placement is statistically indistinguishable from the brightness
+   baseline that scores Dice 0.000 against ground truth, and the two masks
+   overlap by a **median of 0.000** — they are reading different parts of the
+   photograph. This is the strongest argument and it is not statistical.
 4. **Higher specificity (0.385 vs 0.231)** at equal recall means fewer
    unnecessary confirmatory blood tests.
 
@@ -204,3 +254,14 @@ comparison script is written and takes minutes; the decision should be made on
 - The comparison is between the pipelines *as currently implemented*. B's
   deficit is dominated by its segmentation, which is fixable — a trained
   segmenter feeding B's a\*/b\* representation has not been tested.
+- **The paired test in §4 is weaker than it looks**, because
+  `../12_mask_placement/` shows the two masks are essentially disjoint. It
+  compares two models, one of which was largely not looking at conjunctiva, so
+  it measures the combined effect of extraction and colour treatment rather
+  than isolating either.
+- **B's features are not even consistently wrong.** No patient has both eyes
+  on-tissue, so of its 26 per-patient vectors, 20 average two off-tissue
+  captures and 6 average one on-tissue with one off-tissue. Each patient is
+  therefore measured on a different mixture of tissue types. A uniformly
+  misplaced mask would at least be a stable measurement; this is not, which is
+  a further reason not to read B's numbers as a colour-representation result.

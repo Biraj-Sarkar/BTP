@@ -19,7 +19,7 @@ from anemia.metrics import (  # noqa: E402
     regression_metrics,
     screening_metrics,
 )
-from anemia.preprocess import prepare  # noqa: E402
+from anemia.preprocess import assess_quality, prepare  # noqa: E402
 from anemia.segment import (  # noqa: E402
     heuristic_conjunctiva_mask,
     heuristic_segmenter,
@@ -94,6 +94,79 @@ class TestPreprocess:
         blurred_prep = prepare(blurred, heuristic_segmenter, PreprocessConfig(), config)
         assert sharp_prep.quality.focus > blurred_prep.quality.focus
         assert not blurred_prep.quality.passed
+
+
+class TestQualityGate:
+    """Every statistic QC computes must also be able to reject a capture.
+
+    Blur and mask area were enforced from the start; clipping and illuminant
+    colour were measured, reported, and then ignored, so a blown-out or
+    strongly tinted photo produced a confident number. These tests exist so
+    that cannot come back.
+    """
+
+    def test_blown_out_capture_is_rejected(self):
+        image, _ = make_eye(seed=5)
+        blown = np.full_like(image, 255)
+        blown[:20, :20] = image[:20, :20]  # keep a sliver so segmentation runs
+        mask = np.zeros(image.shape[:2], np.uint8)
+        mask[200:300, 150:350] = 255
+
+        report = assess_quality(blown, mask, QualityConfig())
+        assert not report.passed
+        assert any("clipped" in reason for reason in report.reasons)
+
+    def test_strongly_tinted_capture_is_rejected(self):
+        """Under a heavy cast a channel is empty, so the redness was never captured."""
+
+        image, truth = make_eye(seed=6)
+        tinted = image.copy()
+        tinted[:, :, 0] = 1  # red channel effectively dead, as under blue light
+
+        report = assess_quality(image, truth, QualityConfig(), raw_rgb=tinted)
+        assert not report.passed
+        assert any("coloured lighting" in reason for reason in report.reasons)
+        assert report.cast_ratio > 3.0
+
+    def test_normal_capture_passes_both_new_gates(self):
+        image, truth = make_eye(seed=7)
+        report = assess_quality(image, truth, QualityConfig(), raw_rgb=image)
+        assert report.passed, report.reasons
+        assert report.cast_ratio < 3.0
+
+    def test_cast_check_is_skipped_when_prebalance_image_is_absent(self):
+        """Skipped, not silently passed on a meaningless value."""
+
+        image, truth = make_eye(seed=8)
+        report = assess_quality(image, truth, QualityConfig())
+        assert np.isnan(report.cast_ratio)
+        assert report.to_dict()["cast_ratio"] is None
+
+
+class TestLinearModelProvenance:
+    def test_extractor_travels_with_the_model(self, tmp_path):
+        """Features measured inside a different mask are not comparable, so the
+        extractor name is part of the model, not a serving-time default."""
+
+        from anemia.linear_model import LinearModel, fit_linear_model
+
+        X = np.array([[0.1, -0.02], [0.2, 0.01], [0.15, 0.0], [0.05, -0.03], [0.25, 0.02]])
+        y = np.array([9.0, 12.0, 11.0, 8.5, 13.0])
+        model = fit_linear_model(X, y, "erythema", extractor="cielab")
+
+        path = tmp_path / "m.json"
+        model.save(path)
+        assert LinearModel.load(path).extractor == "cielab"
+
+    def test_incomplete_model_file_refuses_to_load(self, tmp_path):
+        import json
+
+        from anemia.linear_model import LinearModel
+
+        path = tmp_path / "bad.json"
+        path.write_text(json.dumps({"coefficients": [1.0, 2.0]}), encoding="utf-8")
+        with pytest.raises(ValueError, match="cannot"):
+            LinearModel.load(path)
 
 
 class TestClinicalLabels:

@@ -29,24 +29,37 @@ import matplotlib.pyplot as plt  # noqa: E402
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
+from anemia.config import PreprocessConfig, QualityConfig  # noqa: E402
 from anemia.data import anemia_threshold, load_local_cohort  # noqa: E402
-from anemia.imaging import gray_world_white_balance, read_rgb, resize  # noqa: E402
+from anemia.imaging import read_rgb  # noqa: E402
+from anemia.linear_model import extract_features  # noqa: E402
+from anemia.preprocess import prepare  # noqa: E402
 from anemia.segment import heuristic_segmenter  # noqa: E402
 
 INK, ACCENT, MUTED = "#1A1A1A", "#8C2F39", "#5A5A5A"
+REPRESENTATION = "erythema"
+"""Must match the deployed model in `runs/linear_model.json`."""
 
 
 def leave_one_out_predictions():
+    """Held-out predictions for the **deployed** configuration.
+
+    Erythema index with the quality gate applied before fitting, matching
+    `anemia fit-linear` — so the figure describes the model that ships rather
+    than the earlier channel-mean one it replaced.
+    """
+
+    preprocess, quality = PreprocessConfig(), QualityConfig()
     by_patient: dict[str, dict] = {}
     for sample in load_local_cohort(ROOT):
-        rgb = resize(read_rgb(sample.image_path), (512, 512))
-        balanced = gray_world_white_balance(rgb)
-        mask, _ = heuristic_segmenter(balanced)
-        if not (mask > 0).any():
+        prepared = prepare(read_rgb(sample.image_path), heuristic_segmenter,
+                           preprocess, quality)
+        if not (prepared.mask > 0).any() or not prepared.quality.passed:
             continue
         entry = by_patient.setdefault(sample.patient_id, {
             "hb": sample.hb, "age": sample.age_years, "sex": sample.sex, "feats": []})
-        entry["feats"].append(balanced[mask > 0].mean(axis=0).astype(np.float64))
+        entry["feats"].append(
+            extract_features(prepared.balanced, prepared.mask, REPRESENTATION))
 
     patients = sorted(by_patient)
     X = np.array([np.mean(by_patient[p]["feats"], axis=0) for p in patients])

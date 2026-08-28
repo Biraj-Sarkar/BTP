@@ -3,6 +3,27 @@
 Run: `python experiments/10_fitted_equation/fit_equation.py`
 Machine-readable coefficients: `fitted_equation.json`
 
+> **Superseded — this is not the deployed equation.** Everything below fits
+> **channel means** (mean R, G, B) under leave-one-patient-out, with no quality
+> gate. The model that ships uses the **erythema index** with the QC gate
+> applied before fitting, and is a different equation with different
+> coefficients:
+>
+> ```
+> Hb = 9.8308 + 15.101390·log(R/G) − 12.790747·log(R/B)     [g/dL]
+> ```
+>
+> **The physiological check in §4 does not carry over.** It is a real finding
+> about the channel-mean model and is kept for that reason, but the deployed
+> model *passes* the same check: its dominant standardised coefficient is
+> **+1.049 on log(R/G)** — red over green, positive, exactly the sign a
+> haemoglobin signal should have. Do not quote §4 as a current criticism of
+> the pipeline. Current numbers: `../11_head_to_head/RESULTS.md` and
+> `runs/linear_model.json`.
+>
+> Sections 1 and 2 — why leave-one-out yields one pooled R², and whether
+> 25-train/1-test is too extreme — are about *protocol* and remain valid.
+
 ---
 
 ## 1. Why only one R², when leave-one-out fits 26 models?

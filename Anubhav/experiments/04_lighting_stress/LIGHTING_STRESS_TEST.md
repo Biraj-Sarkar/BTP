@@ -123,7 +123,7 @@ an assumption into a measurement.
 - **These lights are far harsher than any clinic.** Wards are fluorescent or
   daylight; nobody screens patients under a magenta lamp. The test establishes
   where the method breaks, not that it breaks in practice.
-- **Segmentation failure confounds the variance comparison**, so the 3× and
-  1.5× ratios should be read as directional, not precise.
+- **Segmentation failure confounds the variance comparison**, so the 1.9× and
+  1.7× ratios should be read as directional, not precise.
 - The white-light capture — the only realistic one — extracted correctly and
   produced a sane mask, which is the reassuring part.

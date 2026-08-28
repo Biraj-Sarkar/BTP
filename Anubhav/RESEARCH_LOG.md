@@ -154,6 +154,73 @@ and it didn't help" was true of the features tried, not of features in general.
 Choosing representations for a *physical* reason beat choosing them for
 convenience.
 
+### A.9c Reading a fitted-on-all table as evidence — a mistake in our own analysis
+
+**What happened.** After refitting both pipelines on all 26 patients, the
+comparison table was read as "pipeline A is clearly ahead of the baseline
+(R² 0.133 against 0)". That sentence reached five documents and the report.
+
+**Why it is wrong.** The in-sample baseline is the full-sample mean, whose R²
+is **0 by definition**, and a fitted model with a free intercept essentially
+cannot score below 0. The model wins before any data is involved — the
+comparison cannot be lost, so it carries no information.
+
+**What the correct reference is.** Noise. Shuffling haemoglobin against the
+same real features and refitting, 20,000 times, gives the distribution of
+in-sample R² under "these features carry nothing":
+
+| | features | observed | null mean | p |
+|---|---|---|---|---|
+| Pipeline A | 2 | +0.133 | +0.075 | 0.172 |
+| Pipeline B | 1 | +0.010 | +0.041 | 0.630 |
+| **Deployed (erythema + QC gate)** | 2 | **+0.195** | +0.077 | **0.074** |
+
+Two further confounds surfaced with it. **A had one more free parameter than
+B** (erythema's 2 features against `a_only`'s 1), which inflates in-sample fit
+mechanically — adjusted R² is +0.058 against −0.031, and matched at one feature
+each the pair is +0.060 against +0.010. And **B's fitted classification is
+identical to the baseline's**, patient for patient, while A's entire
+accuracy/F1/specificity margin rests on **one net patient** out of 26.
+
+**What it changed.** A leads B on every matched framing, so the deployment
+recommendation is unaffected. What changed is the claim: no fitted R² in this
+project clears its own noise floor, and every in-sample figure is now reported
+beside that floor rather than beside zero. The house rule "every result is
+reported against a baseline" was being followed to the letter and still
+produced a misleading sentence, because **the baseline itself was uninformative
+under that protocol**. The rule now reads: check that the baseline is one the
+model could actually lose against.
+
+**How it was caught.** By asking what the switch from leave-one-out to
+fitted-on-all had actually bought, and testing it rather than re-reading it.
+The answer is that it bought a description of the fit, not evidence of signal —
+the negative held-out R² was the honest number the whole time.
+
+### A.9d The physiological check reversed — the good kind of surprise
+
+**What happened.** A.9b and experiment 10 recorded that the channel-mean
+model's coefficients were physiologically backwards: red weakest (+0.137
+standardised), the model running on green negatively and blue positively, a
+blue-minus-green contrast closer to residual colour cast than to blood. That
+was written down with a concrete prediction — *re-fit later and inspect the
+signs before the metrics; a dominant positive red term would mean the model is
+reading tissue.*
+
+**What happened when it was re-applied.** The deployed model — erythema index,
+QC gate applied before fitting — has its dominant standardised coefficient at
+**+1.049 on log(R/G)**, red over green, positive, rising with haemoglobin.
+`log(R/B)` carries −0.968. **The check passes.**
+
+**Why this is worth recording as more than good news.** The diagnostic was
+specified while it was failing, applied unchanged after the representation
+changed, and reversed. That is what separates a real test from a story told
+after the fact, and it is the strongest single piece of evidence in the project
+that the erythema representation is measuring tissue rather than illumination.
+
+**What it does not license.** Held-out R² is +0.007 with p = 0.067. The
+coefficients pointing the right way is necessary, not sufficient — quote it as
+the first encouraging sign, never as "it works".
+
 ### A.9 Lasso — zeroed every coefficient
 
 **Idea.** Try L1 regularisation as an alternative to ridge; it might select the
@@ -239,6 +306,61 @@ tracked the patient numbers too neatly to be a coincidence.
 in both the batch predictor and the shared loader `_first_column`, where the
 same trap was latent for any dataset with an "Image ID" column.
 
+### B.11 Quality control gated on only half of what it measured
+
+`assess_quality` computed focus, mask ratio, clipping **and** exposure, and
+wrote all four into every quality report. Only focus and mask ratio could
+reject a capture: `QualityConfig` had no clipping threshold at all, so nothing
+consulted the value.
+
+**Why it mattered.** Clipping exists to catch the one failure blur detection
+provably cannot — a flash fired at wet conjunctiva blows out exactly the region
+being measured, and the result is still *sharp*. `PIPELINE.md` §3.4 described
+"three checks" and said the gate was enforced. Two of the three were.
+
+**This is B.1 one layer down.** B.1 was "QC computed but never enforced", fixed
+by adding a gate. The fix enforced the checks that existed at the time, and the
+statistic added afterwards carried the original defect forward. A gate is not
+you install once; every statistic added later has to be wired into it.
+
+**Fixed** by adding thresholds for clipping and for illuminant neutrality, so
+all four are enforced, plus a test per check that a failing capture is actually
+rejected. Confirmed cost-free on this cohort: refitting the deployed model
+under the new gates is byte-identical.
+
+**How it was caught.** By writing the client integration guide and having to
+state, field by field, what each quality number does. Documenting an interface
+for someone else is an effective audit of it.
+
+### B.12 The crop cache ignored quality settings
+
+`CropCache` keyed on image content, preprocessing settings and the extractor
+version, but not on `QualityConfig` — while caching the `QualityReport`
+produced under those thresholds. Tightening a gate would have silently reused
+verdicts computed under the old one.
+
+Exactly B.8 with a different field: that bug was the cache key omitting the
+extractor version, this one is the same key omitting the quality thresholds.
+**Fixed** by hashing the quality config into the cache namespace.
+
+### B.13 Model selection on the test fold in the training loop
+
+`train_fold` evaluated the test fold every epoch, kept the weights that scored
+best on it, early-stopped on it, and then reported that fold's metrics as the
+result. Every individual prediction was genuinely out-of-fold, which is why it
+survived review — the leak is not in the predictions but in *which model* made
+them. Choosing the epoch by test performance makes the reported figure
+optimistic by an amount nothing in the output reveals.
+
+**Fixed** by carving a patient-grouped validation split out of the training
+fold to drive early stopping and best-epoch selection, leaving the test fold
+scored exactly once after training ends.
+
+**Nothing published changes**, because no network has been trained on real
+data. That is the whole point of finding it now: this defect would have
+inflated the first real CNN result, which is the number the project exists to
+produce.
+
 ### B.10 Colour profile mismatch in the lighting test
 The iPhone captures are Display P3. The first export preserved that profile,
 which OpenCV then read as if it were sRGB — a systematic colour shift against
@@ -276,7 +398,15 @@ Null results, kept deliberately.
   wins on 15 of 26 patients, close to a coin flip.
 - **Mask ratio cannot detect wrong-tissue segmentation.** Masks landing on
   skin had entirely normal area fractions. Only visual inspection of overlays
-  caught it, which is why the overlay sheet exists.
+  caught it, which is why the overlay sheet exists. It can, however, be
+  measured without ground truth: redness index *inside* the mask separates the
+  two cleanly (+9.53 median for the working extractor, −3.67 for one that
+  lands off-tissue), which is what `experiments/12_mask_placement/` does.
+- **A remembered number is not a measurement.** "B's masks land off-tissue on
+  50 of 52 captures" was quoted as decisive in the report and four documents
+  for weeks. Measured properly it is **46 of 52**. The conclusion held and the
+  supporting evidence got stronger, but the figure was wrong, and every other
+  predictive claim in the project carries an artifact that regenerates it.
 - **Blur detection cannot detect flash blowout.** A blown-out capture is still
   *sharp*, so Laplacian variance passes it. Hence the separate clipping check.
 - **The lighting stress test cannot separate two failures.** Segmentation

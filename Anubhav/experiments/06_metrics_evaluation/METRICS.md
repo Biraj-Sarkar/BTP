@@ -103,8 +103,8 @@ With `e = predicted − true` over `n` patients:
 |---|---|---|---|
 | **MSE** | `mean(e²)` | (g/dL)² | Squared-error average. Punishes large errors quadratically — good as a training loss, awkward to read because the units are squared. |
 | **RMSE** | `√MSE` | g/dL | Back in readable units, still dominated by the worst cases. |
-| **MAE** | `mean(|e|)` | g/dL | "Typically wrong by this much." The number to quote to a clinician. |
-| **Median AE** | `median(|e|)` | g/dL | Same idea, immune to one catastrophic case. If it is far below MAE, a few outliers dominate. |
+| **MAE** | `mean(\|e\|)` | g/dL | "Typically wrong by this much." The number to quote to a clinician. |
+| **Median AE** | `median(\|e\|)` | g/dL | Same idea, immune to one catastrophic case. If it is far below MAE, a few outliers dominate. |
 | **Bias** | `mean(e)` | g/dL | Systematic offset. **Positive bias means over-estimating Hb, i.e. systematically declaring anaemic patients healthy** — the dangerous direction. |
 | **R²** | `1 − Σe² / Σ(true − mean)²` | — | Fraction of variance explained. 0 = no better than always predicting the mean. **Negative = worse than that.** |
 | **Pearson r** | `corr(pred, true)` | — | Linear agreement. Negative means predictions move opposite to truth. |
@@ -168,13 +168,22 @@ recall is perfect. On phantoms, this is expected rather than impressive.
 
 ## 3.2 Evaluation B — real cohort
 
-> **Superseded numbers.** The figures below use channel means and leave-one-out.
-> The current best configuration is the erythema index, and the deployed model
-> is fitted on all 26 patients: **pipeline A reaches MAE 0.944, R² 0.133,
-> F1 0.727, accuracy 0.654** against a full-sample-mean baseline of MAE 1.041,
-> R² 0.000; held out it gives MAE 1.062, R² −0.094. See
-> `../11_head_to_head/RESULTS.md` for the full two-pipeline comparison in both
-> framings.
+> **Superseded numbers — kept as the record of the channel-mean model.**
+> Everything in §3.2 fits **channel means** under leave-one-out with no quality
+> gate. The deployed model uses the **erythema index with the QC gate applied
+> before fitting** (`runs/linear_model.json`), and on the same 26 patients
+> reaches **in-sample MAE 0.918 / R² +0.195** and **held-out MAE 1.033 /
+> R² +0.007** against a leave-one-out baseline of MAE 1.083 / R² −0.082.
+>
+> Two conclusions below therefore do **not** describe the current pipeline:
+> the negative R² and negative Pearson r are properties of the channel-mean
+> model, and the physiological check on the coefficients — red weakest, model
+> running on blue-minus-green — is reversed in the deployed model, whose
+> dominant standardised coefficient is **+1.049 on log(R/G)**. Both are real
+> findings about the representation they were measured on, which is why they
+> are kept rather than deleted.
+>
+> Current figures: `../11_head_to_head/RESULTS.md` and `../README.md`.
 
 
 26 patients, laboratory Hb, ridge regression over channel means,
@@ -206,18 +215,23 @@ leave-one-patient-out. No CNN has been trained on real data.
 ![Linear model diagnostics](linear_model_diagnostics.png)
 
 *Left*: predictions cluster in a narrow band near the cohort mean while true
-values span 8.1–14.3 g/dL. The prediction spread is **23% of the actual
-spread** — the visual signature of a model with no signal. *Centre*:
-Bland–Altman limits of −2.94 to +2.98 g/dL, far too wide to screen with.
-*Right*: residuals rise steeply with the prediction (slope +2.02), the classic
-pattern of regression toward the mean.
+values span 8.1–14.3 g/dL. The prediction spread is **33% of the actual
+spread** (23% on the superseded channel-mean model) — the visual signature of a model with no signal. *Centre*:
+Bland–Altman limits of −2.68 to +2.77 g/dL, still far too wide to screen with.
+*Right*: residuals rise with the prediction (slope +0.46, down from +2.02 on
+channel means), the signature of regression toward the mean — weaker than
+before, not absent.
+
+**The figure now plots the deployed model** (erythema + QC gate), not the
+channel-mean model described in the rest of §3.2.
 
 
-### The fitted equation
+### The fitted equation — the channel-mean model, not the deployed one
 
 Three inputs per patient — the mean red, green and blue values of the
 **conjunctiva pixels only**, from the white-balanced image, both eyes averaged.
-Fitted by ridge regression on all 26 patients:
+Fitted by ridge regression on all 26 patients. **This is not the equation that
+ships**; see the note at the head of §3.2:
 
 ```
 Hb = 12.5311 + 0.010191·(mean R) − 0.058732·(mean G) + 0.035552·(mean B)   [g/dL]
@@ -258,7 +272,9 @@ All figures carry wide intervals at n = 26. Bootstrap 95% CIs over patients:
 MAE [0.708, 1.490], R² [−0.512, +0.021], F1 [0.462, 0.850]. Read every number
 below as "no better than baseline" rather than as a precise value.
 
-**The model does not work on real data.** Three independent signs:
+**The channel-mean model does not work on real data.** Three independent signs
+— all measured on that representation, none of which transferred unchanged to
+the erythema model that replaced it:
 
 1. **R² is negative** (−0.166). It explains less variance than a constant.
 2. **Pearson r is negative** (−0.238) — predictions trend *opposite* to truth.

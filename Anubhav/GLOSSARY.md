@@ -74,8 +74,8 @@ a definition at first use, but this is the reference.
 | **NPV** | Negative Predictive Value | `TN/(TN+FN)`; how often "normal" is correct. |
 | **F1** | F1 score | Harmonic mean of precision and recall. |
 | **AUC** | Area Under the Curve | Threshold-independent classifier summary; quoted from published work for comparison. |
-| **IoU** | Intersection over Union | Segmentation overlap: `|A∩B| / |A∪B|`. |
-| **Dice** | Dice coefficient | Segmentation overlap: `2|A∩B| / (|A|+|B|)`. |
+| **IoU** | Intersection over Union | Segmentation overlap: `\|A∩B\| / \|A∪B\|`. |
+| **Dice** | Dice coefficient | Segmentation overlap: `2\|A∩B\| / (\|A\|+\|B\|)`. |
 | **SD** | Standard Deviation | Spread of a distribution. |
 | **ρ (rho)** | Spearman's rank correlation | Correlation of ranks rather than values; robust to non-linearity. |
 | **r** | Pearson correlation | Linear correlation between two variables, −1 to +1. |
