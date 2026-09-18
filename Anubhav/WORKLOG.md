@@ -7,6 +7,62 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 10–16 Sep 2026
 
+**18 Sep — Reading list assembled and ordered in `papers/`**
+Five downloaded papers renamed by title, two more fetched, and everything filed in
+`papers/conjunctiva-anemia/` numbered in reading order, with `papers/README.md`
+saying what to take from each *for this project*:
+
+01 Collings 2016 (erythema index with an in-frame calibration card) → 02 Suner 2021
+(the pipeline closest to our linear model) → 03 Zhao 2024 (deployed app, LoA ±4.8
+g/dL, transfusion-threshold framing) → 04 Mannino 2018 (**personalised calibration**,
+published support for per-site recalibration) → 05 Kasiviswanathan 2020 (the
+Eyes-Defy-Anemia paper, whose masks we train on) → 06 Dhalla 2023 (segmentation
+architectures for this exact task) → 07 Kato 2024 (end-to-end, for the network work)
+→ 08, 09 (existing 2025 papers).
+
+Added 04 and 05, neither previously held: Mannino because our transfer failure points
+exactly at per-patient/per-site calibration, and Kasiviswanathan because we train on
+that dataset and rejected ~45% of its masks as bounding boxes. Zhao 2024 turned out
+to be a duplicate of a paper already stored and was consolidated. The README's claim
+that MDPI blocks scripted downloads is now qualified: their CDN serves the PDF.
+Licence table added; the Wiley paper is flagged as unverified — if it is not open
+access the PDF should be replaced by its DOI.
+→ `papers/`
+
+**18 Sep — Wider masks don't help; the "vessel signal" was the site, not the vessels**
+Two questions on 217 patients at 1024px, no colour correction, sex included.
+
+**Coverage.** Swept the extractor's probability threshold (0.9 → 0.3) and eroded
+and dilated the 0.5 mask. **Tighter is better, monotonically:** R² 0.544 (erode
+8px) → 0.539 (deployed) → 0.520 (dilate 32px), MAE moving with it. Lowering the
+threshold to capture more tissue does not help; widening dilutes the measurement.
+This reproduces experiment 13, which mattered because that sweep was run on the 26
+local patients, since shown unable to answer it. **Deployed threshold unchanged**
+— the erode gain is 0.005 R², picked from eight variants on the same patients, and
+tighter masks come back empty more often on hard captures.
+
+**Vessels — a negative result worth the space.** Texture features (variability,
+edge strength, vessel-like darkness) looked convincing pooled: edge strength
+correlates **+0.403** with Hb, R² 0.539 → **0.563**, and structure alone with no
+colour reached 0.434. Three controls killed it:
+- edge strength on tissue *surrounding* the conjunctiva also correlates +0.328, so
+  it is not conjunctiva-specific (whole-frame blur does not, +0.094 n.s.);
+- the two sites differ in both Hb (11.47 vs 13.83) and image detail (edges 14.3 vs
+  20.1), so "more edges" partly means "Italian patient". **Within site: +0.180
+  (p 0.081) and +0.143 (p 0.117); controlling site and surroundings: −0.021**;
+- within-site prediction gains +0.005 to +0.007 R², and the full structure set is
+  *worse* than colour alone.
+
+**Not adopted.** Recorded because the pooled number would have looked like a real
+improvement in any report that skipped the site control.
+
+**Open observation:** surrounding, non-conjunctival tissue predicts Hb within each
+site (+0.319 India, +0.309 Italy). It cannot be pallor. Warning for the network
+work: an end-to-end model on whole photographs can score well on photo-level cues
+without looking at the conjunctiva — split by site, and consider evaluating on
+masked images.
+→ `experiments/19_coverage_and_vessels/`
+
 **17 Sep — Worklog audit: gaps filled, order fixed, personal notes de-referenced**
 Three entries were missing and are now in place under their dates: experiment 14
 (217-patient cohort, transfer failure), experiment 15 (sclera-relative features),
