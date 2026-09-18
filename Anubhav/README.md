@@ -17,32 +17,37 @@ segments the conjunctiva and runs the regressor, and the response carries an Hb
 estimate in g/dL plus an anemic / not-anemic verdict.
 
 > **Status: no CNN has been trained on real data yet.** The deployed model is a
-> ridge regression on the erythema index, fitted on all 26 patients with the
-> quality gate applied first (`runs/linear_model.json`):
+> ridge regression on mean chromaticity inside the **learned (U-Net) extractor's**
+> mask, fitted on **190 patients** from Eyes-Defy-Anemia with the quality gate
+> applied first (`runs/linear_model.json`, extractor `runs/segmenter/unet.pt`):
 >
 > ```
-> Hb = 9.8308 + 15.101390·log(R/G) − 12.790747·log(R/B)     [g/dL]
+> Hb = −39.2123 + 70.042126·r + 75.186694·g     [g/dL]
+> r, g = mean R/(R+G+B) and G/(R+G+B) inside the mask
 > ```
 >
 > | | in-sample | held out (unseen patients) | baseline |
 > |---|---|---|---|
-> | MAE (g/dL) | **0.918** | 1.033 | 1.083 |
-> | R² | **+0.195** | **+0.007** | −0.082 |
+> | MAE (g/dL) | 1.482 | **1.505** | 1.965 |
+> | R² | +0.336 | **+0.317** | −0.011 |
 >
-> Read those two columns differently: in-sample describes the *fit*, held-out
-> estimates a *new patient*, and the gap between them is the overfitting.
-> Applying the QC gate before fitting is what lifted held-out R² above zero,
-> making this the only configuration here that beats its baseline on patients
-> it has not seen.
+> The learned extractor was chosen on 243 patients: on 116 photographs it never
+> saw in training it explains R² 0.354 against the classical extractor's 0.074.
+> Three limits matter more than those numbers:
 >
-> **It is still not significant at n = 26.** A permutation test — shuffling Hb
-> against the same features and refitting — gives p = 0.067 held out and
-> p = 0.074 in-sample. Two free parameters fitted to 26 patients score R² ≈
-> +0.075 on pure noise, so any fitted R² in this repository must be read
-> against that floor rather than against zero. The two candidate pipelines are
-> **not statistically separable** at this sample size (paired test p = 0.408).
-> Full comparison: `experiments/11_head_to_head/RESULTS.md`. **No accuracy
-> figure in this repo is a clinical result.**
+> - **It is calibrated to the cameras it was fitted on.** Models measured so far
+>   do not transfer between the two cohorts' cameras (R² −1.9); that has not yet
+>   been re-measured with this extractor. A new site needs recalibration.
+> - **The local 26-patient cohort is not used to fit.** It shows no
+>   physiological colour signal under either extractor. Image processing,
+>   illumination, capture session and demographics are ruled out; how far the
+>   eyelid was pulled down varies widely between its captures and measurably
+>   changes conjunctival colour (`experiments/16_local_inversion/`).
+> - **Predictions shrink toward the cohort mean**, so classification near the WHO
+>   thresholds is weak.
+>
+> Full account: `experiments/13_learned_extractor/RESULTS.md` and §7 of
+> `Progress_Report.pdf`. **No accuracy figure in this repo is a clinical result.**
 
 ## Setup
 
@@ -146,10 +151,24 @@ The header strip carries the filename, segmentation backend, mask ratio, focus
 score and QC verdict. Panels are letterboxed rather than stretched, so the
 crescent geometry the pipeline protects is not misrepresented in the figure.
 
-Options: `--image` for a single photo, `--segmenter` for a trained model,
-`--panel` / `--per-row` to change the layout, and `--separate` to additionally
-write each stage as its own file. Pre-generated traces live in
-`experiments/01_stage_traces/`; see `experiments/README.md` for the full index.
+To trace the **learned** extractor instead, add `--extractor unet`:
+
+```bash
+python -m anemia stages --dir left_eye --extractor unet --out experiments/01_stage_traces/learned_pipeline/left_eye
+```
+
+Panel 03 then shows the network's **conjunctiva probability map** rather than
+the redness map, because that is what its segmentation decision is made from.
+The two are read differently: the redness map is stretched per image, so its
+colours are only meaningful within one capture, while the probability map is
+absolute 0–1 and directly comparable across captures.
+
+Options: `--image` for a single photo, `--extractor` to choose a backend,
+`--segmenter` for a trained bundle or directory, `--panel` / `--per-row` to
+change the layout, and `--separate` to additionally write each stage as its own
+file. Pre-generated traces for all three pipelines live in
+`experiments/01_stage_traces/` (`main_pipeline`, `cielab_pipeline`,
+`learned_pipeline`); see `experiments/README.md` for the full index.
 
 ## Predicting on new patients (no training)
 
@@ -165,7 +184,7 @@ python -m anemia fit-linear --data . --out runs/linear_model.json
 ```
 
 Options: `--representation` (means / chroma / erythema / lab / a_only),
-`--extractor` (refined / redness / brightness / grabcut / cielab), `--alpha`,
+`--extractor` (refined / redness / brightness / grabcut / cielab / unet), `--alpha`,
 or `--segmenter <dir>` for a trained segmentation model.
 
 **Step 2 — predict** (any time, any number of patients, no labels needed):
@@ -196,7 +215,7 @@ features measured inside a different mask are not comparable.
 ANEMIA_CHECKPOINT=runs/hb/best.pt ANEMIA_SEGMENTER=runs/segmenter uvicorn serve.app:app --port 8000
 ```
 
-`POST /predict` takes an image plus optional `age_years`, `sex`, `pregnant`, and
+`POST /anemia-detection` (also `POST /predict`) takes an image plus optional `age_years`, `sex`, `pregnant`, and
 returns `hb_g_dl`, `anemic`, `threshold_g_dl`, `usable`, and a `quality` block.
 A capture that fails QC returns `usable: false` with a retake message — the app
 should show that rather than a number.

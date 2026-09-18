@@ -29,7 +29,15 @@ not needed to build the client.
 
 ## Step 2 — Learn the contract
 
-### `POST /predict`
+### `POST /anemia-detection` — also served as `POST /predict`
+
+Both paths run the same handler and return byte-identical responses. The Flutter
+app uses `/anemia-detection`; `/predict` stays for scripts and older clients.
+`tests/test_api.py` checks both, including every field `lib/results.dart` reads.
+
+> There is **no `/extract` endpoint.** The app's "extract" task mode posts to
+> one, and will get a 404 until either the server implements it or that mode is
+> removed from the app.
 
 `multipart/form-data`:
 
@@ -37,7 +45,7 @@ not needed to build the client.
 |---|---|---|---|
 | `image` | file | yes | JPEG or PNG. Max **12 MB** |
 | `age_years` | float | no | Strongly recommended — see step 4 |
-| `sex` | string | no | `"M"` or `"F"` |
+| `sex` | string | no | `"M"` or `"F"`, case-insensitive |
 | `pregnant` | bool | no | Defaults to `false` |
 
 Error responses: **400** empty upload, **413** larger than 12 MB, **400**
@@ -173,13 +181,14 @@ def threshold(age, sex, pregnant=False):
 def health():
     return {
         "status": "ok",
-        "model": {"kind": "linear", "extractor": "refined",
-                  "representation": "erythema", "equation": "mock", "metrics": {}},
+        "model": {"kind": "linear", "extractor": "unet",
+                  "representation": "chroma", "equation": "mock", "metrics": {}},
         "backbone": None, "metrics": {},
     }
 
 
 @app.post("/predict")
+@app.post("/anemia-detection")
 async def predict(
     image: UploadFile = File(...),
     age_years: Optional[float] = Form(None),
@@ -305,9 +314,9 @@ produced it. **`GET /health` now returns this** under `model`:
   "status": "ok",
   "model": {
     "kind": "linear",
-    "extractor": "refined",
-    "representation": "erythema",
-    "equation": "Hb = 9.8308 + 15.101390*(log(R/G)) - 12.790747*(log(R/B))   [g/dL]",
+    "extractor": "unet",
+    "representation": "chroma",
+    "equation": "Hb = -39.2123 + 70.042126*(r chromaticity) + 75.186694*(g chromaticity)   [g/dL]",
     "metrics": { "in_sample": {...}, "held_out": {...}, "baseline": {...} }
   }
 }

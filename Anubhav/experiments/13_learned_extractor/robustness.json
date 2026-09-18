@@ -1,0 +1,148 @@
+{
+  "n_captures": 52,
+  "per_perturbation": {
+    "unet_v3": {
+      "rotate 10deg": {
+        "median_iou": 0.7871204034549244,
+        "failures": 0
+      },
+      "rotate 20deg": {
+        "median_iou": 0.6579599451346175,
+        "failures": 1
+      },
+      "rotate -15deg": {
+        "median_iou": 0.6667496972049309,
+        "failures": 4
+      },
+      "zoom in 1.3x": {
+        "median_iou": 0.6969184367354235,
+        "failures": 2
+      },
+      "zoom out 0.75x": {
+        "median_iou": 0.724983216776186,
+        "failures": 2
+      },
+      "dim 60%": {
+        "median_iou": 0.7753065772156469,
+        "failures": 1
+      },
+      "bright 140%": {
+        "median_iou": 0.6835518163247407,
+        "failures": 5
+      },
+      "motion blur": {
+        "median_iou": 0.7563644508344574,
+        "failures": 1
+      },
+      "jpeg quality 30": {
+        "median_iou": 0.8698381627645306,
+        "failures": 2
+      },
+      "warm cast": {
+        "median_iou": 0.9812430566619329,
+        "failures": 0
+      }
+    },
+    "unet_v5": {
+      "rotate 10deg": {
+        "median_iou": 0.8218801721185237,
+        "failures": 0
+      },
+      "rotate 20deg": {
+        "median_iou": 0.7231621793476322,
+        "failures": 0
+      },
+      "rotate -15deg": {
+        "median_iou": 0.6951251706008084,
+        "failures": 1
+      },
+      "zoom in 1.3x": {
+        "median_iou": 0.6263353664084153,
+        "failures": 0
+      },
+      "zoom out 0.75x": {
+        "median_iou": 0.5260428059497921,
+        "failures": 1
+      },
+      "dim 60%": {
+        "median_iou": 0.6909627182633318,
+        "failures": 0
+      },
+      "bright 140%": {
+        "median_iou": 0.629742519190448,
+        "failures": 7
+      },
+      "motion blur": {
+        "median_iou": 0.6573469489504338,
+        "failures": 0
+      },
+      "jpeg quality 30": {
+        "median_iou": 0.83960799931947,
+        "failures": 0
+      },
+      "warm cast": {
+        "median_iou": 0.9803687211936567,
+        "failures": 0
+      }
+    },
+    "classical": {
+      "rotate 10deg": {
+        "median_iou": 0.9437709075906915,
+        "failures": 0
+      },
+      "rotate 20deg": {
+        "median_iou": 0.9250887959057801,
+        "failures": 0
+      },
+      "rotate -15deg": {
+        "median_iou": 0.9371226873789852,
+        "failures": 0
+      },
+      "zoom in 1.3x": {
+        "median_iou": 0.6814185794835561,
+        "failures": 0
+      },
+      "zoom out 0.75x": {
+        "median_iou": 0.6773829368255342,
+        "failures": 0
+      },
+      "dim 60%": {
+        "median_iou": 0.8587467647845426,
+        "failures": 0
+      },
+      "bright 140%": {
+        "median_iou": 0.6659075601190465,
+        "failures": 0
+      },
+      "motion blur": {
+        "median_iou": 0.8122601741841828,
+        "failures": 0
+      },
+      "jpeg quality 30": {
+        "median_iou": 0.8697078131129778,
+        "failures": 0
+      },
+      "warm cast": {
+        "median_iou": 0.9580223679809492,
+        "failures": 0
+      }
+    }
+  },
+  "overall": {
+    "unet_v3": {
+      "median_iou": 0.7521775920136302,
+      "total_failures": 18,
+      "clean_failures": 2
+    },
+    "unet_v5": {
+      "median_iou": 0.7232669921179098,
+      "total_failures": 9,
+      "clean_failures": 2
+    },
+    "classical": {
+      "median_iou": 0.8557691414542699,
+      "total_failures": 0,
+      "clean_failures": 0
+    }
+  }
+}

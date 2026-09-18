@@ -16,6 +16,7 @@ from typing import List
 
 from .config import Config, REPO_ROOT
 from .data import Sample, load_dataset, summarise
+from .segment import EXTRACTOR_CHOICES
 
 
 def _collect(data_roots: List[Path]) -> List[Sample]:
@@ -356,9 +357,14 @@ def cmd_stages(args: argparse.Namespace) -> None:
         tight_bbox,
     )
     from .preprocess import assess_quality
-    from .segment import heuristic_segmenter, load_segmenter
+    from .segment import get_extractor
 
-    segmenter = load_segmenter(args.segmenter) if args.segmenter else heuristic_segmenter
+    segmenter = get_extractor(args.extractor, args.segmenter)
+
+    # The classical chain scores redness; the learned one scores a per-pixel
+    # probability. Whichever the extractor actually uses is the panel worth
+    # showing, because it is what the segmentation decision is made from.
+    scores_probability = hasattr(segmenter, "probability")
     preprocess = PreprocessConfig()
     quality_config = QualityConfig()
 
@@ -390,12 +396,20 @@ def cmd_stages(args: argparse.Namespace) -> None:
         # Stage 2: gray-world white balance neutralises the illuminant.
         balanced = gray_world_white_balance(resized)
 
-        # Stage 3: the redness map — what the extractor actually scores.
-        redness = redness_index(balanced)
-        spread = float(np.ptp(redness)) or 1.0
-        red_u8 = np.clip((redness - redness.min()) / spread * 255, 0, 255).astype(np.uint8)
+        # Stage 3: what the extractor actually scores.
+        if scores_probability:
+            # Absolute 0-1, so the colours mean the same thing on every capture
+            # — unlike the redness map below, which is stretched per image.
+            probability = segmenter.probability(balanced)
+            score_u8 = np.clip(probability * 255, 0, 255).astype(np.uint8)
+            score_label = "03  conjunctiva probability"
+        else:
+            redness = redness_index(balanced)
+            spread = float(np.ptp(redness)) or 1.0
+            score_u8 = np.clip((redness - redness.min()) / spread * 255, 0, 255).astype(np.uint8)
+            score_label = "03  redness map (a*-0.5b*)"
         redness_view = cv2.cvtColor(
-            cv2.applyColorMap(red_u8, cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
+            cv2.applyColorMap(score_u8, cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
 
         # Stage 4-5: segmentation, as raw mask and as overlay.
         mask, backend = segmenter(balanced)
@@ -422,7 +436,7 @@ def cmd_stages(args: argparse.Namespace) -> None:
             (rgb, "00  original capture"),
             (resized, "01  resized to 512x512"),
             (balanced, "02  gray-world white balance"),
-            (redness_view, "03  redness map (a*-0.5b*)"),
+            (redness_view, score_label),
             (mask, "04  segmentation mask"),
             (overlay, "05  mask over photo"),
             (masked, "06  outside mask removed"),
@@ -459,7 +473,8 @@ def cmd_stages(args: argparse.Namespace) -> None:
 
     print(f"\nDone. One sheet per capture: <name>_stages.jpg")
     print("Panels read left to right, top to bottom:")
-    print("  original -> resized -> white balance -> redness map -> mask ->")
+    print(f"  original -> resized -> white balance -> "
+          f"{'probability map' if scores_probability else 'redness map'} -> mask ->")
     print("  overlay -> masked -> crop -> letterbox -> model input")
     print("Pass --separate to also write each stage as its own file.")
 
@@ -602,7 +617,12 @@ def build_parser() -> argparse.ArgumentParser:
     stage_source.add_argument("--image", type=Path, help="single photo")
     stage_source.add_argument("--dir", type=Path, help="folder of photos")
     stages.add_argument("--out", type=Path, default=REPO_ROOT / "stages")
-    stages.add_argument("--segmenter", type=Path, default=None)
+    stages.add_argument("--segmenter", type=Path, default=None,
+                        help="trained segmenter bundle or directory (overrides --extractor)")
+    stages.add_argument("--extractor", default="refined", choices=EXTRACTOR_CHOICES,
+                        help="which extractor to trace; 'unet' traces the learned "
+                             "backend and shows its probability map in place of "
+                             "the redness map")
     stages.add_argument("--panel", type=int, default=300, help="panel size in pixels")
     stages.add_argument("--per-row", type=int, default=5, help="panels per row")
     stages.add_argument("--separate", action="store_true",
@@ -616,8 +636,9 @@ def build_parser() -> argparse.ArgumentParser:
                             choices=["means", "chroma", "erythema", "lab", "a_only"])
     fit_linear.add_argument("--alpha", type=float, default=1.0)
     fit_linear.add_argument("--extractor", default="refined",
-                            choices=["refined", "redness", "brightness", "grabcut", "cielab"],
-                            help="which conjunctiva extractor to use")
+                            choices=EXTRACTOR_CHOICES,
+                            help="which conjunctiva extractor to use "
+                                 "('unet' needs a bundle from scripts/train_segmenter.py)")
     fit_linear.add_argument("--segmenter", type=Path, default=None,
                             help="trained segmenter directory (overrides --extractor)")
     fit_linear.set_defaults(func=cmd_fit_linear)

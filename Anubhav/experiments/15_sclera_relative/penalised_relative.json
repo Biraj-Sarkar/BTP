@@ -1,0 +1,103 @@
+{
+  "n_local": 26,
+  "n_external": 217,
+  "n_features": 51,
+  "feature_names": [
+    "R_mean ratio",
+    "R_mean logratio",
+    "R_mean diff",
+    "R_median ratio",
+    "R_median logratio",
+    "R_median diff",
+    "R_std ratio",
+    "G_mean ratio",
+    "G_mean logratio",
+    "G_mean diff",
+    "G_median ratio",
+    "G_median logratio",
+    "G_median diff",
+    "G_std ratio",
+    "B_mean ratio",
+    "B_mean logratio",
+    "B_mean diff",
+    "B_median ratio",
+    "B_median logratio",
+    "B_median diff",
+    "B_std ratio",
+    "r_mean ratio",
+    "r_mean logratio",
+    "r_mean diff",
+    "r_median ratio",
+    "r_median logratio",
+    "r_median diff",
+    "r_std ratio",
+    "g_mean ratio",
+    "g_mean logratio",
+    "g_mean diff",
+    "g_median ratio",
+    "g_median logratio",
+    "g_median diff",
+    "g_std ratio",
+    "L_mean ratio",
+    "L_mean logratio",
+    "L_mean diff",
+    "L_median ratio",
+    "L_median logratio",
+    "L_median diff",
+    "L_std ratio",
+    "a_mean diff",
+    "a_median diff",
+    "a_std ratio",
+    "b_mean diff",
+    "b_median diff",
+    "b_std ratio",
+    "redness_mean diff",
+    "redness_median diff",
+    "redness_std ratio"
+  ],
+  "separation_median": 2.0324988662661347,
+  "separation_overlapping": 5,
+  "results": {
+    "L1 lasso": {
+      "external_r2_10fold": 0.33206784168838055,
+      "external_to_local_r2": -3.5678469110091564,
+      "local_to_external_r2": -0.20051066880422064,
+      "external_to_local_mae": 2.5819056065198374,
+      "features_kept": 39,
+      "stable_features": [
+        "B_median ratio"
+      ]
+    },
+    "L2 ridge": {
+      "external_r2_10fold": 0.36190559956228985,
+      "external_to_local_r2": -2.3444774263280106,
+      "local_to_external_r2": -0.8116427076640063,
+      "external_to_local_mae": 2.229605631523193,
+      "features_kept": 51,
+      "stable_features": [
+        "R_mean ratio",
+        "r_std ratio",
+        "g_mean ratio",
+        "g_mean logratio",
+        "g_mean diff",
+        "g_median ratio",
+        "g_median logratio",
+        "g_median diff",
+        "g_std ratio",
+        "L_mean ratio"
+      ]
+    },
+    "elastic net": {
+      "external_r2_10fold": 0.3307174306543661,
+      "external_to_local_r2": -3.596858336305571,
+      "local_to_external_r2": -0.20051066880422064,
+      "external_to_local_mae": 2.6118934927987194,
+      "features_kept": 51,
+      "stable_features": [
+        "B_median ratio"
+      ]
+    }
+  },
+  "best_transfer": "L2 ridge",
+  "best_transfer_permutation_p": 0.916
+}

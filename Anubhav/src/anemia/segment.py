@@ -365,6 +365,17 @@ EXTRACTORS = {
     "cielab": cielab_segmenter,
 }
 
+# Backends that need a trained bundle on disk, so they cannot be plain entries
+# in EXTRACTORS (which holds ready-to-call functions). `get_extractor` resolves
+# these by constructing them on request; they are named here so error messages
+# and `--extractor` help list every choice, not just the classical ones.
+TRAINED_EXTRACTORS = ("unet",)
+
+# The canonical list for every `--extractor` flag. Derived rather than retyped:
+# the CLI and `predict_folder.py` previously each held their own copy, so a new
+# backend was registered and still not selectable from either.
+EXTRACTOR_CHOICES = sorted([*EXTRACTORS, *TRAINED_EXTRACTORS])
+
 
 def get_extractor(name: str = "refined", model_dir: Optional[Path] = None):
     """Resolve an extractor by name, or load a trained segmenter directory.
@@ -376,7 +387,22 @@ def get_extractor(name: str = "refined", model_dir: Optional[Path] = None):
     """
 
     if model_dir is not None:
+        model_dir = Path(model_dir)
+        # A file is a learned-segmenter bundle; a directory is a Mask2Former
+        # export. Both are trained backends, so an explicit path wins over
+        # `name` either way.
+        if model_dir.is_file():
+            from .segment_learned import LearnedSegmenter
+
+            return LearnedSegmenter(model_dir)
         return Mask2FormerSegmenter(model_dir)
+    if name == "unet":
+        # Constructed on request rather than at import, so the registry stays
+        # importable without torch and without a trained bundle present.
+        from .segment_learned import DEFAULT_BUNDLE, LearnedSegmenter
+
+        return LearnedSegmenter(DEFAULT_BUNDLE)
     if name not in EXTRACTORS:
-        raise ValueError(f"Unknown extractor {name!r}; choose from {sorted(EXTRACTORS)}")
+        choices = sorted([*EXTRACTORS, *TRAINED_EXTRACTORS])
+        raise ValueError(f"Unknown extractor {name!r}; choose from {choices}")
     return EXTRACTORS[name]

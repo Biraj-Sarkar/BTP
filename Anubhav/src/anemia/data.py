@@ -163,6 +163,32 @@ def _discover_masks(image_path: Path) -> Dict[str, Path]:
     return masks
 
 
+HB_PLAUSIBLE = (3.0, 22.0)
+
+
+def _to_float(value) -> Optional[float]:
+    """Parse a spreadsheet number that may use a comma as its decimal separator.
+
+    Eyes-Defy-Anemia's Italy sheet stores 19 of its 123 haemoglobin values as
+    *text* in European notation — `15,1` for 15.1 g/dL — beside 104 ordinary
+    numbers in the same column. `float("15,1")` raises, and the tempting
+    `pd.to_numeric(errors="coerce")` fix fails quietly instead: those 19
+    patients silently become NaN and drop out. Returns None for anything that
+    genuinely is not a number.
+    """
+
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return None
+    if isinstance(value, str):
+        value = value.strip().replace(",", ".")
+        if not value:
+            return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _is_raw_capture(path: Path) -> bool:
     """Reject the segmentation PNGs that sit beside the raw JPGs."""
 
@@ -220,7 +246,14 @@ def load_eyes_defy_anemia(root: Path, subsets: Sequence[str] = ("India", "Italy"
             if not patient_dir.is_dir():
                 continue
 
-            age = float(row[age_col]) if age_col and not pd.isna(row[age_col]) else None
+            hb = _to_float(row[hb_col])
+            # A mis-parsed separator would turn 15,1 into 151 under a naive
+            # strip; anything outside a survivable range is a parsing failure,
+            # not a patient.
+            if hb is None or not HB_PLAUSIBLE[0] <= hb <= HB_PLAUSIBLE[1]:
+                continue
+
+            age = _to_float(row[age_col]) if age_col else None
             sex = _normalise_sex(row[sex_col]) if sex_col else None
 
             for image_path in sorted(p for p in patient_dir.iterdir() if _is_raw_capture(p)):
@@ -229,7 +262,7 @@ def load_eyes_defy_anemia(root: Path, subsets: Sequence[str] = ("India", "Italy"
                         patient_id=f"eyesdefy-{subset.lower()}:{number}",
                         source=f"eyes-defy-anemia/{subset.lower()}",
                         image_path=image_path,
-                        hb=float(row[hb_col]),
+                        hb=hb,
                         age_years=age,
                         sex=sex,
                         mask_paths=_discover_masks(image_path),

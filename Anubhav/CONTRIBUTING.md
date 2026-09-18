@@ -85,6 +85,69 @@ wrong rather than obviously broken. Do not bypass this.
 *look at the overlay sheet*. Every extraction failure in this project's history
 was invisible to the numbers and obvious in the overlays.
 
+### 1b. The trained extractor (`unet`)
+
+The classical backends above decide with hand-written rules. `unet` learns the
+decision from annotated examples instead, which removes the one limit tuning
+cannot: the classical chain thresholds redness at `np.percentile(red, 92)`, an
+*image-relative* cut that assumes every capture devotes the same share of its
+pixels to conjunctiva. A wide shot at 2% and a macro crop at 60% get very
+different thresholds from the same rule.
+
+It is split across two files, and the asymmetry is deliberate:
+
+| File | Reads params | Writes params |
+|---|---|---|
+| `src/anemia/segment_learned.py` | yes | **no** |
+| `scripts/train_segmenter.py` | yes (`--init`) | yes |
+
+So a bundle on the server is always the recorded output of a training run,
+never something a serving process mutated.
+
+**Check a dataset before planning around it.** Most published anaemia datasets
+ship *cropped conjunctiva*, which cannot train a segmenter — the input a
+segmenter needs is the whole eye:
+
+```bash
+python scripts/inspect_dataset.py datasets/eyes_defy
+```
+
+**Train:**
+
+```bash
+python scripts/train_segmenter.py --data datasets/eyes_defy --out runs/segmenter/unet.pt
+```
+
+**When more data arrives, warm-start rather than starting over** — this keeps
+the general shape prior learned from the public set while adapting to the new
+camera and population:
+
+```bash
+python scripts/train_segmenter.py \
+    --data datasets/eyes_defy datasets/hospital \
+    --init runs/segmenter/unet.pt --out runs/segmenter/unet.pt
+```
+
+**Then use it like any other extractor**, or point at a bundle explicitly:
+
+```bash
+PYTHONPATH=src python -m anemia fit-linear --data . --extractor unet --out runs/mine.json
+PYTHONPATH=src python -m anemia fit-linear --data . --segmenter runs/segmenter/unet.pt --out runs/mine.json
+```
+
+Two rules that are easy to get wrong:
+
+- **Split by subject, never by image.** The same eye photographed twice is not
+  two independent samples; an image-level split measures recall, not
+  generalisation. `train_segmenter.py` groups automatically via `subject_of`.
+- **Photometric augmentation is aggressive, and that is correct here.** This
+  model outputs a *mask*, not a colour, so colour-invariance is exactly what we
+  want. The colour statistics feeding haemoglobin regression are measured later
+  on the original untouched pixels — augmented colour must never reach them.
+
+`runs/` and `*.pt` are gitignored, so a trained bundle is **not** in the repo
+and has to be handed over separately, like `runs/linear_model.json`.
+
 ---
 
 ## 2. Add a new feature representation

@@ -1,0 +1,69 @@
+{
+  "n_local": 26,
+  "n_external": 217,
+  "results": {
+    "absolute chroma (current)": {
+      "k": 2,
+      "separation": 2.7667897019887717,
+      "local_r2": 0.08997392686431915,
+      "external_r2": 0.3458657607974095,
+      "external_to_local_r2": -2.0099972273837983,
+      "local_to_external_r2": -1.1123057627326913,
+      "external_to_local_mae": 2.174744978002095
+    },
+    "absolute redness": {
+      "k": 1,
+      "separation": 1.2152937891662121,
+      "local_r2": 0.06779602586502664,
+      "external_r2": -0.007593882798583973,
+      "external_to_local_r2": -0.9021698477415716,
+      "local_to_external_r2": -0.15197690518082996,
+      "external_to_local_mae": 1.5020206417043376
+    },
+    "ratio RGB": {
+      "k": 2,
+      "separation": 2.271313874886317,
+      "local_r2": -0.17196337199281952,
+      "external_r2": 0.2018519683138078,
+      "external_to_local_r2": -0.31990366419408334,
+      "local_to_external_r2": -0.16311937345917005,
+      "external_to_local_mae": 1.1983388227459957
+    },
+    "log-ratio RGB": {
+      "k": 2,
+      "separation": 2.157579131467579,
+      "local_r2": -0.15026532508747592,
+      "external_r2": 0.21148007984431205,
+      "external_to_local_r2": -0.00418665405051466,
+      "local_to_external_r2": -0.01745924023999823,
+      "external_to_local_mae": 0.9953133555282977
+    },
+    "chroma difference": {
+      "k": 2,
+      "separation": 2.1970636387543188,
+      "local_r2": -0.01889663117582896,
+      "external_r2": 0.3615756913692578,
+      "external_to_local_r2": -1.1343746874549607,
+      "local_to_external_r2": -0.6453872170661135,
+      "external_to_local_mae": 1.7121360273961004
+    },
+    "redness difference": {
+      "k": 1,
+      "separation": 0.6765634073556704,
+      "local_r2": 0.014302865577444535,
+      "external_r2": 0.05793984177268552,
+      "external_to_local_r2": -0.6145892419697023,
+      "local_to_external_r2": -0.17990887914116938,
+      "external_to_local_mae": 1.4048394103988442
+    },
+    "a* difference": {
+      "k": 1,
+      "separation": 1.5990564311157913,
+      "local_r2": -0.06076060620217505,
+      "external_r2": 0.22114074622524404,
+      "external_to_local_r2": 0.03242293832722609,
+      "local_to_external_r2": 0.08128163624217077,
+      "external_to_local_mae": 1.0146838745699798
+    }
+  }
+}

@@ -112,8 +112,8 @@ data is not a claim about anything.
 ## What this changes
 
 1. **The corrected figure is 46 of 52 (88%).** Propagated to the report,
-   `../11_head_to_head/RESULTS.md`, `EVERYTHING_EXPLAINED.md`,
-   `TALKING_POINTS.md` and `CLAUDE.md`.
+   `../11_head_to_head/RESULTS.md`, the personal study notes,
+   the meeting notes and the working notes.
 2. **The argument for A survives and is stronger than it was**, because it now
    rests on a regenerable measurement plus three facts that were not previously
    stated: B matches the sclera-selecting baseline, the masks are disjoint, and

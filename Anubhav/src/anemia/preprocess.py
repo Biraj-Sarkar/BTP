@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -141,6 +141,18 @@ def prepare(
     balanced = gray_world_white_balance(working) if preprocess.gray_world else working
 
     mask, backend = segmenter(balanced)
+
+    # The mask-size floor belongs to the extractor, not to the capture. 1.5% of
+    # the frame was calibrated for the classical chain, whose masks cover ~10%
+    # of it; the learned extractor draws tight crescents (median ~1.9%) and the
+    # global floor rejected 30 of 52 local captures as "too small" — discarding
+    # them *because* the mask was precise. An extractor that declares its own
+    # floor governs that one check; every other gate, and every extractor that
+    # declares nothing, is unchanged.
+    own_floor = getattr(segmenter, "min_mask_ratio", None)
+    if own_floor is not None:
+        quality = replace(quality, min_mask_ratio=float(own_floor))
+
     # `working` is pre-white-balance, which the illuminant check needs.
     report = assess_quality(balanced, mask, quality, raw_rgb=working)
 

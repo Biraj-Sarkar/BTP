@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import cv2
 import numpy as np
 import pytest
 
@@ -169,6 +170,121 @@ class TestLinearModelProvenance:
             LinearModel.load(path)
 
 
+class TestLearnedSegmenter:
+    """The trained backend is written by one file and read by another.
+
+    `scripts/train_segmenter.py` is the only writer; `anemia.segment_learned`
+    is the only reader and cannot write. These tests pin the contract between
+    them, because a mismatch would surface as a served model quietly measuring
+    haemoglobin inside a meaningless mask rather than as an error.
+    """
+
+    @staticmethod
+    def _bundle(tmp_path, input_size=64):
+        smp = pytest.importorskip("segmentation_models_pytorch")
+        pytest.importorskip("torch")
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+        from train_segmenter import save_bundle
+
+        from anemia.segment_learned import SegmenterConfig
+
+        config = SegmenterConfig(encoder="resnet18", input_size=input_size)
+        model = smp.Unet(encoder_name=config.encoder, encoder_weights=None,
+                         in_channels=3, classes=1)
+        path = tmp_path / "unet.pt"
+        save_bundle(path, model, config,
+                    provenance={"trained_at": "2026-01-01T00:00:00", "datasets": ["synthetic"]},
+                    metrics={"val_dice": 0.5})
+        return path
+
+    def test_bundle_round_trips_and_honours_the_extractor_contract(self, tmp_path):
+        from anemia.segment_learned import LearnedSegmenter
+
+        segmenter = LearnedSegmenter(self._bundle(tmp_path))
+        image, _ = make_eye(seed=11)
+        mask, name = segmenter(image)
+
+        assert mask.shape == image.shape[:2]
+        assert set(np.unique(mask)).issubset({0, 255})
+        assert name.startswith("unet")
+
+    def test_training_time_conditioning_travels_with_the_weights(self, tmp_path):
+        """Serving must condition images exactly as training did, so the input
+        size lives in the bundle rather than defaulting in the serving code."""
+
+        from anemia.segment_learned import LearnedSegmenter
+
+        segmenter = LearnedSegmenter(self._bundle(tmp_path, input_size=96))
+        assert segmenter.config.input_size == 96
+        assert segmenter.config.encoder == "resnet18"
+
+    def test_retrained_segmenter_invalidates_cached_features(self, tmp_path):
+        """Features cached under an old mask must not be reused under a new one."""
+
+        from anemia.segment_learned import LearnedSegmenter
+
+        assert LearnedSegmenter(self._bundle(tmp_path)).cache_key == "unet-2026-01-01T00:00:00"
+
+    def test_quality_gate_uses_the_extractors_own_mask_floor(self):
+        """A tight, correct mask must not be rejected as 'too small' by a floor
+        calibrated for a different extractor's much larger masks.
+
+        The global 1.5% floor once rejected 30 of 52 real captures under the
+        learned extractor, whose masks are ~1.9% of the frame on median.
+        """
+
+        image, truth = make_eye(seed=13)
+        small = np.zeros_like(truth)
+        ys, xs = np.nonzero(truth)
+        cy, cx = int(ys.mean()), int(xs.mean())
+        small[cy - 6:cy + 6, cx - 20:cx + 20] = 255  # well under 1.5% of frame
+
+        def global_floor(rgb):
+            return small, "fixed"
+
+        def own_floor(rgb):
+            return small, "fixed"
+        own_floor.min_mask_ratio = 0.0005
+
+        cfg = PreprocessConfig()
+        rejected = prepare(image, global_floor, cfg, QualityConfig())
+        accepted = prepare(image, own_floor, cfg, QualityConfig())
+
+        assert any("too small" in r for r in rejected.quality.reasons)
+        assert not any("too small" in r for r in accepted.quality.reasons)
+
+    def test_probability_map_is_exposed_for_weighted_pooling(self, tmp_path):
+        from anemia.segment_learned import LearnedSegmenter
+
+        segmenter = LearnedSegmenter(self._bundle(tmp_path))
+        image, _ = make_eye(seed=12)
+        probability = segmenter.probability(image)
+
+        assert probability.shape == image.shape[:2]
+        assert 0.0 <= float(probability.min()) and float(probability.max()) <= 1.0
+
+    @pytest.mark.parametrize(
+        "bundle,expected",
+        [
+            ({"format": "anemia-segmenter", "version": 1, "state_dict": {}}, "missing"),
+            ({"weights": [1, 2, 3]}, "missing"),
+            ({"format": "something-else", "version": 1, "state_dict": {},
+              "config": {}, "provenance": {}}, "format"),
+        ],
+    )
+    def test_unservable_bundle_refuses_to_load(self, tmp_path, bundle, expected):
+        """Refusing beats loading and segmenting nonsense — the same rule
+        `LinearModel.load` follows for incomplete model files."""
+
+        torch = pytest.importorskip("torch")
+        from anemia.segment_learned import LearnedSegmenter
+
+        path = tmp_path / "bad.pt"
+        torch.save(bundle, path)
+        with pytest.raises(ValueError, match=expected):
+            LearnedSegmenter(path)
+
+
 class TestClinicalLabels:
     @pytest.mark.parametrize(
         "age,sex,expected",
@@ -182,6 +298,56 @@ class TestClinicalLabels:
     )
     def test_who_thresholds(self, age, sex, expected):
         assert anemia_threshold(age, sex) == expected
+
+    @pytest.mark.parametrize("raw,expected", [
+        (15.1, 15.1),          # an ordinary numeric cell
+        ("15,1", 15.1),        # European decimal comma, stored as text
+        (" 9,8 ", 9.8),
+        ("", None),
+        ("n/a", None),
+        (float("nan"), None),
+    ])
+    def test_spreadsheet_numbers_accept_a_decimal_comma(self, raw, expected):
+        """The Italy sheet mixes both forms in one column; 19 of 123 patients
+        are text. A parser that fails on them drops those patients, and one
+        that strips the comma turns 15.1 g/dL into 151."""
+
+        from anemia.data import _to_float
+
+        result = _to_float(raw)
+        if expected is None:
+            assert result is None
+        else:
+            assert result == pytest.approx(expected)
+
+    def test_local_cohort_loader_reads_both_eyes_with_labels(self, tmp_path):
+        """The local loader once shipped referencing an undefined variable after
+        an edit meant for a different loader; nothing exercised it, so every
+        test still passed. This one builds the cohort's real layout in miniature."""
+
+        from anemia.data import load_local_cohort
+
+        (tmp_path / "DATASAMPLE.csv").write_text(
+            "Image ID,Created On,Date Of Birth,Gender,Haemoglobin (gm/dL)\n"
+            "1,Tue Jun 21 2022 09:00:22 GMT+0530 (India Standard Time),09/12/2015,M,12\n"
+            "2,Wed Mar 01 2023 11:15:33 GMT+0530 (India Standard Time),04/14/2011,F,8.5\n",
+            encoding="utf-8",
+        )
+        image, _ = make_eye(seed=31)
+        for eye in ("left_eye", "right_eye"):
+            (tmp_path / eye).mkdir()
+            for n in (1, 2):
+                cv2.imwrite(str(tmp_path / eye / f"{n}.jpeg"), image)
+
+        samples = load_local_cohort(tmp_path)
+
+        assert len(samples) == 4
+        assert {s.patient_id for s in samples} == {"local:1", "local:2"}
+        by_patient = {s.patient_id: s for s in samples}
+        assert by_patient["local:1"].hb == pytest.approx(12.0)
+        assert by_patient["local:2"].hb == pytest.approx(8.5)
+        assert by_patient["local:2"].sex == "F"
+        assert 6.0 < by_patient["local:1"].age_years < 7.5
 
     def test_hardcoded_eleven_would_miss_anemic_men(self):
         """Why a single fixed threshold fails, made explicit."""

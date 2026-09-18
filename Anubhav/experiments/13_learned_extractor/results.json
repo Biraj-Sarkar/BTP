@@ -1,0 +1,68 @@
+{
+  "matched_patients": [
+    "local:1",
+    "local:10",
+    "local:11",
+    "local:12",
+    "local:13",
+    "local:14",
+    "local:15",
+    "local:16",
+    "local:17",
+    "local:18",
+    "local:19",
+    "local:2",
+    "local:20",
+    "local:21",
+    "local:22",
+    "local:23",
+    "local:24",
+    "local:25",
+    "local:26",
+    "local:3",
+    "local:4",
+    "local:5",
+    "local:6",
+    "local:7",
+    "local:8",
+    "local:9"
+  ],
+  "lost_to_unet": [],
+  "mask_iou_median": 0.12691896772488725,
+  "loo_baseline_r2": -0.08160000000000012,
+  "permutations": 20000,
+  "results": {
+    "refined": {
+      "n": 26,
+      "r2_in_sample": 0.13165109746271852,
+      "r2_loo": -0.08258655353841182,
+      "mae_loo": 1.0710505156813108,
+      "in_sample_floor": {
+        "null_mean": 0.07481879231471669,
+        "null_p95": 0.2169257154487947,
+        "p": 0.17545
+      },
+      "loo_floor": {
+        "null_mean": -0.15566890931719854,
+        "null_p95": 0.021029542984240427,
+        "p": 0.19355
+      }
+    },
+    "unet": {
+      "n": 26,
+      "r2_in_sample": 0.2803843811188368,
+      "r2_loo": 0.11180166746266063,
+      "mae_loo": 1.0038329300144089,
+      "in_sample_floor": {
+        "null_mean": 0.07793867204608311,
+        "null_p95": 0.222126344021255,
+        "p": 0.0203
+      },
+      "loo_floor": {
+        "null_mean": -0.1596090721644826,
+        "null_p95": 0.02075297323054106,
+        "p": 0.01535
+      }
+    }
+  }
+}

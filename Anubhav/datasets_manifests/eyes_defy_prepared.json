@@ -1,0 +1,1168 @@
+{
+  "source": "datasets/eyes_defy",
+  "variant": "_palpebral",
+  "max_extent": 0.95,
+  "kept": [
+    {
+      "stem": "India-11_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/11/20200203_094523.jpg",
+      "extent": 0.252,
+      "coverage": 0.0526
+    },
+    {
+      "stem": "India-12_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/12/20200203_103722.jpg",
+      "extent": 0.081,
+      "coverage": 0.0418
+    },
+    {
+      "stem": "India-14_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/14/20200204_154215.jpg",
+      "extent": 0.169,
+      "coverage": 0.0521
+    },
+    {
+      "stem": "India-15_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/15/20200204_160737.jpg",
+      "extent": 0.15,
+      "coverage": 0.0483
+    },
+    {
+      "stem": "India-17_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/17/20200209_122613.jpg",
+      "extent": 0.264,
+      "coverage": 0.0917
+    },
+    {
+      "stem": "India-18_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/18/20200209_132714.jpg",
+      "extent": 0.132,
+      "coverage": 0.0608
+    },
+    {
+      "stem": "India-20_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/20/20200211_143315.jpg",
+      "extent": 0.257,
+      "coverage": 0.087
+    },
+    {
+      "stem": "India-21_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/21/20200211_145200.jpg",
+      "extent": 0.142,
+      "coverage": 0.0368
+    },
+    {
+      "stem": "India-23_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/23/20200211_155237.jpg",
+      "extent": 0.151,
+      "coverage": 0.0492
+    },
+    {
+      "stem": "India-24_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/24/20200212_080100.jpg",
+      "extent": 0.234,
+      "coverage": 0.0641
+    },
+    {
+      "stem": "India-26_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/26/20200213_120556.jpg",
+      "extent": 0.192,
+      "coverage": 0.052
+    },
+    {
+      "stem": "India-27_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/27/20200213_134128.jpg",
+      "extent": 0.19,
+      "coverage": 0.0629
+    },
+    {
+      "stem": "India-29_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/29/20200213_151234.jpg",
+      "extent": 0.191,
+      "coverage": 0.0583
+    },
+    {
+      "stem": "India-3_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/3/20200124_155418.jpg",
+      "extent": 0.127,
+      "coverage": 0.0252
+    },
+    {
+      "stem": "India-30_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/30/20200213_152136.jpg",
+      "extent": 0.179,
+      "coverage": 0.0548
+    },
+    {
+      "stem": "India-32_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/32/20200213_153536.jpg",
+      "extent": 0.144,
+      "coverage": 0.0494
+    },
+    {
+      "stem": "India-33_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/33/20200213_154129.jpg",
+      "extent": 0.186,
+      "coverage": 0.0475
+    },
+    {
+      "stem": "India-35_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/35/20200213_155456_001.jpg",
+      "extent": 0.173,
+      "coverage": 0.0761
+    },
+    {
+      "stem": "India-36_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/36/20200213_160045.jpg",
+      "extent": 0.22,
+      "coverage": 0.0558
+    },
+    {
+      "stem": "India-38_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/38/20200214_122915.jpg",
+      "extent": 0.168,
+      "coverage": 0.0767
+    },
+    {
+      "stem": "India-39_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/39/20200213_232040.jpg",
+      "extent": 0.168,
+      "coverage": 0.0719
+    },
+    {
+      "stem": "India-4_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/4/20200124_160522.jpg",
+      "extent": 0.184,
+      "coverage": 0.0542
+    },
+    {
+      "stem": "India-41_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/41/20200214_134745.jpg",
+      "extent": 0.237,
+      "coverage": 0.0917
+    },
+    {
+      "stem": "India-42_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/42/20200216_211040.jpg",
+      "extent": 0.229,
+      "coverage": 0.042
+    },
+    {
+      "stem": "India-44_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/44/20200216_223744.jpg",
+      "extent": 0.085,
+      "coverage": 0.0361
+    },
+    {
+      "stem": "India-45_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/45/20200216_224452.jpg",
+      "extent": 0.201,
+      "coverage": 0.0578
+    },
+    {
+      "stem": "India-47_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/47/20200216_232931.jpg",
+      "extent": 0.237,
+      "coverage": 0.0388
+    },
+    {
+      "stem": "India-48_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/48/20200217_141804.jpg",
+      "extent": 0.141,
+      "coverage": 0.0482
+    },
+    {
+      "stem": "India-5_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/5/20200124_161452.jpg",
+      "extent": 0.197,
+      "coverage": 0.0546
+    },
+    {
+      "stem": "India-50_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/50/20200217_154641.jpg",
+      "extent": 0.152,
+      "coverage": 0.0568
+    },
+    {
+      "stem": "India-51_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/51/20200218_210419.jpg",
+      "extent": 0.239,
+      "coverage": 0.0528
+    },
+    {
+      "stem": "India-53_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/53/20200218_222325.jpg",
+      "extent": 0.183,
+      "coverage": 0.0461
+    },
+    {
+      "stem": "India-54_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/54/20200219_140311.jpg",
+      "extent": 0.183,
+      "coverage": 0.0351
+    },
+    {
+      "stem": "India-56_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/56/20200219_183506.jpg",
+      "extent": 0.11,
+      "coverage": 0.0298
+    },
+    {
+      "stem": "India-57_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/57/20200219_182849.jpg",
+      "extent": 0.128,
+      "coverage": 0.038
+    },
+    {
+      "stem": "India-59_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/59/20200219_201501.jpg",
+      "extent": 0.1,
+      "coverage": 0.0252
+    },
+    {
+      "stem": "India-6_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/6/20200124_184029.jpg",
+      "extent": 0.176,
+      "coverage": 0.0494
+    },
+    {
+      "stem": "India-60_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/60/20200223_184734.jpg",
+      "extent": 0.085,
+      "coverage": 0.02
+    },
+    {
+      "stem": "India-62_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/62/20200223_190638.jpg",
+      "extent": 0.168,
+      "coverage": 0.0561
+    },
+    {
+      "stem": "India-63_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/63/20200223_191233.jpg",
+      "extent": 0.187,
+      "coverage": 0.0568
+    },
+    {
+      "stem": "India-65_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/65/20200223_194457.jpg",
+      "extent": 0.22,
+      "coverage": 0.0687
+    },
+    {
+      "stem": "India-66_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/66/20200224_114700.jpg",
+      "extent": 0.127,
+      "coverage": 0.0313
+    },
+    {
+      "stem": "India-68_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/68/20200224_115853.jpg",
+      "extent": 0.147,
+      "coverage": 0.0303
+    },
+    {
+      "stem": "India-69_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/69/20200224_120426.jpg",
+      "extent": 0.15,
+      "coverage": 0.0426
+    },
+    {
+      "stem": "India-71_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/71/20200224_133633.jpg",
+      "extent": 0.16,
+      "coverage": 0.0404
+    },
+    {
+      "stem": "India-74_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/74/20200224_145301.jpg",
+      "extent": 0.243,
+      "coverage": 0.0423
+    },
+    {
+      "stem": "India-75_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/75/20200224_150804.jpg",
+      "extent": 0.205,
+      "coverage": 0.0524
+    },
+    {
+      "stem": "India-77_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/77/20200224_151450.jpg",
+      "extent": 0.22,
+      "coverage": 0.0538
+    },
+    {
+      "stem": "India-80_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/80/20200224_180925.jpg",
+      "extent": 0.113,
+      "coverage": 0.0166
+    },
+    {
+      "stem": "India-81_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/81/20200228_190130.jpg",
+      "extent": 0.164,
+      "coverage": 0.0573
+    },
+    {
+      "stem": "India-82_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/82/20200228_190334.jpg",
+      "extent": 0.135,
+      "coverage": 0.0246
+    },
+    {
+      "stem": "India-83_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/83/20200224_121621.jpg",
+      "extent": 0.179,
+      "coverage": 0.0703
+    },
+    {
+      "stem": "India-84_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/84/20200224_154729.jpg",
+      "extent": 0.178,
+      "coverage": 0.0345
+    },
+    {
+      "stem": "India-86_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/86/20200229_205445.jpg",
+      "extent": 0.124,
+      "coverage": 0.0352
+    },
+    {
+      "stem": "India-89_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/89/20200302_224240.jpg",
+      "extent": 0.204,
+      "coverage": 0.0417
+    },
+    {
+      "stem": "India-9_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/9/20200131_205917.jpg",
+      "extent": 0.21,
+      "coverage": 0.0473
+    },
+    {
+      "stem": "India-92_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/92/20200312_183626.jpg",
+      "extent": 0.188,
+      "coverage": 0.0442
+    },
+    {
+      "stem": "India-95_0",
+      "source": "datasets/eyes_defy/dataset anemia/India/95/20200318_130225.jpg",
+      "extent": 0.239,
+      "coverage": 0.0455
+    },
+    {
+      "stem": "Italy-100_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/100/T_69_20190613_081445.jpg",
+      "extent": 0.28,
+      "coverage": 0.048
+    },
+    {
+      "stem": "Italy-102_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/102/T_71_20190613_083200.jpg",
+      "extent": 0.173,
+      "coverage": 0.036
+    },
+    {
+      "stem": "Italy-103_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/103/T_72_20190613_083940.jpg",
+      "extent": 0.213,
+      "coverage": 0.0512
+    },
+    {
+      "stem": "Italy-105_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/105/T_74_20190613_090639.jpg",
+      "extent": 0.215,
+      "coverage": 0.0482
+    },
+    {
+      "stem": "Italy-108_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/108/T_77_20190613_093815.jpg",
+      "extent": 0.214,
+      "coverage": 0.041
+    },
+    {
+      "stem": "Italy-109_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/109/T_78_20190614_074753.jpg",
+      "extent": 0.198,
+      "coverage": 0.0653
+    },
+    {
+      "stem": "Italy-111_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/111/T_80_20190614_075052.jpg",
+      "extent": 0.34,
+      "coverage": 0.0774
+    },
+    {
+      "stem": "Italy-112_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/112/T_81_20190614_075610.jpg",
+      "extent": 0.113,
+      "coverage": 0.0403
+    },
+    {
+      "stem": "Italy-114_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/114/T_83_20190614_080652.jpg",
+      "extent": 0.299,
+      "coverage": 0.087
+    },
+    {
+      "stem": "Italy-115_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/115/T_84_20190614_080746.jpg",
+      "extent": 0.144,
+      "coverage": 0.0509
+    },
+    {
+      "stem": "Italy-117_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/117/T_86_20190614_081710.jpg",
+      "extent": 0.243,
+      "coverage": 0.0626
+    },
+    {
+      "stem": "Italy-120_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/120/T_89_20190614_082828.jpg",
+      "extent": 0.107,
+      "coverage": 0.0326
+    },
+    {
+      "stem": "Italy-33_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/33/T_2_20190606_093707.jpg",
+      "extent": 0.216,
+      "coverage": 0.0762
+    },
+    {
+      "stem": "Italy-35_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/35/T_4_20190606_095326.jpg",
+      "extent": 0.318,
+      "coverage": 0.0677
+    },
+    {
+      "stem": "Italy-36_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/36/T_5_20190607_074439.jpg",
+      "extent": 0.275,
+      "coverage": 0.0997
+    },
+    {
+      "stem": "Italy-37_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/37/T_6_20190607_074640.jpg",
+      "extent": 0.205,
+      "coverage": 0.0505
+    },
+    {
+      "stem": "Italy-39_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/39/T_8_20190607_075130.jpg",
+      "extent": 0.365,
+      "coverage": 0.0987
+    },
+    {
+      "stem": "Italy-42_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/42/T_11_20190607_080138.jpg",
+      "extent": 0.209,
+      "coverage": 0.0615
+    },
+    {
+      "stem": "Italy-43_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/43/T_12_20190607_080302.jpg",
+      "extent": 0.247,
+      "coverage": 0.087
+    },
+    {
+      "stem": "Italy-45_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/45/T_14_20190607_083121.jpg",
+      "extent": 0.207,
+      "coverage": 0.0524
+    },
+    {
+      "stem": "Italy-46_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/46/T_15_20190608_075438.jpg",
+      "extent": 0.198,
+      "coverage": 0.0487
+    },
+    {
+      "stem": "Italy-48_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/48/T_17_20190608_080434.jpg",
+      "extent": 0.154,
+      "coverage": 0.0426
+    },
+    {
+      "stem": "Italy-51_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/51/T_20_20190608_082624.jpg",
+      "extent": 0.257,
+      "coverage": 0.0743
+    },
+    {
+      "stem": "Italy-52_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/52/T_21_20190608_083544.jpg",
+      "extent": 0.183,
+      "coverage": 0.0453
+    },
+    {
+      "stem": "Italy-54_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/54/T_23_20190608_090427.jpg",
+      "extent": 0.239,
+      "coverage": 0.0737
+    },
+    {
+      "stem": "Italy-57_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/57/T_26_20190608_094356.jpg",
+      "extent": 0.261,
+      "coverage": 0.0487
+    },
+    {
+      "stem": "Italy-58_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/58/T_27_20190608_100451.jpg",
+      "extent": 0.386,
+      "coverage": 0.0727
+    },
+    {
+      "stem": "Italy-60_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/60/T_29_20190608_110432.jpg",
+      "extent": 0.143,
+      "coverage": 0.0357
+    },
+    {
+      "stem": "Italy-63_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/63/T_32_20190610_075738.jpg",
+      "extent": 0.16,
+      "coverage": 0.0536
+    },
+    {
+      "stem": "Italy-66_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/66/T_35_20190610_084118.jpg",
+      "extent": 0.208,
+      "coverage": 0.0659
+    },
+    {
+      "stem": "Italy-69_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/69/T_38_20190611_075450.jpg",
+      "extent": 0.186,
+      "coverage": 0.0592
+    },
+    {
+      "stem": "Italy-70_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/70/T_39_20190611_080114.jpg",
+      "extent": 0.266,
+      "coverage": 0.1093
+    },
+    {
+      "stem": "Italy-72_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/72/T_41_20190611_082501.jpg",
+      "extent": 0.274,
+      "coverage": 0.0703
+    },
+    {
+      "stem": "Italy-75_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/75/T_44_20190611_083543.jpg",
+      "extent": 0.224,
+      "coverage": 0.048
+    },
+    {
+      "stem": "Italy-78_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/78/T_47_20190611_094951.jpg",
+      "extent": 0.242,
+      "coverage": 0.0826
+    },
+    {
+      "stem": "Italy-81_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/81/T_50_20190612_080012.jpg",
+      "extent": 0.25,
+      "coverage": 0.0769
+    },
+    {
+      "stem": "Italy-82_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/82/T_51_20190612_080714.jpg",
+      "extent": 0.273,
+      "coverage": 0.0843
+    },
+    {
+      "stem": "Italy-84_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/84/T_53_20190612_081419.jpg",
+      "extent": 0.278,
+      "coverage": 0.046
+    },
+    {
+      "stem": "Italy-87_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/87/T_56_20190612_083151.jpg",
+      "extent": 0.195,
+      "coverage": 0.0639
+    },
+    {
+      "stem": "Italy-90_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/90/T_59_20190612_090635.jpg",
+      "extent": 0.284,
+      "coverage": 0.0887
+    },
+    {
+      "stem": "Italy-96_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/96/T_65_20190613_075213.jpg",
+      "extent": 0.148,
+      "coverage": 0.058
+    },
+    {
+      "stem": "Italy-97_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/97/T_66_20190613_075959.jpg",
+      "extent": 0.173,
+      "coverage": 0.0436
+    },
+    {
+      "stem": "Italy-99_0",
+      "source": "datasets/eyes_defy/dataset anemia/Italy/99/T_68_20190613_081143.jpg",
+      "extent": 0.136,
+      "coverage": 0.0272
+    }
+  ],
+  "rejected": [
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/1/20200118_164733.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/10/20200203_091841.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/13/20200203_190841.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/16/20200204_155221.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/19/20200211_140525.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/2/20200124_154320.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/22/20200211_150240.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/25/20200213_121216.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/28/20200213_150536.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/31/20200213_152924.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/34/20200213_154759.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/37/20200214_123002.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/40/20200214_121836.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/43/20200216_210631.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/46/20200216_231923.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/49/20200217_152107.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/52/20200218_221400.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/55/20200219_180148.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/58/20200219_195511.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/61/20200223_185602.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/64/20200223_191620.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/67/20200224_115146.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/7/20200124_202058.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/70/20200224_123714.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/72/20200224_143301.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/73/20200224_144551.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/76/20200224_150539.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/78/20200224_153146.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/79/20200224_162916.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/8/20200124_202947.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/85/20200229_205012.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/87/20200302_222551.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/88/20200302_223503.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/90/20200302_225922.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/91/20200302_231050.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/93/20200315_161347.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/India/94/20200318_130148.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/1/1.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/10/10.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/101/T_70_20190613_081811.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/104/T_73_20190613_084628.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/106/T_75_20190613_092335.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/107/T_76_20190613_093151.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/11/11.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/110/T_79_20190614_075002.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/113/T_82_20190614_080327.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/116/T_85_20190614_081338.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/118/T_87_20190614_081929.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/119/T_88_20190614_082233.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/12/12.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/121/T_90_20190614_083843.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/122/T_91_20190614_085732.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/123/T_92_20190614_090938.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/13/13.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/14/14.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/15/15.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/16/16.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/17/17.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/18/18.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/19/19.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/2/2.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/20/20.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/21/21.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/22/22.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/23/23.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/24/24.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/25/25.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/26/26.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/27/27.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/28/28.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/29/29.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/3/3.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/30/30.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/31/31.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/32/T_1_20190606_092247.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/34/T_3_20190606_094015.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/38/T_7_20190607_074759.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/4/4.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/40/T_9_20190607_075803.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/41/T_10_20190607_075451.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/44/T_13_20190607_081201.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/47/T_16_20190608_075548.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/49/T_18_20190608_081326.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/5/5.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/50/T_19_20190608_081908.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/53/T_22_20190608_084856.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/55/T_24_20190608_091157.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/56/T_25_20190608_092503.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/59/T_28_20190608_102706.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/6/6.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/61/T_30_20190608_113211.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/62/T_31_20190608_113406.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/64/T_33_20190610_075938.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/65/T_34_20190610_083355.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/67/T_36_20190610_084456.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/68/T_37_20190610_085835.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/7/7.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/71/T_40_20190611_080529.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/73/T_42_20190611_082701.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/74/T_43_20190611_083341.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/76/T_45_20190611_090821.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/77/T_46_20190611_091248.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/79/T_48_20190611_095442.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/8/8.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/80/T_49_20190611_095655.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/83/T_52_20190612_081110.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/85/T_54_20190612_081705.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/86/T_55_20190612_082104.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/88/T_57_20190612_085736.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/89/T_58_20190612_090128.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/9/9.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/91/T_60_20190612_091032.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/92/T_61_20190612_091504.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/93/T_62_20190612_091625.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/94/T_63_20190612_092329.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/95/T_64_20190612_092742.jpg",
+      "reason": "no annotation"
+    },
+    {
+      "image": "datasets/eyes_defy/dataset anemia/Italy/98/T_67_20190613_080656.jpg",
+      "reason": "rectangle",
+      "extent": 1.0
+    }
+  ],
+  "subjects": 101
+}

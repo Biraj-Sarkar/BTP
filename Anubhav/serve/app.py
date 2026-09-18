@@ -123,7 +123,12 @@ def health() -> dict:
     }
 
 
+# Two paths, one handler. The mobile app (Flutter, `lib/main.dart`) posts to
+# `/anemia-detection`; `/predict` is the name used by `UI_INTEGRATION.md` and
+# existing scripts. Identical request fields and response body on both, so
+# neither client has to change and there is no second implementation to drift.
 @app.post("/predict")
+@app.post("/anemia-detection")
 async def predict(
     image: UploadFile = File(...),
     age_years: Optional[float] = Form(None),

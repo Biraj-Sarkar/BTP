@@ -1,0 +1,597 @@
+{
+  "colour (current)": [
+    {
+      "mae": 1.5239400645900694,
+      "r2": 0.3375989206380815,
+      "caught": 0.8791208791208791,
+      "missed_women": 0.16981132075471697,
+      "missed_men": 0.05263157894736842,
+      "missed_women_n": 9,
+      "missed_men_n": 2,
+      "possibly": 0.22119815668202766,
+      "likely_ppv": 0.6914893617021277,
+      "unlikely_npv": 0.8533333333333334,
+      "est_anaemic_women": 11.730350039769506,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0,
+        8.5
+      ]
+    },
+    {
+      "mae": 1.5358026168502565,
+      "r2": 0.3238659225617496,
+      "caught": 0.8791208791208791,
+      "missed_women": 0.18867924528301888,
+      "missed_men": 0.02631578947368421,
+      "missed_women_n": 10,
+      "missed_men_n": 1,
+      "possibly": 0.2073732718894009,
+      "likely_ppv": 0.6808510638297872,
+      "unlikely_npv": 0.8589743589743589,
+      "est_anaemic_women": 11.742439730263285,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0,
+        8.1,
+        8.5
+      ]
+    },
+    {
+      "mae": 1.5256378208337082,
+      "r2": 0.33366014038824,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.1509433962264151,
+      "missed_men": 0.02631578947368421,
+      "missed_women_n": 8,
+      "missed_men_n": 1,
+      "possibly": 0.1935483870967742,
+      "likely_ppv": 0.6767676767676768,
+      "unlikely_npv": 0.881578947368421,
+      "est_anaemic_women": 11.736114955626826,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0,
+        8.5
+      ]
+    },
+    {
+      "mae": 1.5168041395632412,
+      "r2": 0.3428596180131507,
+      "caught": 0.8901098901098901,
+      "missed_women": 0.1509433962264151,
+      "missed_men": 0.05263157894736842,
+      "missed_women_n": 8,
+      "missed_men_n": 2,
+      "possibly": 0.19815668202764977,
+      "likely_ppv": 0.6804123711340206,
+      "unlikely_npv": 0.8701298701298701,
+      "est_anaemic_women": 11.73260618610551,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0,
+        8.5
+      ]
+    },
+    {
+      "mae": 1.5311666725581132,
+      "r2": 0.3346986109948098,
+      "caught": 0.8901098901098901,
+      "missed_women": 0.16981132075471697,
+      "missed_men": 0.02631578947368421,
+      "missed_women_n": 9,
+      "missed_men_n": 1,
+      "possibly": 0.20276497695852536,
+      "likely_ppv": 0.6875,
+      "unlikely_npv": 0.8701298701298701,
+      "est_anaemic_women": 11.756639329311291,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0,
+        8.5
+      ]
+    }
+  ],
+  "colour, per-sex cut": [
+    {
+      "mae": 1.5239400645900694,
+      "r2": 0.3375989206380815,
+      "caught": 0.8901098901098901,
+      "missed_women": 0.11320754716981132,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 6,
+      "missed_men_n": 4,
+      "possibly": 0.14285714285714285,
+      "likely_ppv": 0.6914893617021277,
+      "unlikely_npv": 0.8913043478260869,
+      "est_anaemic_women": 11.730350039769506,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.5358026168502565,
+      "r2": 0.3238659225617496,
+      "caught": 0.8791208791208791,
+      "missed_women": 0.11320754716981132,
+      "missed_men": 0.13157894736842105,
+      "missed_women_n": 6,
+      "missed_men_n": 5,
+      "possibly": 0.14285714285714285,
+      "likely_ppv": 0.6808510638297872,
+      "unlikely_npv": 0.8804347826086957,
+      "est_anaemic_women": 11.742439730263285,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.5256378208337082,
+      "r2": 0.33366014038824,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.09433962264150944,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 5,
+      "missed_men_n": 4,
+      "possibly": 0.12442396313364056,
+      "likely_ppv": 0.6767676767676768,
+      "unlikely_npv": 0.9010989010989011,
+      "est_anaemic_women": 11.736114955626826,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.5168041395632412,
+      "r2": 0.3428596180131507,
+      "caught": 0.8901098901098901,
+      "missed_women": 0.11320754716981132,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 6,
+      "missed_men_n": 4,
+      "possibly": 0.1336405529953917,
+      "likely_ppv": 0.6804123711340206,
+      "unlikely_npv": 0.8901098901098901,
+      "est_anaemic_women": 11.73260618610551,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.5311666725581132,
+      "r2": 0.3346986109948098,
+      "caught": 0.9120879120879121,
+      "missed_women": 0.07547169811320754,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 4,
+      "missed_men_n": 4,
+      "possibly": 0.14746543778801843,
+      "likely_ppv": 0.6875,
+      "unlikely_npv": 0.9101123595505618,
+      "est_anaemic_women": 11.756639329311291,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    }
+  ],
+  "colour + sex, per-sex cut": [
+    {
+      "mae": 1.322453097072237,
+      "r2": 0.48547505875690244,
+      "caught": 0.9230769230769231,
+      "missed_women": 0.05660377358490566,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 3,
+      "missed_men_n": 4,
+      "possibly": 0.12442396313364056,
+      "likely_ppv": 0.696969696969697,
+      "unlikely_npv": 0.9230769230769231,
+      "est_anaemic_women": 10.776074137496632,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3336651454207216,
+      "r2": 0.47645136789811404,
+      "caught": 0.9230769230769231,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.13157894736842105,
+      "missed_women_n": 2,
+      "missed_men_n": 5,
+      "possibly": 0.11981566820276497,
+      "likely_ppv": 0.7,
+      "unlikely_npv": 0.9230769230769231,
+      "est_anaemic_women": 10.807106831640846,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3302873965964113,
+      "r2": 0.48044041204517207,
+      "caught": 0.9340659340659341,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 2,
+      "missed_men_n": 4,
+      "possibly": 0.12903225806451613,
+      "likely_ppv": 0.69,
+      "unlikely_npv": 0.9325842696629213,
+      "est_anaemic_women": 10.802844724966407,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3170718033525233,
+      "r2": 0.4907236383473248,
+      "caught": 0.9230769230769231,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.13157894736842105,
+      "missed_women_n": 2,
+      "missed_men_n": 5,
+      "possibly": 0.11059907834101383,
+      "likely_ppv": 0.7019230769230769,
+      "unlikely_npv": 0.9213483146067416,
+      "est_anaemic_women": 10.777226544454027,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3391098708635476,
+      "r2": 0.4775424851998604,
+      "caught": 0.9340659340659341,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.10526315789473684,
+      "missed_women_n": 2,
+      "missed_men_n": 4,
+      "possibly": 0.12442396313364056,
+      "likely_ppv": 0.6862745098039216,
+      "unlikely_npv": 0.9318181818181818,
+      "est_anaemic_women": 10.796649768942764,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    }
+  ],
+  "colour + sex": [
+    {
+      "mae": 1.322453097072237,
+      "r2": 0.48547505875690244,
+      "caught": 0.9120879120879121,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.15789473684210525,
+      "missed_women_n": 2,
+      "missed_men_n": 6,
+      "possibly": 0.14285714285714285,
+      "likely_ppv": 0.696969696969697,
+      "unlikely_npv": 0.9080459770114943,
+      "est_anaemic_women": 10.776074137496632,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3336651454207216,
+      "r2": 0.47645136789811404,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.18421052631578946,
+      "missed_women_n": 2,
+      "missed_men_n": 7,
+      "possibly": 0.1336405529953917,
+      "likely_ppv": 0.7,
+      "unlikely_npv": 0.8977272727272727,
+      "est_anaemic_women": 10.807106831640846,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3302873965964113,
+      "r2": 0.48044041204517207,
+      "caught": 0.8791208791208791,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.23684210526315788,
+      "missed_women_n": 2,
+      "missed_men_n": 9,
+      "possibly": 0.12903225806451613,
+      "likely_ppv": 0.69,
+      "unlikely_npv": 0.8764044943820225,
+      "est_anaemic_women": 10.802844724966407,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3170718033525233,
+      "r2": 0.4907236383473248,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.18421052631578946,
+      "missed_women_n": 2,
+      "missed_men_n": 7,
+      "possibly": 0.12903225806451613,
+      "likely_ppv": 0.7019230769230769,
+      "unlikely_npv": 0.8941176470588236,
+      "est_anaemic_women": 10.777226544454027,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3391098708635476,
+      "r2": 0.4775424851998604,
+      "caught": 0.8901098901098901,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.21052631578947367,
+      "missed_women_n": 2,
+      "missed_men_n": 8,
+      "possibly": 0.1152073732718894,
+      "likely_ppv": 0.6862745098039216,
+      "unlikely_npv": 0.8888888888888888,
+      "est_anaemic_women": 10.796649768942764,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    }
+  ],
+  "colour + sex, interaction": [
+    {
+      "mae": 1.3299700672821133,
+      "r2": 0.48495141343626325,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.18421052631578946,
+      "missed_women_n": 2,
+      "missed_men_n": 7,
+      "possibly": 0.14746543778801843,
+      "likely_ppv": 0.68,
+      "unlikely_npv": 0.8941176470588236,
+      "est_anaemic_women": 10.792861947664983,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3426945012441227,
+      "r2": 0.4757742636825303,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.18421052631578946,
+      "missed_women_n": 2,
+      "missed_men_n": 7,
+      "possibly": 0.1152073732718894,
+      "likely_ppv": 0.6826923076923077,
+      "unlikely_npv": 0.8977272727272727,
+      "est_anaemic_women": 10.822342240516708,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3320268448172852,
+      "r2": 0.48216266122911766,
+      "caught": 0.8791208791208791,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.23684210526315788,
+      "missed_women_n": 2,
+      "missed_men_n": 9,
+      "possibly": 0.12442396313364056,
+      "likely_ppv": 0.6764705882352942,
+      "unlikely_npv": 0.875,
+      "est_anaemic_women": 10.813344853128443,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3246143492313343,
+      "r2": 0.49033779739164396,
+      "caught": 0.9010989010989011,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.18421052631578946,
+      "missed_women_n": 2,
+      "missed_men_n": 7,
+      "possibly": 0.1336405529953917,
+      "likely_ppv": 0.6862745098039216,
+      "unlikely_npv": 0.8953488372093024,
+      "est_anaemic_women": 10.790984069213373,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    },
+    {
+      "mae": 1.3456229172931713,
+      "r2": 0.47763125289927066,
+      "caught": 0.8901098901098901,
+      "missed_women": 0.03773584905660377,
+      "missed_men": 0.21052631578947367,
+      "missed_women_n": 2,
+      "missed_men_n": 8,
+      "possibly": 0.1382488479262673,
+      "likely_ppv": 0.7070707070707071,
+      "unlikely_npv": 0.8863636363636364,
+      "est_anaemic_women": 10.814352836744154,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": [
+        7.0
+      ]
+    }
+  ],
+  "sex only, no photo": [
+    {
+      "mae": 1.6142609132561694,
+      "r2": 0.3022679838852331,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 0.6036866359447005,
+      "likely_ppv": 0.6162790697674418,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 11.178986569388796,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 1.636051122875252,
+      "r2": 0.28709329060367583,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 0.6036866359447005,
+      "likely_ppv": 0.6162790697674418,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 11.225289010829306,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 1.6289933899453815,
+      "r2": 0.2915707035520134,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 0.6036866359447005,
+      "likely_ppv": 0.6162790697674418,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 11.201793121591777,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 1.6121396008563196,
+      "r2": 0.3037776269789433,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 0.6036866359447005,
+      "likely_ppv": 0.6162790697674418,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 11.187638139128838,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 1.6323498810336086,
+      "r2": 0.2880361324630779,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 0.6036866359447005,
+      "likely_ppv": 0.6162790697674418,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 11.193680638294413,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    }
+  ],
+  "no information": [
+    {
+      "mae": 2.0042165428383334,
+      "r2": -0.005709666194094076,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 1.0,
+      "likely_ppv": 0.0,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 12.80086316558554,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 2.0153591311037,
+      "r2": -0.019536323304608638,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 1.0,
+      "likely_ppv": 0.0,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 12.825199865722777,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 2.004627299625983,
+      "r2": -0.009642451485826209,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 1.0,
+      "likely_ppv": 0.0,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 12.802626521726255,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 2.0062271508390666,
+      "r2": -0.0082608522119072,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 1.0,
+      "likely_ppv": 0.0,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 12.80891006881708,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    },
+    {
+      "mae": 2.0080771051419504,
+      "r2": -0.010892062405157832,
+      "caught": 1.0,
+      "missed_women": 0.0,
+      "missed_men": 0.0,
+      "missed_women_n": 0,
+      "missed_men_n": 0,
+      "possibly": 1.0,
+      "likely_ppv": 0.0,
+      "unlikely_npv": 0.0,
+      "est_anaemic_women": 12.80875307307248,
+      "true_anaemic_women": 9.847169811320754,
+      "severe_missed": []
+    }
+  ]
+}

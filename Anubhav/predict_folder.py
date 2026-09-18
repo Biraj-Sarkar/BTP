@@ -49,7 +49,7 @@ from anemia.data import _normalise_sex, anemia_threshold  # noqa: E402
 from anemia.imaging import read_rgb  # noqa: E402
 from anemia.linear_model import LinearModel, extract_features  # noqa: E402
 from anemia.preprocess import prepare  # noqa: E402
-from anemia.segment import get_extractor  # noqa: E402
+from anemia.segment import EXTRACTOR_CHOICES, get_extractor  # noqa: E402
 
 EYE_DIRS = ("left_eye", "right_eye")
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png"}
@@ -147,7 +147,7 @@ def main() -> None:
                         help="fitted model file (produced once by `anemia fit-linear`)")
     parser.add_argument("--out", type=Path, default=None, help="output CSV")
     parser.add_argument("--extractor", default=None,
-                        choices=["refined", "redness", "brightness", "grabcut", "cielab"],
+                        choices=EXTRACTOR_CHOICES,
                         help="override the extractor recorded in the model file "
                              "(normally leave unset — a mismatch invalidates the model)")
     parser.add_argument("--segmenter", type=Path, default=None,

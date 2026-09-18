@@ -1,0 +1,2745 @@
+{
+  "source": "datasets/conjunctiva_seg/Eye Conjunctiva Segmentation Dataset",
+  "annotator_policy": "intersection",
+  "max_size": 768,
+  "inter_annotator_dice_mean": 0.7361091982491943,
+  "inter_annotator_dice_median": 0.7447035152089004,
+  "kept": [
+    {
+      "stem": "1",
+      "coverage": 0.01038,
+      "annotator_dice": 0.7835
+    },
+    {
+      "stem": "10",
+      "coverage": 0.00567,
+      "annotator_dice": 0.8034
+    },
+    {
+      "stem": "100",
+      "coverage": 0.00498,
+      "annotator_dice": 0.8141
+    },
+    {
+      "stem": "101",
+      "coverage": 0.00371,
+      "annotator_dice": 0.6888
+    },
+    {
+      "stem": "102",
+      "coverage": 0.00254,
+      "annotator_dice": 0.6319
+    },
+    {
+      "stem": "103",
+      "coverage": 0.00343,
+      "annotator_dice": 0.6047
+    },
+    {
+      "stem": "104",
+      "coverage": 0.00268,
+      "annotator_dice": 0.5237
+    },
+    {
+      "stem": "105",
+      "coverage": 0.00295,
+      "annotator_dice": 0.5428
+    },
+    {
+      "stem": "106",
+      "coverage": 0.00338,
+      "annotator_dice": 0.5088
+    },
+    {
+      "stem": "107",
+      "coverage": 0.00404,
+      "annotator_dice": 0.5963
+    },
+    {
+      "stem": "108",
+      "coverage": 0.00294,
+      "annotator_dice": 0.5068
+    },
+    {
+      "stem": "109",
+      "coverage": 0.0032,
+      "annotator_dice": 0.5695
+    },
+    {
+      "stem": "11",
+      "coverage": 0.00481,
+      "annotator_dice": 0.7952
+    },
+    {
+      "stem": "110",
+      "coverage": 0.00305,
+      "annotator_dice": 0.5737
+    },
+    {
+      "stem": "111",
+      "coverage": 0.00968,
+      "annotator_dice": 0.7015
+    },
+    {
+      "stem": "112",
+      "coverage": 0.00902,
+      "annotator_dice": 0.7174
+    },
+    {
+      "stem": "113",
+      "coverage": 0.01361,
+      "annotator_dice": 0.7771
+    },
+    {
+      "stem": "114",
+      "coverage": 0.01261,
+      "annotator_dice": 0.7644
+    },
+    {
+      "stem": "115",
+      "coverage": 0.01424,
+      "annotator_dice": 0.7711
+    },
+    {
+      "stem": "116",
+      "coverage": 0.00723,
+      "annotator_dice": 0.7744
+    },
+    {
+      "stem": "117",
+      "coverage": 0.00678,
+      "annotator_dice": 0.7706
+    },
+    {
+      "stem": "118",
+      "coverage": 0.00527,
+      "annotator_dice": 0.7356
+    },
+    {
+      "stem": "119",
+      "coverage": 0.00789,
+      "annotator_dice": 0.823
+    },
+    {
+      "stem": "12",
+      "coverage": 0.00684,
+      "annotator_dice": 0.8185
+    },
+    {
+      "stem": "120",
+      "coverage": 0.00662,
+      "annotator_dice": 0.7727
+    },
+    {
+      "stem": "121",
+      "coverage": 0.0097,
+      "annotator_dice": 0.7133
+    },
+    {
+      "stem": "122",
+      "coverage": 0.00829,
+      "annotator_dice": 0.8276
+    },
+    {
+      "stem": "123",
+      "coverage": 0.00631,
+      "annotator_dice": 0.8197
+    },
+    {
+      "stem": "124",
+      "coverage": 0.00755,
+      "annotator_dice": 0.755
+    },
+    {
+      "stem": "125",
+      "coverage": 0.00643,
+      "annotator_dice": 0.7459
+    },
+    {
+      "stem": "126",
+      "coverage": 0.0049,
+      "annotator_dice": 0.645
+    },
+    {
+      "stem": "127",
+      "coverage": 0.00384,
+      "annotator_dice": 0.5819
+    },
+    {
+      "stem": "128",
+      "coverage": 0.00482,
+      "annotator_dice": 0.7184
+    },
+    {
+      "stem": "129",
+      "coverage": 0.0047,
+      "annotator_dice": 0.7503
+    },
+    {
+      "stem": "13",
+      "coverage": 0.01438,
+      "annotator_dice": 0.8564
+    },
+    {
+      "stem": "130",
+      "coverage": 0.004,
+      "annotator_dice": 0.7139
+    },
+    {
+      "stem": "131",
+      "coverage": 0.00481,
+      "annotator_dice": 0.7645
+    },
+    {
+      "stem": "132",
+      "coverage": 0.00466,
+      "annotator_dice": 0.7182
+    },
+    {
+      "stem": "133",
+      "coverage": 0.00359,
+      "annotator_dice": 0.6582
+    },
+    {
+      "stem": "134",
+      "coverage": 0.00375,
+      "annotator_dice": 0.6724
+    },
+    {
+      "stem": "135",
+      "coverage": 0.00377,
+      "annotator_dice": 0.4829
+    },
+    {
+      "stem": "136",
+      "coverage": 0.00464,
+      "annotator_dice": 0.6487
+    },
+    {
+      "stem": "137",
+      "coverage": 0.00347,
+      "annotator_dice": 0.7342
+    },
+    {
+      "stem": "138",
+      "coverage": 0.00388,
+      "annotator_dice": 0.7368
+    },
+    {
+      "stem": "139",
+      "coverage": 0.00367,
+      "annotator_dice": 0.7488
+    },
+    {
+      "stem": "14",
+      "coverage": 0.00364,
+      "annotator_dice": 0.7481
+    },
+    {
+      "stem": "140",
+      "coverage": 0.00346,
+      "annotator_dice": 0.7058
+    },
+    {
+      "stem": "141",
+      "coverage": 0.00511,
+      "annotator_dice": 0.7567
+    },
+    {
+      "stem": "142",
+      "coverage": 0.00588,
+      "annotator_dice": 0.8623
+    },
+    {
+      "stem": "143",
+      "coverage": 0.00516,
+      "annotator_dice": 0.7349
+    },
+    {
+      "stem": "144",
+      "coverage": 0.00532,
+      "annotator_dice": 0.7791
+    },
+    {
+      "stem": "145",
+      "coverage": 0.01281,
+      "annotator_dice": 0.7838
+    },
+    {
+      "stem": "146",
+      "coverage": 0.01297,
+      "annotator_dice": 0.8159
+    },
+    {
+      "stem": "147",
+      "coverage": 0.01335,
+      "annotator_dice": 0.8489
+    },
+    {
+      "stem": "148",
+      "coverage": 0.01249,
+      "annotator_dice": 0.8063
+    },
+    {
+      "stem": "149",
+      "coverage": 0.0124,
+      "annotator_dice": 0.7646
+    },
+    {
+      "stem": "15",
+      "coverage": 0.0041,
+      "annotator_dice": 0.8108
+    },
+    {
+      "stem": "150",
+      "coverage": 0.00555,
+      "annotator_dice": 0.7982
+    },
+    {
+      "stem": "151",
+      "coverage": 0.0057,
+      "annotator_dice": 0.8302
+    },
+    {
+      "stem": "152",
+      "coverage": 0.00514,
+      "annotator_dice": 0.7871
+    },
+    {
+      "stem": "153",
+      "coverage": 0.00459,
+      "annotator_dice": 0.7216
+    },
+    {
+      "stem": "154",
+      "coverage": 0.00917,
+      "annotator_dice": 0.5912
+    },
+    {
+      "stem": "155",
+      "coverage": 0.01457,
+      "annotator_dice": 0.8228
+    },
+    {
+      "stem": "156",
+      "coverage": 0.01299,
+      "annotator_dice": 0.7942
+    },
+    {
+      "stem": "157",
+      "coverage": 0.01339,
+      "annotator_dice": 0.7962
+    },
+    {
+      "stem": "158",
+      "coverage": 0.00889,
+      "annotator_dice": 0.7446
+    },
+    {
+      "stem": "159",
+      "coverage": 0.0103,
+      "annotator_dice": 0.8092
+    },
+    {
+      "stem": "16",
+      "coverage": 0.00371,
+      "annotator_dice": 0.8024
+    },
+    {
+      "stem": "160",
+      "coverage": 0.01043,
+      "annotator_dice": 0.8598
+    },
+    {
+      "stem": "161",
+      "coverage": 0.01002,
+      "annotator_dice": 0.7815
+    },
+    {
+      "stem": "162",
+      "coverage": 0.00921,
+      "annotator_dice": 0.7415
+    },
+    {
+      "stem": "163",
+      "coverage": 0.01029,
+      "annotator_dice": 0.7607
+    },
+    {
+      "stem": "164",
+      "coverage": 0.00976,
+      "annotator_dice": 0.7551
+    },
+    {
+      "stem": "165",
+      "coverage": 0.01028,
+      "annotator_dice": 0.7935
+    },
+    {
+      "stem": "166",
+      "coverage": 0.01045,
+      "annotator_dice": 0.7182
+    },
+    {
+      "stem": "167",
+      "coverage": 0.00656,
+      "annotator_dice": 0.6212
+    },
+    {
+      "stem": "168",
+      "coverage": 0.00676,
+      "annotator_dice": 0.6436
+    },
+    {
+      "stem": "169",
+      "coverage": 0.00645,
+      "annotator_dice": 0.6176
+    },
+    {
+      "stem": "17",
+      "coverage": 0.00548,
+      "annotator_dice": 0.8297
+    },
+    {
+      "stem": "170",
+      "coverage": 0.00641,
+      "annotator_dice": 0.6133
+    },
+    {
+      "stem": "171",
+      "coverage": 0.00701,
+      "annotator_dice": 0.588
+    },
+    {
+      "stem": "172",
+      "coverage": 0.00757,
+      "annotator_dice": 0.6185
+    },
+    {
+      "stem": "173",
+      "coverage": 0.01024,
+      "annotator_dice": 0.6959
+    },
+    {
+      "stem": "174",
+      "coverage": 0.01037,
+      "annotator_dice": 0.6883
+    },
+    {
+      "stem": "175",
+      "coverage": 0.00428,
+      "annotator_dice": 0.6094
+    },
+    {
+      "stem": "176",
+      "coverage": 0.00439,
+      "annotator_dice": 0.5622
+    },
+    {
+      "stem": "177",
+      "coverage": 0.00627,
+      "annotator_dice": 0.6989
+    },
+    {
+      "stem": "178",
+      "coverage": 0.00601,
+      "annotator_dice": 0.67
+    },
+    {
+      "stem": "179",
+      "coverage": 0.00851,
+      "annotator_dice": 0.787
+    },
+    {
+      "stem": "18",
+      "coverage": 0.00563,
+      "annotator_dice": 0.841
+    },
+    {
+      "stem": "180",
+      "coverage": 0.01094,
+      "annotator_dice": 0.8362
+    },
+    {
+      "stem": "181",
+      "coverage": 0.01038,
+      "annotator_dice": 0.8223
+    },
+    {
+      "stem": "182",
+      "coverage": 0.00947,
+      "annotator_dice": 0.8149
+    },
+    {
+      "stem": "183",
+      "coverage": 0.00495,
+      "annotator_dice": 0.7601
+    },
+    {
+      "stem": "184",
+      "coverage": 0.00445,
+      "annotator_dice": 0.7548
+    },
+    {
+      "stem": "185",
+      "coverage": 0.00455,
+      "annotator_dice": 0.7365
+    },
+    {
+      "stem": "186",
+      "coverage": 0.00514,
+      "annotator_dice": 0.7691
+    },
+    {
+      "stem": "187",
+      "coverage": 0.005,
+      "annotator_dice": 0.7867
+    },
+    {
+      "stem": "188",
+      "coverage": 0.00713,
+      "annotator_dice": 0.692
+    },
+    {
+      "stem": "189",
+      "coverage": 0.00469,
+      "annotator_dice": 0.6351
+    },
+    {
+      "stem": "19",
+      "coverage": 0.00495,
+      "annotator_dice": 0.7414
+    },
+    {
+      "stem": "190",
+      "coverage": 0.00448,
+      "annotator_dice": 0.6889
+    },
+    {
+      "stem": "191",
+      "coverage": 0.00466,
+      "annotator_dice": 0.7084
+    },
+    {
+      "stem": "192",
+      "coverage": 0.00328,
+      "annotator_dice": 0.7238
+    },
+    {
+      "stem": "193",
+      "coverage": 0.0036,
+      "annotator_dice": 0.699
+    },
+    {
+      "stem": "194",
+      "coverage": 0.00582,
+      "annotator_dice": 0.7871
+    },
+    {
+      "stem": "195",
+      "coverage": 0.00346,
+      "annotator_dice": 0.6937
+    },
+    {
+      "stem": "196",
+      "coverage": 0.01156,
+      "annotator_dice": 0.8161
+    },
+    {
+      "stem": "197",
+      "coverage": 0.00664,
+      "annotator_dice": 0.7182
+    },
+    {
+      "stem": "198",
+      "coverage": 0.00676,
+      "annotator_dice": 0.716
+    },
+    {
+      "stem": "199",
+      "coverage": 0.00736,
+      "annotator_dice": 0.7451
+    },
+    {
+      "stem": "2",
+      "coverage": 0.01091,
+      "annotator_dice": 0.7229
+    },
+    {
+      "stem": "20",
+      "coverage": 0.00437,
+      "annotator_dice": 0.7183
+    },
+    {
+      "stem": "200",
+      "coverage": 0.0033,
+      "annotator_dice": 0.7348
+    },
+    {
+      "stem": "201",
+      "coverage": 0.00341,
+      "annotator_dice": 0.5384
+    },
+    {
+      "stem": "202",
+      "coverage": 0.00264,
+      "annotator_dice": 0.5299
+    },
+    {
+      "stem": "203",
+      "coverage": 0.00306,
+      "annotator_dice": 0.5948
+    },
+    {
+      "stem": "204",
+      "coverage": 0.00489,
+      "annotator_dice": 0.6972
+    },
+    {
+      "stem": "205",
+      "coverage": 0.0034,
+      "annotator_dice": 0.5414
+    },
+    {
+      "stem": "206",
+      "coverage": 0.0022,
+      "annotator_dice": 0.4976
+    },
+    {
+      "stem": "207",
+      "coverage": 0.00177,
+      "annotator_dice": 0.3941
+    },
+    {
+      "stem": "208",
+      "coverage": 0.00251,
+      "annotator_dice": 0.4331
+    },
+    {
+      "stem": "209",
+      "coverage": 0.00286,
+      "annotator_dice": 0.4286
+    },
+    {
+      "stem": "21",
+      "coverage": 0.00524,
+      "annotator_dice": 0.784
+    },
+    {
+      "stem": "210",
+      "coverage": 0.01068,
+      "annotator_dice": 0.4352
+    },
+    {
+      "stem": "211",
+      "coverage": 0.01735,
+      "annotator_dice": 0.6151
+    },
+    {
+      "stem": "212",
+      "coverage": 0.01195,
+      "annotator_dice": 0.5251
+    },
+    {
+      "stem": "213",
+      "coverage": 0.0129,
+      "annotator_dice": 0.5274
+    },
+    {
+      "stem": "214",
+      "coverage": 0.01035,
+      "annotator_dice": 0.6768
+    },
+    {
+      "stem": "215",
+      "coverage": 0.01028,
+      "annotator_dice": 0.624
+    },
+    {
+      "stem": "216",
+      "coverage": 0.01172,
+      "annotator_dice": 0.6888
+    },
+    {
+      "stem": "217",
+      "coverage": 0.0146,
+      "annotator_dice": 0.796
+    },
+    {
+      "stem": "218",
+      "coverage": 0.01359,
+      "annotator_dice": 0.7831
+    },
+    {
+      "stem": "219",
+      "coverage": 0.01171,
+      "annotator_dice": 0.657
+    },
+    {
+      "stem": "22",
+      "coverage": 0.00358,
+      "annotator_dice": 0.7524
+    },
+    {
+      "stem": "220",
+      "coverage": 0.00733,
+      "annotator_dice": 0.591
+    },
+    {
+      "stem": "221",
+      "coverage": 0.00819,
+      "annotator_dice": 0.7914
+    },
+    {
+      "stem": "222",
+      "coverage": 0.00848,
+      "annotator_dice": 0.7415
+    },
+    {
+      "stem": "223",
+      "coverage": 0.01208,
+      "annotator_dice": 0.8635
+    },
+    {
+      "stem": "224",
+      "coverage": 0.00877,
+      "annotator_dice": 0.8221
+    },
+    {
+      "stem": "225",
+      "coverage": 0.00728,
+      "annotator_dice": 0.6203
+    },
+    {
+      "stem": "226",
+      "coverage": 0.0075,
+      "annotator_dice": 0.7319
+    },
+    {
+      "stem": "227",
+      "coverage": 0.00478,
+      "annotator_dice": 0.7287
+    },
+    {
+      "stem": "228",
+      "coverage": 0.00647,
+      "annotator_dice": 0.7871
+    },
+    {
+      "stem": "229",
+      "coverage": 0.00789,
+      "annotator_dice": 0.7412
+    },
+    {
+      "stem": "23",
+      "coverage": 0.00396,
+      "annotator_dice": 0.7773
+    },
+    {
+      "stem": "230",
+      "coverage": 0.00592,
+      "annotator_dice": 0.7781
+    },
+    {
+      "stem": "231",
+      "coverage": 0.0057,
+      "annotator_dice": 0.7598
+    },
+    {
+      "stem": "232",
+      "coverage": 0.00671,
+      "annotator_dice": 0.7621
+    },
+    {
+      "stem": "233",
+      "coverage": 0.00584,
+      "annotator_dice": 0.7513
+    },
+    {
+      "stem": "234",
+      "coverage": 0.00592,
+      "annotator_dice": 0.6576
+    },
+    {
+      "stem": "235",
+      "coverage": 0.00625,
+      "annotator_dice": 0.6624
+    },
+    {
+      "stem": "236",
+      "coverage": 0.00966,
+      "annotator_dice": 0.7219
+    },
+    {
+      "stem": "237",
+      "coverage": 0.00623,
+      "annotator_dice": 0.5354
+    },
+    {
+      "stem": "238",
+      "coverage": 0.00989,
+      "annotator_dice": 0.7275
+    },
+    {
+      "stem": "239",
+      "coverage": 0.00677,
+      "annotator_dice": 0.7319
+    },
+    {
+      "stem": "24",
+      "coverage": 0.00384,
+      "annotator_dice": 0.7483
+    },
+    {
+      "stem": "240",
+      "coverage": 0.008,
+      "annotator_dice": 0.698
+    },
+    {
+      "stem": "241",
+      "coverage": 0.00877,
+      "annotator_dice": 0.771
+    },
+    {
+      "stem": "242",
+      "coverage": 0.00728,
+      "annotator_dice": 0.6642
+    },
+    {
+      "stem": "243",
+      "coverage": 0.00473,
+      "annotator_dice": 0.6831
+    },
+    {
+      "stem": "244",
+      "coverage": 0.00501,
+      "annotator_dice": 0.6833
+    },
+    {
+      "stem": "245",
+      "coverage": 0.00591,
+      "annotator_dice": 0.7686
+    },
+    {
+      "stem": "246",
+      "coverage": 0.005,
+      "annotator_dice": 0.6865
+    },
+    {
+      "stem": "247",
+      "coverage": 0.00503,
+      "annotator_dice": 0.658
+    },
+    {
+      "stem": "248",
+      "coverage": 0.00598,
+      "annotator_dice": 0.6707
+    },
+    {
+      "stem": "249",
+      "coverage": 0.00568,
+      "annotator_dice": 0.7075
+    },
+    {
+      "stem": "25",
+      "coverage": 0.01276,
+      "annotator_dice": 0.8824
+    },
+    {
+      "stem": "250",
+      "coverage": 0.00538,
+      "annotator_dice": 0.6719
+    },
+    {
+      "stem": "251",
+      "coverage": 0.00243,
+      "annotator_dice": 0.5227
+    },
+    {
+      "stem": "252",
+      "coverage": 0.00767,
+      "annotator_dice": 0.8645
+    },
+    {
+      "stem": "253",
+      "coverage": 0.00634,
+      "annotator_dice": 0.856
+    },
+    {
+      "stem": "254",
+      "coverage": 0.00265,
+      "annotator_dice": 0.6211
+    },
+    {
+      "stem": "255",
+      "coverage": 0.01593,
+      "annotator_dice": 0.8145
+    },
+    {
+      "stem": "256",
+      "coverage": 0.01407,
+      "annotator_dice": 0.8145
+    },
+    {
+      "stem": "257",
+      "coverage": 0.01188,
+      "annotator_dice": 0.8062
+    },
+    {
+      "stem": "258",
+      "coverage": 0.01466,
+      "annotator_dice": 0.8302
+    },
+    {
+      "stem": "259",
+      "coverage": 0.00933,
+      "annotator_dice": 0.5002
+    },
+    {
+      "stem": "26",
+      "coverage": 0.01256,
+      "annotator_dice": 0.8423
+    },
+    {
+      "stem": "260",
+      "coverage": 0.00776,
+      "annotator_dice": 0.5701
+    },
+    {
+      "stem": "261",
+      "coverage": 0.00588,
+      "annotator_dice": 0.4148
+    },
+    {
+      "stem": "262",
+      "coverage": 0.00629,
+      "annotator_dice": 0.6283
+    },
+    {
+      "stem": "263",
+      "coverage": 0.0141,
+      "annotator_dice": 0.7686
+    },
+    {
+      "stem": "264",
+      "coverage": 0.01308,
+      "annotator_dice": 0.8066
+    },
+    {
+      "stem": "265",
+      "coverage": 0.01379,
+      "annotator_dice": 0.7418
+    },
+    {
+      "stem": "266",
+      "coverage": 0.01014,
+      "annotator_dice": 0.6789
+    },
+    {
+      "stem": "267",
+      "coverage": 0.00869,
+      "annotator_dice": 0.7068
+    },
+    {
+      "stem": "268",
+      "coverage": 0.01072,
+      "annotator_dice": 0.8082
+    },
+    {
+      "stem": "269",
+      "coverage": 0.01091,
+      "annotator_dice": 0.8514
+    },
+    {
+      "stem": "27",
+      "coverage": 0.02567,
+      "annotator_dice": 0.8285
+    },
+    {
+      "stem": "270",
+      "coverage": 0.0094,
+      "annotator_dice": 0.7367
+    },
+    {
+      "stem": "271",
+      "coverage": 0.0094,
+      "annotator_dice": 0.8252
+    },
+    {
+      "stem": "272",
+      "coverage": 0.00771,
+      "annotator_dice": 0.7518
+    },
+    {
+      "stem": "273",
+      "coverage": 0.008,
+      "annotator_dice": 0.7688
+    },
+    {
+      "stem": "274",
+      "coverage": 0.00939,
+      "annotator_dice": 0.8001
+    },
+    {
+      "stem": "275",
+      "coverage": 0.00795,
+      "annotator_dice": 0.7723
+    },
+    {
+      "stem": "276",
+      "coverage": 0.00843,
+      "annotator_dice": 0.7174
+    },
+    {
+      "stem": "277",
+      "coverage": 0.00674,
+      "annotator_dice": 0.7071
+    },
+    {
+      "stem": "278",
+      "coverage": 0.00757,
+      "annotator_dice": 0.6396
+    },
+    {
+      "stem": "279",
+      "coverage": 0.00787,
+      "annotator_dice": 0.7732
+    },
+    {
+      "stem": "28",
+      "coverage": 0.00504,
+      "annotator_dice": 0.7736
+    },
+    {
+      "stem": "280",
+      "coverage": 0.00364,
+      "annotator_dice": 0.703
+    },
+    {
+      "stem": "281",
+      "coverage": 0.00312,
+      "annotator_dice": 0.5685
+    },
+    {
+      "stem": "282",
+      "coverage": 0.00215,
+      "annotator_dice": 0.6331
+    },
+    {
+      "stem": "283",
+      "coverage": 0.00187,
+      "annotator_dice": 0.5846
+    },
+    {
+      "stem": "284",
+      "coverage": 0.01098,
+      "annotator_dice": 0.7141
+    },
+    {
+      "stem": "285",
+      "coverage": 0.01096,
+      "annotator_dice": 0.7204
+    },
+    {
+      "stem": "286",
+      "coverage": 0.00768,
+      "annotator_dice": 0.7166
+    },
+    {
+      "stem": "287",
+      "coverage": 0.00998,
+      "annotator_dice": 0.6965
+    },
+    {
+      "stem": "288",
+      "coverage": 0.00902,
+      "annotator_dice": 0.6637
+    },
+    {
+      "stem": "289",
+      "coverage": 0.00501,
+      "annotator_dice": 0.7602
+    },
+    {
+      "stem": "29",
+      "coverage": 0.00326,
+      "annotator_dice": 0.8602
+    },
+    {
+      "stem": "290",
+      "coverage": 0.00621,
+      "annotator_dice": 0.7215
+    },
+    {
+      "stem": "291",
+      "coverage": 0.00751,
+      "annotator_dice": 0.7171
+    },
+    {
+      "stem": "292",
+      "coverage": 0.00958,
+      "annotator_dice": 0.784
+    },
+    {
+      "stem": "293",
+      "coverage": 0.00786,
+      "annotator_dice": 0.7671
+    },
+    {
+      "stem": "294",
+      "coverage": 0.01369,
+      "annotator_dice": 0.789
+    },
+    {
+      "stem": "295",
+      "coverage": 0.00678,
+      "annotator_dice": 0.6787
+    },
+    {
+      "stem": "296",
+      "coverage": 0.00483,
+      "annotator_dice": 0.7307
+    },
+    {
+      "stem": "297",
+      "coverage": 0.00453,
+      "annotator_dice": 0.6789
+    },
+    {
+      "stem": "298",
+      "coverage": 0.00557,
+      "annotator_dice": 0.685
+    },
+    {
+      "stem": "299",
+      "coverage": 0.0051,
+      "annotator_dice": 0.599
+    },
+    {
+      "stem": "3",
+      "coverage": 0.00742,
+      "annotator_dice": 0.8371
+    },
+    {
+      "stem": "30",
+      "coverage": 0.00557,
+      "annotator_dice": 0.8473
+    },
+    {
+      "stem": "300",
+      "coverage": 0.00473,
+      "annotator_dice": 0.6398
+    },
+    {
+      "stem": "301",
+      "coverage": 0.0053,
+      "annotator_dice": 0.7025
+    },
+    {
+      "stem": "302",
+      "coverage": 0.00514,
+      "annotator_dice": 0.7287
+    },
+    {
+      "stem": "303",
+      "coverage": 0.0053,
+      "annotator_dice": 0.7219
+    },
+    {
+      "stem": "304",
+      "coverage": 0.00587,
+      "annotator_dice": 0.7151
+    },
+    {
+      "stem": "305",
+      "coverage": 0.00533,
+      "annotator_dice": 0.7778
+    },
+    {
+      "stem": "306",
+      "coverage": 0.00455,
+      "annotator_dice": 0.7406
+    },
+    {
+      "stem": "307",
+      "coverage": 0.00423,
+      "annotator_dice": 0.6859
+    },
+    {
+      "stem": "308",
+      "coverage": 0.00996,
+      "annotator_dice": 0.7043
+    },
+    {
+      "stem": "309",
+      "coverage": 0.01073,
+      "annotator_dice": 0.8015
+    },
+    {
+      "stem": "31",
+      "coverage": 0.00302,
+      "annotator_dice": 0.735
+    },
+    {
+      "stem": "310",
+      "coverage": 0.01037,
+      "annotator_dice": 0.7947
+    },
+    {
+      "stem": "311",
+      "coverage": 0.01658,
+      "annotator_dice": 0.8274
+    },
+    {
+      "stem": "312",
+      "coverage": 0.01919,
+      "annotator_dice": 0.8213
+    },
+    {
+      "stem": "313",
+      "coverage": 0.01727,
+      "annotator_dice": 0.7728
+    },
+    {
+      "stem": "314",
+      "coverage": 0.01674,
+      "annotator_dice": 0.7835
+    },
+    {
+      "stem": "315",
+      "coverage": 0.02005,
+      "annotator_dice": 0.8709
+    },
+    {
+      "stem": "316",
+      "coverage": 0.02015,
+      "annotator_dice": 0.8412
+    },
+    {
+      "stem": "317",
+      "coverage": 0.01041,
+      "annotator_dice": 0.7991
+    },
+    {
+      "stem": "318",
+      "coverage": 0.01051,
+      "annotator_dice": 0.8158
+    },
+    {
+      "stem": "319",
+      "coverage": 0.00991,
+      "annotator_dice": 0.7913
+    },
+    {
+      "stem": "32",
+      "coverage": 0.00796,
+      "annotator_dice": 0.8265
+    },
+    {
+      "stem": "320",
+      "coverage": 0.01092,
+      "annotator_dice": 0.8107
+    },
+    {
+      "stem": "321",
+      "coverage": 0.01091,
+      "annotator_dice": 0.8043
+    },
+    {
+      "stem": "322",
+      "coverage": 0.00883,
+      "annotator_dice": 0.7826
+    },
+    {
+      "stem": "323",
+      "coverage": 0.00845,
+      "annotator_dice": 0.7797
+    },
+    {
+      "stem": "324",
+      "coverage": 0.00844,
+      "annotator_dice": 0.7759
+    },
+    {
+      "stem": "325",
+      "coverage": 0.0076,
+      "annotator_dice": 0.6927
+    },
+    {
+      "stem": "326",
+      "coverage": 0.00811,
+      "annotator_dice": 0.8128
+    },
+    {
+      "stem": "327",
+      "coverage": 0.00874,
+      "annotator_dice": 0.8653
+    },
+    {
+      "stem": "328",
+      "coverage": 0.00772,
+      "annotator_dice": 0.7761
+    },
+    {
+      "stem": "329",
+      "coverage": 0.0072,
+      "annotator_dice": 0.7862
+    },
+    {
+      "stem": "33",
+      "coverage": 0.00691,
+      "annotator_dice": 0.837
+    },
+    {
+      "stem": "330",
+      "coverage": 0.01038,
+      "annotator_dice": 0.7921
+    },
+    {
+      "stem": "331",
+      "coverage": 0.0093,
+      "annotator_dice": 0.7904
+    },
+    {
+      "stem": "332",
+      "coverage": 0.00957,
+      "annotator_dice": 0.7691
+    },
+    {
+      "stem": "333",
+      "coverage": 0.00969,
+      "annotator_dice": 0.7843
+    },
+    {
+      "stem": "334",
+      "coverage": 0.008,
+      "annotator_dice": 0.7877
+    },
+    {
+      "stem": "335",
+      "coverage": 0.00812,
+      "annotator_dice": 0.8501
+    },
+    {
+      "stem": "336",
+      "coverage": 0.0077,
+      "annotator_dice": 0.7692
+    },
+    {
+      "stem": "337",
+      "coverage": 0.00718,
+      "annotator_dice": 0.7973
+    },
+    {
+      "stem": "338",
+      "coverage": 0.00815,
+      "annotator_dice": 0.8363
+    },
+    {
+      "stem": "339",
+      "coverage": 0.00608,
+      "annotator_dice": 0.708
+    },
+    {
+      "stem": "34",
+      "coverage": 0.00854,
+      "annotator_dice": 0.822
+    },
+    {
+      "stem": "340",
+      "coverage": 0.00759,
+      "annotator_dice": 0.7558
+    },
+    {
+      "stem": "341",
+      "coverage": 0.00796,
+      "annotator_dice": 0.7338
+    },
+    {
+      "stem": "342",
+      "coverage": 0.00779,
+      "annotator_dice": 0.7401
+    },
+    {
+      "stem": "343",
+      "coverage": 0.01018,
+      "annotator_dice": 0.8742
+    },
+    {
+      "stem": "344",
+      "coverage": 0.00398,
+      "annotator_dice": 0.6949
+    },
+    {
+      "stem": "345",
+      "coverage": 0.00387,
+      "annotator_dice": 0.6408
+    },
+    {
+      "stem": "346",
+      "coverage": 0.00515,
+      "annotator_dice": 0.6356
+    },
+    {
+      "stem": "347",
+      "coverage": 0.00569,
+      "annotator_dice": 0.692
+    },
+    {
+      "stem": "348",
+      "coverage": 0.00533,
+      "annotator_dice": 0.6769
+    },
+    {
+      "stem": "349",
+      "coverage": 0.00458,
+      "annotator_dice": 0.651
+    },
+    {
+      "stem": "35",
+      "coverage": 0.00576,
+      "annotator_dice": 0.768
+    },
+    {
+      "stem": "350",
+      "coverage": 0.00453,
+      "annotator_dice": 0.6001
+    },
+    {
+      "stem": "351",
+      "coverage": 0.01092,
+      "annotator_dice": 0.8242
+    },
+    {
+      "stem": "352",
+      "coverage": 0.01103,
+      "annotator_dice": 0.763
+    },
+    {
+      "stem": "353",
+      "coverage": 0.01177,
+      "annotator_dice": 0.8269
+    },
+    {
+      "stem": "354",
+      "coverage": 0.01083,
+      "annotator_dice": 0.8254
+    },
+    {
+      "stem": "355",
+      "coverage": 0.01083,
+      "annotator_dice": 0.8074
+    },
+    {
+      "stem": "356",
+      "coverage": 0.00719,
+      "annotator_dice": 0.8239
+    },
+    {
+      "stem": "357",
+      "coverage": 0.00832,
+      "annotator_dice": 0.8903
+    },
+    {
+      "stem": "358",
+      "coverage": 0.00818,
+      "annotator_dice": 0.8578
+    },
+    {
+      "stem": "359",
+      "coverage": 0.00861,
+      "annotator_dice": 0.857
+    },
+    {
+      "stem": "36",
+      "coverage": 0.01585,
+      "annotator_dice": 0.8153
+    },
+    {
+      "stem": "360",
+      "coverage": 0.00849,
+      "annotator_dice": 0.8681
+    },
+    {
+      "stem": "361",
+      "coverage": 0.01004,
+      "annotator_dice": 0.7635
+    },
+    {
+      "stem": "362",
+      "coverage": 0.0098,
+      "annotator_dice": 0.7324
+    },
+    {
+      "stem": "363",
+      "coverage": 0.01037,
+      "annotator_dice": 0.7327
+    },
+    {
+      "stem": "364",
+      "coverage": 0.00906,
+      "annotator_dice": 0.7108
+    },
+    {
+      "stem": "365",
+      "coverage": 0.00566,
+      "annotator_dice": 0.6961
+    },
+    {
+      "stem": "366",
+      "coverage": 0.00522,
+      "annotator_dice": 0.6953
+    },
+    {
+      "stem": "367",
+      "coverage": 0.00604,
+      "annotator_dice": 0.7261
+    },
+    {
+      "stem": "368",
+      "coverage": 0.00578,
+      "annotator_dice": 0.7446
+    },
+    {
+      "stem": "369",
+      "coverage": 0.00775,
+      "annotator_dice": 0.6636
+    },
+    {
+      "stem": "37",
+      "coverage": 0.01397,
+      "annotator_dice": 0.8021
+    },
+    {
+      "stem": "370",
+      "coverage": 0.00861,
+      "annotator_dice": 0.6723
+    },
+    {
+      "stem": "371",
+      "coverage": 0.01113,
+      "annotator_dice": 0.7975
+    },
+    {
+      "stem": "372",
+      "coverage": 0.01098,
+      "annotator_dice": 0.789
+    },
+    {
+      "stem": "373",
+      "coverage": 0.00528,
+      "annotator_dice": 0.6619
+    },
+    {
+      "stem": "374",
+      "coverage": 0.00614,
+      "annotator_dice": 0.729
+    },
+    {
+      "stem": "375",
+      "coverage": 0.00503,
+      "annotator_dice": 0.6947
+    },
+    {
+      "stem": "376",
+      "coverage": 0.00498,
+      "annotator_dice": 0.6946
+    },
+    {
+      "stem": "377",
+      "coverage": 0.00614,
+      "annotator_dice": 0.814
+    },
+    {
+      "stem": "378",
+      "coverage": 0.00618,
+      "annotator_dice": 0.8344
+    },
+    {
+      "stem": "379",
+      "coverage": 0.00564,
+      "annotator_dice": 0.7516
+    },
+    {
+      "stem": "38",
+      "coverage": 0.00638,
+      "annotator_dice": 0.7311
+    },
+    {
+      "stem": "380",
+      "coverage": 0.00644,
+      "annotator_dice": 0.7826
+    },
+    {
+      "stem": "381",
+      "coverage": 0.00493,
+      "annotator_dice": 0.7481
+    },
+    {
+      "stem": "382",
+      "coverage": 0.0046,
+      "annotator_dice": 0.7162
+    },
+    {
+      "stem": "383",
+      "coverage": 0.00467,
+      "annotator_dice": 0.753
+    },
+    {
+      "stem": "384",
+      "coverage": 0.00443,
+      "annotator_dice": 0.6983
+    },
+    {
+      "stem": "385",
+      "coverage": 0.00692,
+      "annotator_dice": 0.7956
+    },
+    {
+      "stem": "386",
+      "coverage": 0.0065,
+      "annotator_dice": 0.7763
+    },
+    {
+      "stem": "387",
+      "coverage": 0.00521,
+      "annotator_dice": 0.6632
+    },
+    {
+      "stem": "388",
+      "coverage": 0.00569,
+      "annotator_dice": 0.693
+    },
+    {
+      "stem": "389",
+      "coverage": 0.00614,
+      "annotator_dice": 0.7304
+    },
+    {
+      "stem": "39",
+      "coverage": 0.01227,
+      "annotator_dice": 0.817
+    },
+    {
+      "stem": "390",
+      "coverage": 0.00636,
+      "annotator_dice": 0.7257
+    },
+    {
+      "stem": "391",
+      "coverage": 0.0066,
+      "annotator_dice": 0.7724
+    },
+    {
+      "stem": "392",
+      "coverage": 0.00646,
+      "annotator_dice": 0.7811
+    },
+    {
+      "stem": "393",
+      "coverage": 0.00433,
+      "annotator_dice": 0.6437
+    },
+    {
+      "stem": "394",
+      "coverage": 0.0053,
+      "annotator_dice": 0.7476
+    },
+    {
+      "stem": "395",
+      "coverage": 0.00546,
+      "annotator_dice": 0.7408
+    },
+    {
+      "stem": "396",
+      "coverage": 0.00459,
+      "annotator_dice": 0.5312
+    },
+    {
+      "stem": "397",
+      "coverage": 0.00695,
+      "annotator_dice": 0.7316
+    },
+    {
+      "stem": "398",
+      "coverage": 0.00481,
+      "annotator_dice": 0.5477
+    },
+    {
+      "stem": "399",
+      "coverage": 0.00633,
+      "annotator_dice": 0.6523
+    },
+    {
+      "stem": "4",
+      "coverage": 0.01262,
+      "annotator_dice": 0.8284
+    },
+    {
+      "stem": "40",
+      "coverage": 0.00493,
+      "annotator_dice": 0.6145
+    },
+    {
+      "stem": "400",
+      "coverage": 0.01284,
+      "annotator_dice": 0.8302
+    },
+    {
+      "stem": "401",
+      "coverage": 0.00991,
+      "annotator_dice": 0.8716
+    },
+    {
+      "stem": "402",
+      "coverage": 0.00867,
+      "annotator_dice": 0.8916
+    },
+    {
+      "stem": "403",
+      "coverage": 0.00676,
+      "annotator_dice": 0.863
+    },
+    {
+      "stem": "404",
+      "coverage": 0.00615,
+      "annotator_dice": 0.79
+    },
+    {
+      "stem": "405",
+      "coverage": 0.00508,
+      "annotator_dice": 0.7372
+    },
+    {
+      "stem": "406",
+      "coverage": 0.00678,
+      "annotator_dice": 0.8545
+    },
+    {
+      "stem": "407",
+      "coverage": 0.00419,
+      "annotator_dice": 0.7365
+    },
+    {
+      "stem": "408",
+      "coverage": 0.00487,
+      "annotator_dice": 0.8101
+    },
+    {
+      "stem": "409",
+      "coverage": 0.00437,
+      "annotator_dice": 0.7376
+    },
+    {
+      "stem": "41",
+      "coverage": 0.0049,
+      "annotator_dice": 0.6621
+    },
+    {
+      "stem": "410",
+      "coverage": 0.00329,
+      "annotator_dice": 0.7135
+    },
+    {
+      "stem": "411",
+      "coverage": 0.0035,
+      "annotator_dice": 0.8
+    },
+    {
+      "stem": "412",
+      "coverage": 0.00305,
+      "annotator_dice": 0.7081
+    },
+    {
+      "stem": "413",
+      "coverage": 0.00291,
+      "annotator_dice": 0.6842
+    },
+    {
+      "stem": "414",
+      "coverage": 0.00261,
+      "annotator_dice": 0.6079
+    },
+    {
+      "stem": "415",
+      "coverage": 0.00304,
+      "annotator_dice": 0.6535
+    },
+    {
+      "stem": "416",
+      "coverage": 0.00244,
+      "annotator_dice": 0.6451
+    },
+    {
+      "stem": "417",
+      "coverage": 0.00599,
+      "annotator_dice": 0.7952
+    },
+    {
+      "stem": "418",
+      "coverage": 0.00652,
+      "annotator_dice": 0.8227
+    },
+    {
+      "stem": "419",
+      "coverage": 0.00658,
+      "annotator_dice": 0.8317
+    },
+    {
+      "stem": "42",
+      "coverage": 0.00526,
+      "annotator_dice": 0.7921
+    },
+    {
+      "stem": "420",
+      "coverage": 0.00693,
+      "annotator_dice": 0.8538
+    },
+    {
+      "stem": "421",
+      "coverage": 0.00755,
+      "annotator_dice": 0.7462
+    },
+    {
+      "stem": "422",
+      "coverage": 0.00697,
+      "annotator_dice": 0.8065
+    },
+    {
+      "stem": "423",
+      "coverage": 0.00664,
+      "annotator_dice": 0.7544
+    },
+    {
+      "stem": "424",
+      "coverage": 0.00856,
+      "annotator_dice": 0.7872
+    },
+    {
+      "stem": "425",
+      "coverage": 0.01408,
+      "annotator_dice": 0.8889
+    },
+    {
+      "stem": "426",
+      "coverage": 0.01319,
+      "annotator_dice": 0.8848
+    },
+    {
+      "stem": "427",
+      "coverage": 0.0109,
+      "annotator_dice": 0.7912
+    },
+    {
+      "stem": "428",
+      "coverage": 0.00974,
+      "annotator_dice": 0.7433
+    },
+    {
+      "stem": "429",
+      "coverage": 0.00934,
+      "annotator_dice": 0.714
+    },
+    {
+      "stem": "43",
+      "coverage": 0.00548,
+      "annotator_dice": 0.8003
+    },
+    {
+      "stem": "430",
+      "coverage": 0.00397,
+      "annotator_dice": 0.6539
+    },
+    {
+      "stem": "431",
+      "coverage": 0.00683,
+      "annotator_dice": 0.748
+    },
+    {
+      "stem": "432",
+      "coverage": 0.00548,
+      "annotator_dice": 0.7008
+    },
+    {
+      "stem": "433",
+      "coverage": 0.00812,
+      "annotator_dice": 0.81
+    },
+    {
+      "stem": "434",
+      "coverage": 0.00566,
+      "annotator_dice": 0.7262
+    },
+    {
+      "stem": "435",
+      "coverage": 0.00589,
+      "annotator_dice": 0.7712
+    },
+    {
+      "stem": "436",
+      "coverage": 0.00409,
+      "annotator_dice": 0.7048
+    },
+    {
+      "stem": "437",
+      "coverage": 0.00977,
+      "annotator_dice": 0.6973
+    },
+    {
+      "stem": "438",
+      "coverage": 0.00611,
+      "annotator_dice": 0.6403
+    },
+    {
+      "stem": "439",
+      "coverage": 0.00469,
+      "annotator_dice": 0.7208
+    },
+    {
+      "stem": "44",
+      "coverage": 0.00482,
+      "annotator_dice": 0.6761
+    },
+    {
+      "stem": "440",
+      "coverage": 0.00447,
+      "annotator_dice": 0.7241
+    },
+    {
+      "stem": "441",
+      "coverage": 0.01653,
+      "annotator_dice": 0.7353
+    },
+    {
+      "stem": "442",
+      "coverage": 0.01401,
+      "annotator_dice": 0.7407
+    },
+    {
+      "stem": "443",
+      "coverage": 0.01046,
+      "annotator_dice": 0.7163
+    },
+    {
+      "stem": "444",
+      "coverage": 0.01491,
+      "annotator_dice": 0.7258
+    },
+    {
+      "stem": "445",
+      "coverage": 0.01743,
+      "annotator_dice": 0.8076
+    },
+    {
+      "stem": "446",
+      "coverage": 0.01765,
+      "annotator_dice": 0.878
+    },
+    {
+      "stem": "447",
+      "coverage": 0.01497,
+      "annotator_dice": 0.7711
+    },
+    {
+      "stem": "448",
+      "coverage": 0.01513,
+      "annotator_dice": 0.8172
+    },
+    {
+      "stem": "449",
+      "coverage": 0.01074,
+      "annotator_dice": 0.7834
+    },
+    {
+      "stem": "45",
+      "coverage": 0.0035,
+      "annotator_dice": 0.6637
+    },
+    {
+      "stem": "450",
+      "coverage": 0.01001,
+      "annotator_dice": 0.7415
+    },
+    {
+      "stem": "451",
+      "coverage": 0.01124,
+      "annotator_dice": 0.7763
+    },
+    {
+      "stem": "452",
+      "coverage": 0.00854,
+      "annotator_dice": 0.7273
+    },
+    {
+      "stem": "453",
+      "coverage": 0.01076,
+      "annotator_dice": 0.7169
+    },
+    {
+      "stem": "454",
+      "coverage": 0.00869,
+      "annotator_dice": 0.7338
+    },
+    {
+      "stem": "455",
+      "coverage": 0.01201,
+      "annotator_dice": 0.6642
+    },
+    {
+      "stem": "456",
+      "coverage": 0.00802,
+      "annotator_dice": 0.6794
+    },
+    {
+      "stem": "457",
+      "coverage": 0.00979,
+      "annotator_dice": 0.6298
+    },
+    {
+      "stem": "458",
+      "coverage": 0.00797,
+      "annotator_dice": 0.7267
+    },
+    {
+      "stem": "459",
+      "coverage": 0.00818,
+      "annotator_dice": 0.6987
+    },
+    {
+      "stem": "46",
+      "coverage": 0.00571,
+      "annotator_dice": 0.8166
+    },
+    {
+      "stem": "460",
+      "coverage": 0.00933,
+      "annotator_dice": 0.6654
+    },
+    {
+      "stem": "461",
+      "coverage": 0.00752,
+      "annotator_dice": 0.6835
+    },
+    {
+      "stem": "462",
+      "coverage": 0.00658,
+      "annotator_dice": 0.6516
+    },
+    {
+      "stem": "463",
+      "coverage": 0.00584,
+      "annotator_dice": 0.7042
+    },
+    {
+      "stem": "464",
+      "coverage": 0.006,
+      "annotator_dice": 0.6383
+    },
+    {
+      "stem": "465",
+      "coverage": 0.00934,
+      "annotator_dice": 0.7474
+    },
+    {
+      "stem": "466",
+      "coverage": 0.00613,
+      "annotator_dice": 0.7601
+    },
+    {
+      "stem": "467",
+      "coverage": 0.00789,
+      "annotator_dice": 0.7905
+    },
+    {
+      "stem": "468",
+      "coverage": 0.01019,
+      "annotator_dice": 0.8165
+    },
+    {
+      "stem": "469",
+      "coverage": 0.0078,
+      "annotator_dice": 0.6688
+    },
+    {
+      "stem": "47",
+      "coverage": 0.00799,
+      "annotator_dice": 0.7739
+    },
+    {
+      "stem": "470",
+      "coverage": 0.00798,
+      "annotator_dice": 0.7419
+    },
+    {
+      "stem": "471",
+      "coverage": 0.00925,
+      "annotator_dice": 0.7058
+    },
+    {
+      "stem": "472",
+      "coverage": 0.00906,
+      "annotator_dice": 0.7394
+    },
+    {
+      "stem": "473",
+      "coverage": 0.00545,
+      "annotator_dice": 0.6609
+    },
+    {
+      "stem": "474",
+      "coverage": 0.00529,
+      "annotator_dice": 0.714
+    },
+    {
+      "stem": "475",
+      "coverage": 0.00977,
+      "annotator_dice": 0.6644
+    },
+    {
+      "stem": "476",
+      "coverage": 0.0064,
+      "annotator_dice": 0.6692
+    },
+    {
+      "stem": "477",
+      "coverage": 0.00696,
+      "annotator_dice": 0.7009
+    },
+    {
+      "stem": "478",
+      "coverage": 0.00604,
+      "annotator_dice": 0.7254
+    },
+    {
+      "stem": "479",
+      "coverage": 0.00665,
+      "annotator_dice": 0.7971
+    },
+    {
+      "stem": "48",
+      "coverage": 0.00732,
+      "annotator_dice": 0.853
+    },
+    {
+      "stem": "480",
+      "coverage": 0.01396,
+      "annotator_dice": 0.7925
+    },
+    {
+      "stem": "481",
+      "coverage": 0.00833,
+      "annotator_dice": 0.8569
+    },
+    {
+      "stem": "482",
+      "coverage": 0.00658,
+      "annotator_dice": 0.7468
+    },
+    {
+      "stem": "483",
+      "coverage": 0.00612,
+      "annotator_dice": 0.6156
+    },
+    {
+      "stem": "484",
+      "coverage": 0.00889,
+      "annotator_dice": 0.8084
+    },
+    {
+      "stem": "485",
+      "coverage": 0.00381,
+      "annotator_dice": 0.6625
+    },
+    {
+      "stem": "486",
+      "coverage": 0.00674,
+      "annotator_dice": 0.6166
+    },
+    {
+      "stem": "487",
+      "coverage": 0.0068,
+      "annotator_dice": 0.7171
+    },
+    {
+      "stem": "488",
+      "coverage": 0.00877,
+      "annotator_dice": 0.6757
+    },
+    {
+      "stem": "489",
+      "coverage": 0.00696,
+      "annotator_dice": 0.7647
+    },
+    {
+      "stem": "49",
+      "coverage": 0.00614,
+      "annotator_dice": 0.7754
+    },
+    {
+      "stem": "490",
+      "coverage": 0.00886,
+      "annotator_dice": 0.711
+    },
+    {
+      "stem": "491",
+      "coverage": 0.00666,
+      "annotator_dice": 0.6579
+    },
+    {
+      "stem": "492",
+      "coverage": 0.00567,
+      "annotator_dice": 0.7031
+    },
+    {
+      "stem": "493",
+      "coverage": 0.00806,
+      "annotator_dice": 0.7637
+    },
+    {
+      "stem": "494",
+      "coverage": 0.00759,
+      "annotator_dice": 0.7516
+    },
+    {
+      "stem": "495",
+      "coverage": 0.00937,
+      "annotator_dice": 0.7817
+    },
+    {
+      "stem": "496",
+      "coverage": 0.00723,
+      "annotator_dice": 0.7692
+    },
+    {
+      "stem": "497",
+      "coverage": 0.01231,
+      "annotator_dice": 0.8359
+    },
+    {
+      "stem": "498",
+      "coverage": 0.01118,
+      "annotator_dice": 0.8667
+    },
+    {
+      "stem": "499",
+      "coverage": 0.01038,
+      "annotator_dice": 0.7676
+    },
+    {
+      "stem": "5",
+      "coverage": 0.00214,
+      "annotator_dice": 0.6775
+    },
+    {
+      "stem": "50",
+      "coverage": 0.00742,
+      "annotator_dice": 0.7896
+    },
+    {
+      "stem": "500",
+      "coverage": 0.008,
+      "annotator_dice": 0.7447
+    },
+    {
+      "stem": "501",
+      "coverage": 0.00222,
+      "annotator_dice": 0.513
+    },
+    {
+      "stem": "502",
+      "coverage": 0.00328,
+      "annotator_dice": 0.5521
+    },
+    {
+      "stem": "503",
+      "coverage": 0.00482,
+      "annotator_dice": 0.6495
+    },
+    {
+      "stem": "504",
+      "coverage": 0.0048,
+      "annotator_dice": 0.6182
+    },
+    {
+      "stem": "505",
+      "coverage": 0.00711,
+      "annotator_dice": 0.6491
+    },
+    {
+      "stem": "506",
+      "coverage": 0.00658,
+      "annotator_dice": 0.6717
+    },
+    {
+      "stem": "507",
+      "coverage": 0.00607,
+      "annotator_dice": 0.6769
+    },
+    {
+      "stem": "508",
+      "coverage": 0.00539,
+      "annotator_dice": 0.6976
+    },
+    {
+      "stem": "509",
+      "coverage": 0.00809,
+      "annotator_dice": 0.7952
+    },
+    {
+      "stem": "51",
+      "coverage": 0.00852,
+      "annotator_dice": 0.7443
+    },
+    {
+      "stem": "510",
+      "coverage": 0.00778,
+      "annotator_dice": 0.8165
+    },
+    {
+      "stem": "511",
+      "coverage": 0.00525,
+      "annotator_dice": 0.7788
+    },
+    {
+      "stem": "512",
+      "coverage": 0.00693,
+      "annotator_dice": 0.786
+    },
+    {
+      "stem": "513",
+      "coverage": 0.01146,
+      "annotator_dice": 0.7296
+    },
+    {
+      "stem": "514",
+      "coverage": 0.00929,
+      "annotator_dice": 0.7301
+    },
+    {
+      "stem": "515",
+      "coverage": 0.00831,
+      "annotator_dice": 0.6789
+    },
+    {
+      "stem": "516",
+      "coverage": 0.00833,
+      "annotator_dice": 0.7655
+    },
+    {
+      "stem": "517",
+      "coverage": 0.00694,
+      "annotator_dice": 0.6721
+    },
+    {
+      "stem": "518",
+      "coverage": 0.00657,
+      "annotator_dice": 0.7644
+    },
+    {
+      "stem": "519",
+      "coverage": 0.00882,
+      "annotator_dice": 0.7873
+    },
+    {
+      "stem": "52",
+      "coverage": 0.0057,
+      "annotator_dice": 0.7202
+    },
+    {
+      "stem": "520",
+      "coverage": 0.00532,
+      "annotator_dice": 0.7693
+    },
+    {
+      "stem": "521",
+      "coverage": 0.01614,
+      "annotator_dice": 0.7335
+    },
+    {
+      "stem": "522",
+      "coverage": 0.01908,
+      "annotator_dice": 0.7845
+    },
+    {
+      "stem": "523",
+      "coverage": 0.01662,
+      "annotator_dice": 0.8661
+    },
+    {
+      "stem": "524",
+      "coverage": 0.01647,
+      "annotator_dice": 0.8186
+    },
+    {
+      "stem": "525",
+      "coverage": 0.01354,
+      "annotator_dice": 0.7338
+    },
+    {
+      "stem": "526",
+      "coverage": 0.01309,
+      "annotator_dice": 0.8052
+    },
+    {
+      "stem": "527",
+      "coverage": 0.01188,
+      "annotator_dice": 0.6677
+    },
+    {
+      "stem": "528",
+      "coverage": 0.01248,
+      "annotator_dice": 0.6745
+    },
+    {
+      "stem": "529",
+      "coverage": 0.01364,
+      "annotator_dice": 0.7575
+    },
+    {
+      "stem": "53",
+      "coverage": 0.00454,
+      "annotator_dice": 0.7222
+    },
+    {
+      "stem": "530",
+      "coverage": 0.0128,
+      "annotator_dice": 0.6805
+    },
+    {
+      "stem": "531",
+      "coverage": 0.01138,
+      "annotator_dice": 0.6736
+    },
+    {
+      "stem": "532",
+      "coverage": 0.00719,
+      "annotator_dice": 0.6405
+    },
+    {
+      "stem": "533",
+      "coverage": 0.01808,
+      "annotator_dice": 0.8172
+    },
+    {
+      "stem": "534",
+      "coverage": 0.01431,
+      "annotator_dice": 0.8103
+    },
+    {
+      "stem": "535",
+      "coverage": 0.01323,
+      "annotator_dice": 0.7409
+    },
+    {
+      "stem": "536",
+      "coverage": 0.01532,
+      "annotator_dice": 0.7514
+    },
+    {
+      "stem": "537",
+      "coverage": 0.01306,
+      "annotator_dice": 0.6972
+    },
+    {
+      "stem": "538",
+      "coverage": 0.01124,
+      "annotator_dice": 0.6923
+    },
+    {
+      "stem": "539",
+      "coverage": 0.01098,
+      "annotator_dice": 0.7383
+    },
+    {
+      "stem": "54",
+      "coverage": 0.0038,
+      "annotator_dice": 0.6598
+    },
+    {
+      "stem": "540",
+      "coverage": 0.01048,
+      "annotator_dice": 0.7705
+    },
+    {
+      "stem": "541",
+      "coverage": 0.00989,
+      "annotator_dice": 0.7535
+    },
+    {
+      "stem": "542",
+      "coverage": 0.00839,
+      "annotator_dice": 0.7909
+    },
+    {
+      "stem": "543",
+      "coverage": 0.00867,
+      "annotator_dice": 0.77
+    },
+    {
+      "stem": "544",
+      "coverage": 0.01117,
+      "annotator_dice": 0.8091
+    },
+    {
+      "stem": "545",
+      "coverage": 0.01091,
+      "annotator_dice": 0.7421
+    },
+    {
+      "stem": "546",
+      "coverage": 0.01002,
+      "annotator_dice": 0.8028
+    },
+    {
+      "stem": "547",
+      "coverage": 0.00279,
+      "annotator_dice": 0.5547
+    },
+    {
+      "stem": "55",
+      "coverage": 0.00451,
+      "annotator_dice": 0.7319
+    },
+    {
+      "stem": "56",
+      "coverage": 0.0051,
+      "annotator_dice": 0.8022
+    },
+    {
+      "stem": "57",
+      "coverage": 0.00783,
+      "annotator_dice": 0.7677
+    },
+    {
+      "stem": "58",
+      "coverage": 0.00885,
+      "annotator_dice": 0.8322
+    },
+    {
+      "stem": "59",
+      "coverage": 0.00911,
+      "annotator_dice": 0.7664
+    },
+    {
+      "stem": "6",
+      "coverage": 0.00339,
+      "annotator_dice": 0.6986
+    },
+    {
+      "stem": "60",
+      "coverage": 0.00956,
+      "annotator_dice": 0.774
+    },
+    {
+      "stem": "61",
+      "coverage": 0.01129,
+      "annotator_dice": 0.8533
+    },
+    {
+      "stem": "62",
+      "coverage": 0.01195,
+      "annotator_dice": 0.8463
+    },
+    {
+      "stem": "63",
+      "coverage": 0.0137,
+      "annotator_dice": 0.844
+    },
+    {
+      "stem": "64",
+      "coverage": 0.01417,
+      "annotator_dice": 0.7665
+    },
+    {
+      "stem": "65",
+      "coverage": 0.00479,
+      "annotator_dice": 0.7413
+    },
+    {
+      "stem": "66",
+      "coverage": 0.0054,
+      "annotator_dice": 0.6995
+    },
+    {
+      "stem": "67",
+      "coverage": 0.00434,
+      "annotator_dice": 0.6567
+    },
+    {
+      "stem": "68",
+      "coverage": 0.00578,
+      "annotator_dice": 0.7554
+    },
+    {
+      "stem": "69",
+      "coverage": 0.00748,
+      "annotator_dice": 0.8576
+    },
+    {
+      "stem": "7",
+      "coverage": 0.00611,
+      "annotator_dice": 0.7877
+    },
+    {
+      "stem": "70",
+      "coverage": 0.00694,
+      "annotator_dice": 0.7722
+    },
+    {
+      "stem": "71",
+      "coverage": 0.00636,
+      "annotator_dice": 0.7565
+    },
+    {
+      "stem": "72",
+      "coverage": 0.00594,
+      "annotator_dice": 0.7285
+    },
+    {
+      "stem": "73",
+      "coverage": 0.01348,
+      "annotator_dice": 0.8018
+    },
+    {
+      "stem": "74",
+      "coverage": 0.015,
+      "annotator_dice": 0.844
+    },
+    {
+      "stem": "75",
+      "coverage": 0.01442,
+      "annotator_dice": 0.878
+    },
+    {
+      "stem": "76",
+      "coverage": 0.01921,
+      "annotator_dice": 0.8668
+    },
+    {
+      "stem": "77",
+      "coverage": 0.0207,
+      "annotator_dice": 0.8141
+    },
+    {
+      "stem": "78",
+      "coverage": 0.01784,
+      "annotator_dice": 0.8915
+    },
+    {
+      "stem": "79",
+      "coverage": 0.01978,
+      "annotator_dice": 0.8235
+    },
+    {
+      "stem": "8",
+      "coverage": 0.01082,
+      "annotator_dice": 0.752
+    },
+    {
+      "stem": "80",
+      "coverage": 0.01954,
+      "annotator_dice": 0.874
+    },
+    {
+      "stem": "81",
+      "coverage": 0.0075,
+      "annotator_dice": 0.8032
+    },
+    {
+      "stem": "82",
+      "coverage": 0.00649,
+      "annotator_dice": 0.7374
+    },
+    {
+      "stem": "83",
+      "coverage": 0.00613,
+      "annotator_dice": 0.7344
+    },
+    {
+      "stem": "84",
+      "coverage": 0.00695,
+      "annotator_dice": 0.7214
+    },
+    {
+      "stem": "85",
+      "coverage": 0.00602,
+      "annotator_dice": 0.723
+    },
+    {
+      "stem": "86",
+      "coverage": 0.00708,
+      "annotator_dice": 0.7999
+    },
+    {
+      "stem": "87",
+      "coverage": 0.00602,
+      "annotator_dice": 0.6685
+    },
+    {
+      "stem": "88",
+      "coverage": 0.00566,
+      "annotator_dice": 0.6796
+    },
+    {
+      "stem": "89",
+      "coverage": 0.01001,
+      "annotator_dice": 0.8036
+    },
+    {
+      "stem": "9",
+      "coverage": 0.02058,
+      "annotator_dice": 0.9019
+    },
+    {
+      "stem": "90",
+      "coverage": 0.01028,
+      "annotator_dice": 0.8357
+    },
+    {
+      "stem": "91",
+      "coverage": 0.00872,
+      "annotator_dice": 0.762
+    },
+    {
+      "stem": "92",
+      "coverage": 0.00842,
+      "annotator_dice": 0.7741
+    },
+    {
+      "stem": "93",
+      "coverage": 0.00735,
+      "annotator_dice": 0.7614
+    },
+    {
+      "stem": "94",
+      "coverage": 0.00389,
+      "annotator_dice": 0.781
+    },
+    {
+      "stem": "95",
+      "coverage": 0.00332,
+      "annotator_dice": 0.666
+    },
+    {
+      "stem": "96",
+      "coverage": 0.00359,
+      "annotator_dice": 0.7663
+    },
+    {
+      "stem": "97",
+      "coverage": 0.00448,
+      "annotator_dice": 0.7463
+    },
+    {
+      "stem": "98",
+      "coverage": 0.00502,
+      "annotator_dice": 0.8151
+    },
+    {
+      "stem": "99",
+      "coverage": 0.00533,
+      "annotator_dice": 0.8378
+    }
+  ],
+  "rejected": []
+}

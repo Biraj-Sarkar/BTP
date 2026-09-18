@@ -5,6 +5,7 @@ __pycache__/
 
 # Datasets are downloaded, never committed
 data/
+datasets/
 .cache/
 .hf_cache/
 

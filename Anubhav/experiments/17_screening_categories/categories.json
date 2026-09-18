@@ -1,0 +1,226 @@
+{
+  "U-Net (deployed)": {
+    "n": 217,
+    "prevalence": 0.41935483870967744,
+    "p_low_mean": 0.3651083202511774,
+    "table1": [
+      {
+        "category": "Likely",
+        "patients": 94,
+        "share": 0.43317972350230416,
+        "anaemic": 65,
+        "anaemic_rate": 0.6914893617021277,
+        "mean_hb": 11.804255319148934
+      },
+      {
+        "category": "Possibly",
+        "patients": 48,
+        "share": 0.22119815668202766,
+        "anaemic": 15,
+        "anaemic_rate": 0.3125,
+        "mean_hb": 12.981666666666667
+      },
+      {
+        "category": "Unlikely",
+        "patients": 75,
+        "share": 0.3456221198156682,
+        "anaemic": 11,
+        "anaemic_rate": 0.14666666666666667,
+        "mean_hb": 13.92333333333333
+      }
+    ],
+    "table2": {
+      "anaemic_total": 91,
+      "missed": 11,
+      "missed_share": 0.12087912087912088,
+      "caught_top_two": 0.8791208791208791,
+      "missed_hb": [
+        7.0,
+        8.5,
+        9.7,
+        9.7,
+        9.8,
+        10.3,
+        10.7,
+        11.0,
+        11.4,
+        11.8,
+        12.9
+      ],
+      "missed_below_cutoff_by": [
+        0.1,
+        0.2,
+        0.6,
+        1.3,
+        1.7,
+        2.0,
+        2.2,
+        2.3,
+        2.3,
+        3.5,
+        5.0
+      ],
+      "missed_moderate_or_severe": 5
+    },
+    "table3": {
+      "possibly_share": 0.22119815668202766,
+      "decided_share": 0.7788018433179723,
+      "unlikely_npv": 0.8533333333333334,
+      "likely_ppv": 0.6914893617021277
+    },
+    "repeats": {
+      "caught_top_two": [
+        0.8791208791208791,
+        0.8791208791208791,
+        0.9010989010989011,
+        0.8901098901098901,
+        0.8901098901098901
+      ],
+      "possibly_share": [
+        0.22119815668202766,
+        0.2073732718894009,
+        0.1935483870967742,
+        0.19815668202764977,
+        0.20276497695852536
+      ]
+    }
+  },
+  "Classical": {
+    "n": 217,
+    "prevalence": 0.41935483870967744,
+    "p_low_mean": 0.38259733124018835,
+    "table1": [
+      {
+        "category": "Likely",
+        "patients": 76,
+        "share": 0.35023041474654376,
+        "anaemic": 39,
+        "anaemic_rate": 0.5131578947368421,
+        "mean_hb": 12.493026315789473
+      },
+      {
+        "category": "Possibly",
+        "patients": 101,
+        "share": 0.46543778801843316,
+        "anaemic": 46,
+        "anaemic_rate": 0.45544554455445546,
+        "mean_hb": 12.690594059405939
+      },
+      {
+        "category": "Unlikely",
+        "patients": 40,
+        "share": 0.18433179723502305,
+        "anaemic": 6,
+        "anaemic_rate": 0.15,
+        "mean_hb": 13.64375
+      }
+    ],
+    "table2": {
+      "anaemic_total": 91,
+      "missed": 6,
+      "missed_share": 0.06593406593406594,
+      "caught_top_two": 0.9340659340659341,
+      "missed_hb": [
+        7.8,
+        9.2,
+        9.7,
+        10.7,
+        11.0,
+        11.3
+      ],
+      "missed_below_cutoff_by": [
+        0.7,
+        1.0,
+        1.3,
+        2.3,
+        2.8,
+        4.2
+      ],
+      "missed_moderate_or_severe": 3
+    },
+    "table3": {
+      "possibly_share": 0.46543778801843316,
+      "decided_share": 0.5345622119815668,
+      "unlikely_npv": 0.85,
+      "likely_ppv": 0.5131578947368421
+    },
+    "repeats": {
+      "caught_top_two": [
+        0.9340659340659341,
+        0.8901098901098901,
+        0.9010989010989011,
+        0.9120879120879121,
+        0.9010989010989011
+      ],
+      "possibly_share": [
+        0.46543778801843316,
+        0.45161290322580644,
+        0.4470046082949309,
+        0.46543778801843316,
+        0.41935483870967744
+      ]
+    }
+  },
+  "No information": {
+    "n": 217,
+    "prevalence": 0.41935483870967744,
+    "p_low_mean": 0.4193537414965987,
+    "table1": [
+      {
+        "category": "Likely",
+        "patients": 0,
+        "share": 0.0,
+        "anaemic": 0,
+        "anaemic_rate": NaN,
+        "mean_hb": NaN
+      },
+      {
+        "category": "Possibly",
+        "patients": 217,
+        "share": 1.0,
+        "anaemic": 91,
+        "anaemic_rate": 0.41935483870967744,
+        "mean_hb": 12.79709677419355
+      },
+      {
+        "category": "Unlikely",
+        "patients": 0,
+        "share": 0.0,
+        "anaemic": 0,
+        "anaemic_rate": NaN,
+        "mean_hb": NaN
+      }
+    ],
+    "table2": {
+      "anaemic_total": 91,
+      "missed": 0,
+      "missed_share": 0.0,
+      "caught_top_two": 1.0,
+      "missed_hb": [],
+      "missed_below_cutoff_by": [],
+      "missed_moderate_or_severe": 0
+    },
+    "table3": {
+      "possibly_share": 1.0,
+      "decided_share": 0.0,
+      "unlikely_npv": 0.0,
+      "likely_ppv": 0.0
+    },
+    "repeats": {
+      "caught_top_two": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "possibly_share": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}
