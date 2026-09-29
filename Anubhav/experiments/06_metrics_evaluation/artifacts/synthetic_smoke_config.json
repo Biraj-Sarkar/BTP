@@ -1,0 +1,52 @@
+{
+  "data_roots": [
+    "data/synthetic"
+  ],
+  "output_root": "runs/smoke",
+  "cache_root": "/Users/anubhavjindal/Desktop/BTP-AnemiaDetection/.cache/crops",
+  "preprocess": {
+    "work_size": [
+      512,
+      512
+    ],
+    "model_size": [
+      224,
+      224
+    ],
+    "bbox_pad_ratio": 0.08,
+    "gray_world": true
+  },
+  "quality": {
+    "min_focus": 35.0,
+    "min_mask_ratio": 0.015,
+    "max_mask_ratio": 0.85,
+    "enforce": true
+  },
+  "segmentation": {
+    "checkpoint": "facebook/mask2former-swin-tiny-ade-semantic",
+    "epochs": 30,
+    "batch_size": 2,
+    "learning_rate": 5e-05,
+    "mask_kind": "palpebral_forniceal"
+  },
+  "regression": {
+    "backbone": "resnet18",
+    "epochs": 12,
+    "batch_size": 16,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "dropout": 0.3,
+    "freeze_until": "layer3",
+    "imbalance_bins": 10,
+    "imbalance_strength": 1.0,
+    "augment": true,
+    "early_stopping_patience": 8
+  },
+  "split": {
+    "folds": 3,
+    "holdout_fraction": 0.2,
+    "stratify_bins": 4,
+    "seed": 1337
+  },
+  "seed": 1337
+}

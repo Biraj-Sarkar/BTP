@@ -5,7 +5,114 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ---
 
+## Week of 24–30 Sep 2026
+
+**30 Sep — How to use the extractor from other training code, documented**
+The extractor had no documented library-level entry point. `UI_INTEGRATION.md`
+covers the HTTP contract for the application, and `CODE_GUIDE.md` described
+`prepare()` without saying how to call it from outside the package — so anyone
+training their own regressor on extracted crops had to read the source.
+
+`CODE_GUIDE.md` now carries a worked example under `preprocess.py`: resolve the
+segmenter, build the two configs, call `prepare_path()`, check the QC gate, and
+take `Prepared.crop` — a 224×224 RGB array with everything outside the mask
+blacked out, which is already the input size a ResNet-18 expects. The snippet was
+run verbatim from an unrelated working directory before being written down.
+
+Four traps are called out because each produces a silently wrong result rather
+than an error:
+
+- `get_extractor("unet")` resolves `DEFAULT_BUNDLE` **relative to the working
+  directory**, so it only works from the repository root; an absolute
+  `model_dir` is required from anywhere else. Verified: `FileNotFoundError`.
+- `PreprocessConfig.gray_world` still defaults to `True`, while experiment 18
+  found no correction better on every test. Callers should pass `False`.
+- Widening the mask for more context lowers accuracy monotonically
+  (experiment 19), so the threshold should be left alone.
+- Non-conjunctival tissue predicts haemoglobin within each site, so training on
+  full frames rather than the masked crop can score well without reading the
+  conjunctiva. `.crop` is the defence; full-frame training needs site-held-out
+  splits and a masked-input comparison.
+
+Also recorded: `out.backend` and `segmenter.cache_key` identify which extractor
+and which bundle produced a crop, and both belong in any checkpoint that is
+trained on them.
+→ `CODE_GUIDE.md`
+
+**29 Sep — Report gains the screening-categories and texture sections**
+An audit of `Progress_Report.pdf` against the current findings showed the document
+had fallen behind the experiments in two places. Both are now written up.
+
+**New §7.8, "What the application should report".** The three-category output had
+only ever reached the report as two rows inside the colour-correction table, with
+the terms "Possibly" and "per-sex cut" used before being defined. It now has its
+own section: the category rule, the probability taken from the model's own error
+record rather than an assumed distribution, the nested protocol that tunes nothing
+on the patients being scored, and the table showing what the app would say against
+who is actually anaemic. The no-information column is kept beside it, because a
+model that answers "possibly" to everyone catches 100% of anaemic patients and is
+useless — sensitivity is never reported here without the undecided share.
+
+The **fairness result was absent from the report entirely** and is the most
+consequential thing added: anaemic women told "unlikely" 17% of the time against
+5% for men, the structural reason (predictions shrink toward 12.8 g/dL, above the
+women's cutoff and below the men's), the finding that adding sex as an input moves
+the misses onto men rather than removing them, and the per-sex cut that brings both
+groups to 4% and 12%. Stated as a general rule about any hedging estimator, since
+it applies equally to the network.
+
+**New §7.9, "Mask coverage and tissue texture".** Experiment 19 should have gone
+into the report when it was run on 18 Sep and did not. Both negative results are
+now recorded: mask widening hurting monotonically across eight variants, and the
+vessel-texture gain (R² 0.539 → 0.563) dissolving under its controls to r −0.021,
+p 0.76. The warning for the network work — that non-conjunctival tissue predicts
+haemoglobin within each site, so an end-to-end model can score well without
+reading the conjunctiva — is a callout rather than a buried sentence.
+
+§8 updated accordingly: the category result under Verified, texture and mask
+widening under Measured and found wanting, and two new entries under Not yet
+established (the clinical category targets, and whether a network reads the
+conjunctiva or the photograph around it).
+
+**15 pages**, up from 14. Diplomacy grep clean on the extracted PDF text.
+→ `scripts/make_progress_report.py`, `Progress_Report.pdf`
+
+---
+
 ## Week of 10–16 Sep 2026
+
+**19 Sep — Both original pipeline scripts made runnable on any machine**
+`gemini_anemia_pipeline.py` and `cielab_pipeline.py` defaulted `--dataset-root`
+and `--output-root` to absolute paths under a home directory that exists on no
+current machine, so both failed on a bare `python cielab_pipeline.py` and had to
+be driven with explicit flags every time.
+
+Defaults are now relative to the script: `datasets/eyes_defy/dataset anemia/India`
+for input and `runs/<pipeline>_outputs_*` for output, via a module-level `HERE`
+matching the `WORKSPACE_CACHE` idiom already in both files. Header docstrings
+updated to name the default and the override flag. **No logic touched** — the
+pipelines themselves are unchanged and remain the comparison baselines; only the
+two argparse defaults and the docstring paths moved.
+
+Verified: both import cleanly and resolve `--dataset-root` to the real 96-entry
+India subset, `--output-root` inside the gitignored `runs/`.
+→ `gemini_anemia_pipeline.py`, `cielab_pipeline.py`
+
+**18 Sep — Experiment 06 made reproducible off this machine**
+`evaluate.py` read its synthetic-phantom predictions from an absolute path outside
+the repository, so `evaluate_synthetic()` returned `None` for anyone else and
+section A of the output silently vanished — the metric code's only end-to-end test
+was passing on one laptop and skipping everywhere else.
+
+The 74-row prediction file and the training configuration that produced it are now
+checked in at `experiments/06_metrics_evaluation/artifacts/`, and the script reads
+them from beside itself. `artifacts/`, not `data/`: `.gitignore` excludes every
+directory named `data` at any depth, so the obvious name would have reproduced the
+bug in a quieter form.
+
+Numbers are unchanged and now reproduce anywhere — synthetic R² 0.888, MAE 0.666,
+F1 0.986, all still labelled as trivial by construction.
+→ `experiments/06_metrics_evaluation/evaluate.py`, `METRICS.md` §3.1
 
 **18 Sep — Reading list assembled and ordered in `papers/`**
 Five downloaded papers renamed by title, two more fetched, and everything filed in

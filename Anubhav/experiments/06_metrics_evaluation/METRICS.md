@@ -139,6 +139,12 @@ n = 74 images.
 > learnable by construction. This evaluation exists to verify the metric code
 > and to show what the pipeline reports when a model genuinely fits.
 
+The predictions are checked in at
+`experiments/06_metrics_evaluation/artifacts/synthetic_smoke_predictions.csv`,
+with the training configuration that produced them beside it. They are not
+regenerated on each run — the point is a fixed, known-good input to the metric
+code — so this section reproduces identically on any machine.
+
 | Regression | Model | Mean baseline |
 |---|---|---|
 | MSE ((g/dL)²) | **0.698** | 6.244 |

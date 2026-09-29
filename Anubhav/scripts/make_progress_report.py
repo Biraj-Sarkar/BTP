@@ -1195,6 +1195,121 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "been tested."
     ))
 
+    story.append(para("7.8 What the application should report", "h2"))
+    story.append(para(
+        "A haemoglobin number implies a precision this method does not have. The application is a "
+        "screening aid, so its output was designed and tested as three categories &mdash; <b>Likely "
+        "anaemic, get a blood test</b>; <b>Possibly anaemic, consider one</b>; <b>Anaemia unlikely from "
+        "this photograph</b> &mdash; alongside the retake prompt quality control already returns. The "
+        "estimate and its interval remain available behind a details view."
+    ))
+    story.append(para(
+        "The probability behind the category is taken from the model&rsquo;s own track record, not from an "
+        "assumed distribution: the share of its past errors which, added to this patient&rsquo;s estimate, "
+        "would place them below their WHO cutoff. This needs no distributional assumption and works "
+        "unchanged for any model, including the neural network. Nothing is tuned on the patients being "
+        "scored: an outer ten-fold loop holds patients out, and within each fold the model is fitted, its "
+        "errors measured by an inner ten-fold loop, and the category cut chosen &mdash; all on other "
+        "patients. Five random splits. The lower cut is placed to catch 90% of anaemic patients, an "
+        "example target used for testing; <b>the real target is a clinical decision and has not been set.</b>"
+    ))
+    story.append(table([
+        ["Category", "U-Net: share", "&hellip; truly anaemic", "Classical: share", "&hellip; truly anaemic",
+         "No information: share"],
+        ["Likely", "43%", "<b>69%</b>", "35%", "51%", "0%"],
+        ["Possibly", "<b>22%</b>", "31%", "47%", "46%", "100%"],
+        ["Unlikely", "35%", "<b>15%</b>", "18%", "15%", "0%"],
+    ], [30 * mm, 26 * mm, 30 * mm, 26 * mm, 30 * mm, 26 * mm]))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "Against a 42% base rate the learned extractor sorts patients meaningfully. The third column is the "
+        "reason sensitivity cannot be reported alone: a model that answers &ldquo;possibly&rdquo; to "
+        "everyone catches <b>100%</b> of anaemic patients and is useless. The classical extractor catches "
+        "more than the learned one (93% against 88%) almost entirely by leaving <b>47%</b> of patients "
+        "undecided, and its &ldquo;Likely&rdquo; group is barely more anaemic than the population. Every "
+        "sensitivity figure in this section is therefore reported beside the share left undecided."
+    ))
+    story.append(para(
+        "<b>The misses fall on women.</b> Under one set of cuts, anaemic women were told "
+        "&ldquo;unlikely&rdquo; 17% of the time against 5% for men. The mechanism is structural rather "
+        "than particular to this cohort: predictions shrink toward the cohort average of 12.8 g/dL, which "
+        "sits above the women&rsquo;s WHO cutoff of 12.0 and below the men&rsquo;s of 13.0, so hedging "
+        "pushes anaemic women toward &ldquo;not anaemic&rdquo;. Stated generally &mdash; <b>a model that "
+        "hedges toward an average under-flags whichever group&rsquo;s average lies above its own "
+        "cutoff</b> &mdash; this applies to any shrinking estimator, including a network."
+    ))
+    story.append(table([
+        ["Configuration", "R²", "MAE", "Women missed", "Men missed", "Caught", "Undecided"],
+        ["Colour only", "0.335", "1.53", "<b>17%</b>", "4%", "89%", "20%"],
+        ["Colour + sex", "0.482", "1.33", "4%", "<b>19%</b>", "90%", "13%"],
+        ["Colour, per-sex cut", "0.335", "1.53", "10%", "11%", "89%", "14%"],
+        ["<b>Colour + sex, per-sex cut</b>", "<b>0.482</b>", "<b>1.33</b>", "<b>4%</b>", "<b>12%</b>",
+         "<b>93%</b>", "<b>12%</b>"],
+        ["Sex only, no photograph", "0.295", "1.63", "0%", "0%", "100%", "60%"],
+    ], [44 * mm, 18 * mm, 18 * mm, 24 * mm, 20 * mm, 20 * mm, 24 * mm]))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "Giving the model sex <b>moves</b> the problem rather than solving it: women&rsquo;s misses fall to "
+        "4% and men&rsquo;s rise to 19%, because the model now hedges toward each sex&rsquo;s own average "
+        "and the men&rsquo;s (13.86) lies above their cutoff. Drawing the category cut separately for each "
+        "sex, with sex also an input, brings both groups near target together and is the best configuration "
+        "tested on every column. The last row is the control: sex alone reaches R² 0.295 because men "
+        "have higher haemoglobin, but it sorts nobody &mdash; 60% undecided and no patient ever told "
+        "&ldquo;unlikely&rdquo;. <b>The photograph earns its place</b>, though by less than colour-only "
+        "R² suggests in isolation."
+    ))
+    story.append(callout(
+        "One patient is missed in every configuration and every split: a woman at <b>Hb 7.0</b>, severe "
+        "anaemia, estimated at 13.6. Her mask is correct and her photograph reads as healthy; she is the "
+        "most anaemic subject from her site by a wide margin. The wording &ldquo;from this photograph&rdquo; "
+        "and a symptom prompt are not optional.", wide=True))
+
+    story.append(para("7.9 Mask coverage and tissue texture", "h2"))
+    story.append(para(
+        "Two ideas for extracting more from the same photographs were tested on the 217 external patients, "
+        "at 1024 px so that fine structure survives, with no colour correction (Section 7.7) and sex among "
+        "the inputs (Section 7.8). Both were rejected on the measurement."
+    ))
+    story.append(para(
+        "<b>Coverage.</b> The extractor keeps pixels above probability 0.5. Widening the mask to include "
+        "more tissue makes accuracy worse, and tightening it makes accuracy slightly better, monotonically "
+        "across eight variants: R² 0.544 eroded 8 px, 0.539 at the deployed threshold, 0.520 dilated "
+        "32 px, with MAE moving in step. A perfectly ordered sweep is what makes a set of differences this "
+        "small credible. <b>The deployed threshold is unchanged</b>: the gain from eroding is 0.005 "
+        "R², selected from eight variants on the same patients, and a tighter mask returns an empty "
+        "mask more often on difficult captures."
+    ))
+    story.append(para(
+        "<b>Texture.</b> A mean colour discards all structure, and the conjunctiva&rsquo;s vasculature is "
+        "both visible and physiological, so variability, edge strength and a vessel-like share of pixels "
+        "were tested beside colour. Pooled over both sites the result looked convincing: adding edge "
+        "strength lifted R² from 0.539 to <b>0.563</b>, and structure with no colour at all reached "
+        "0.434. It does not survive its controls."
+    ))
+    story.append(table([
+        ["Control", "Result", "Reading"],
+        ["Correlation of edge strength with Hb, pooled", "<b>+0.403</b>", "Apparently strong"],
+        ["Same, within India (95) / Italy (122)", "+0.180 (p 0.081) / +0.143 (p 0.117)",
+         "Collapses inside a site"],
+        ["Site means: Hb, and edges inside mask", "India 11.47 / 14.26; Italy 13.83 / 20.06",
+         "&ldquo;More edges&rdquo; partly means &ldquo;Italian patient&rdquo;"],
+        ["Controlling for site and surrounding tissue", "<b>−0.021 (p 0.76)</b>", "Nothing remains"],
+        ["Gain within a site, colour + sex + texture", "+0.005 to +0.007 R²", "Not measurable"],
+    ], [58 * mm, 56 * mm, 54 * mm]))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "The two sites differ in both image detail and haemoglobin, so the pooled gain was the model using "
+        "texture as a label for which hospital took the photograph. <b>Texture features are not adopted.</b>"
+    ))
+    story.append(callout(
+        "<b>A caution for the neural network.</b> Edge strength on the tissue <i>surrounding</i> the "
+        "conjunctiva &mdash; skin, lashes, sclera &mdash; predicts haemoglobin within each site "
+        "(+0.319, p 0.002; +0.309, p 0.0005). That is not conjunctival tissue and cannot be pallor; "
+        "capture distance and focus are the likely causes. <b>A model trained end to end on whole "
+        "photographs can therefore score well without ever reading the conjunctiva.</b> Splits held out "
+        "by site, and an evaluation on images masked outside the region, are how this is caught.",
+        wide=True))
+
     # ------------------------------------------------------------- status
     story.append(para("8. Verification status", "h1"))
     story.append(para("8.1 Verified", "h2"))
@@ -1213,6 +1328,9 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "clipping.",
         "The per-patient WHO threshold is validated against real laboratory values: a fixed single "
         "cutoff misclassifies 15% of the local cohort, all as false negatives (Section 4.4).",
+        "A three-category screening output, with the category probability taken from the model&rsquo;s own "
+        "errors, catches 93% of anaemic patients while leaving 12% undecided, under a protocol that tunes "
+        "nothing on the patients being scored (Section 7.8).",
     ]))
     story.append(para("8.2 Measured and found wanting", "h2"))
     story.extend(bullets([
@@ -1222,7 +1340,15 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "eversion, which varies widely between its captures, changes measured colour (Section 7.4).",
         "No model tested transfers between the two cohorts&rsquo; cameras better than roughly baseline "
         "(Section 7.6).",
-        "Predictions shrink toward the cohort mean, weakening classification near the WHO thresholds.",
+        "Predictions shrink toward the cohort mean, weakening classification near the WHO thresholds. "
+        "This under-flags whichever group&rsquo;s average lies above its own cutoff &mdash; anaemic women "
+        "were missed 17% of the time against 5% for men, corrected to 4% and 12% by drawing the category "
+        "cut per sex (Section 7.8).",
+        "Tissue texture and vessel-like features add nothing once site is controlled for: an apparent "
+        "R² gain of 0.024 pooled falls to −0.021 correlation (p 0.76) after controls, and is not "
+        "adopted (Section 7.9).",
+        "Widening the extractor&rsquo;s mask lowers accuracy monotonically across eight variants, so the "
+        "signal is not being clipped by too tight a mask (Section 7.9).",
         "The blur threshold looks slightly too aggressive for real captures.",
     ]))
     story.append(para("8.3 Not yet established", "h2"))
@@ -1234,6 +1360,11 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "Whether the deployed extractor&rsquo;s loss of self-consistency under zoom and blur is real or "
         "run-to-run variance; a second training seed is needed.",
         "The CP-AnemiC loader has not been checked against a real download.",
+        "The clinical targets the screening categories should meet: what share of anaemic patients must be "
+        "caught, and how large an undecided group is acceptable. The 90% used throughout Section 7.8 is an "
+        "example for testing, not an agreed target.",
+        "Whether a model trained end to end reads the conjunctiva or the photograph around it; the "
+        "site-held-out and masked-input evaluations in Section 7.9 are not yet run on a network.",
         "No clinical validation of any kind has been performed.",
     ]))
 

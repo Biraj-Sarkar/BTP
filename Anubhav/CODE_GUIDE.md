@@ -138,6 +138,64 @@ time: white balance → segment → tight crop → letterbox → resize.
 Also holds `assess_quality()` (the enforced QC gate) and `CropCache` (the disk
 cache described in §1.3).
 
+#### Using the extractor from your own training code
+
+`prepare()` returns a `Prepared`, whose `.crop` is a square `model_size` RGB
+array — 224×224 by default, which is what a ResNet-18 expects. That is the
+supported way to get an extracted conjunctiva into another model; nothing
+downstream of `.crop` is needed.
+
+```python
+import sys
+from pathlib import Path
+
+REPO = Path("/absolute/path/to/BTP/Anubhav")
+sys.path.insert(0, str(REPO / "src"))
+
+from anemia.config import PreprocessConfig, QualityConfig
+from anemia.preprocess import prepare_path
+from anemia.segment import get_extractor
+
+segmenter = get_extractor(model_dir=REPO / "runs/segmenter/unet.pt")
+pre = PreprocessConfig(gray_world=False)
+qc = QualityConfig()
+
+out = prepare_path(image_path, segmenter, pre, qc)
+if not out.quality.passed:
+    continue                      # skip, or surface a retake — see §1.3
+tensor_source = out.crop          # (224, 224, 3) uint8 RGB, background blacked out
+```
+
+Four things that are easy to get wrong:
+
+1. **Pass an absolute `model_dir`.** `get_extractor("unet")` resolves
+   `DEFAULT_BUNDLE` as the *relative* path `runs/segmenter/unet.pt`, so it only
+   works with the repository root as the working directory. From anywhere else
+   it raises `FileNotFoundError`. An explicit path always wins.
+2. **Set `gray_world=False`.** The dataclass still defaults to `True` from the
+   earlier chain, but no correction beats gray-world on every test run so far,
+   within and across sites — see `experiments/18_white_balance/`. The default is
+   left alone until the hospital camera decides it.
+3. **Honour `out.quality.passed`.** Training on captures the gate would reject
+   teaches the model to read blurred and clipped images. `out.quality.reasons`
+   says which check failed.
+4. **Don't widen the mask** to give the network more context. Every step of
+   widening lowers accuracy, monotonically across eight variants
+   (`experiments/19_coverage_and_vessels/`).
+
+`out.backend` records which extractor ran (`unet` here) and
+`segmenter.cache_key` (`unet-<trained_at>`) identifies the exact bundle. Log
+both with any checkpoint: features measured inside a different mask are not
+comparable, and a model served with the wrong extractor is silently wrong.
+
+**A caution specific to training on whole photographs.** Non-conjunctival
+tissue in these datasets predicts haemoglobin within each site, so a model given
+the uncropped frame can score well without ever reading the conjunctiva
+(`experiments/19_coverage_and_vessels/`, §3). `.crop` already blacks out
+everything outside the mask, which is the defence; if you train on full frames
+instead, evaluate with splits held out **by site** and compare against a
+masked-input run before believing the score.
+
 ### `data.py`
 Dataset adapters and clinical labelling.
 

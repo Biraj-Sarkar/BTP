@@ -1,7 +1,7 @@
 """Conjunctiva preprocessing pipeline for anemia detection.
 
-This script is designed for the current dataset layout in:
-    /Users/yatikajena/Desktop/AnemiaDetection/dataset anemia/India
+This script is designed for the Eyes-Defy-Anemia layout, by default:
+    datasets/eyes_defy/dataset anemia/India   (override with --dataset-root)
 
 What it does:
 1. Loads only the raw eye JPG images from the Indian subset.
@@ -36,7 +36,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Sequence, Tuple
 
-WORKSPACE_CACHE = Path(__file__).resolve().parent / ".hf_cache"
+HERE = Path(__file__).resolve().parent
+DEFAULT_DATASET_ROOT = HERE / "datasets" / "eyes_defy" / "dataset anemia" / "India"
+WORKSPACE_CACHE = HERE / ".hf_cache"
 os.environ.setdefault("HF_HOME", str(WORKSPACE_CACHE))
 os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(WORKSPACE_CACHE / "hub"))
 
@@ -1162,13 +1164,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dataset-root",
         type=Path,
-        default=Path("/Users/yatikajena/Desktop/AnemiaDetection/dataset anemia/India"),
+        default=DEFAULT_DATASET_ROOT,
         help="Path to the Indian eye-image subset",
     )
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=Path("/Users/yatikajena/Desktop/AnemiaDetection/conjunctiva_pipeline_outputs_v6"),
+        default=HERE / "runs" / "conjunctiva_pipeline_outputs_v6",
         help="Where to store masks, crops, overlays, and manifests",
     )
     parser.add_argument("--train-limit", type=int, default=50, help="Number of raw Indian images reserved for training")

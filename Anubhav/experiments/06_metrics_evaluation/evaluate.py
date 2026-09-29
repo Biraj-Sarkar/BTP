@@ -32,6 +32,7 @@ import cv2
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from anemia.data import anemia_threshold, is_anemic, load_local_cohort  # noqa: E402
@@ -132,9 +133,19 @@ def classification_metrics(pred: np.ndarray, true: np.ndarray) -> dict:
 # --------------------------------------------------------------------------
 
 def evaluate_synthetic() -> dict | None:
-    path = ROOT.parent.parent / "Desktop/BTP-AnemiaDetection/runs/smoke/out_of_fold_predictions.csv"
-    if not path.exists():
-        path = Path.home() / "Desktop/BTP-AnemiaDetection/runs/smoke/out_of_fold_predictions.csv"
+    """Metrics for the neural pipeline's smoke run on **synthetic** images.
+
+    The predictions are stored beside this script (`artifacts/`) rather than
+    recomputed: the run needs a training pass, and the point here is to
+    exercise the metric code end to end on a known-good prediction file. The
+    numbers are not evidence about real patients — the images were generated,
+    so the model is being scored on data it can fit easily.
+    `artifacts/synthetic_smoke_config.json` records the configuration that
+    produced them. (`artifacts/`, not `data/`: `.gitignore` excludes every
+    directory named `data`, so the file would not reach anyone else.)
+    """
+
+    path = HERE / "artifacts" / "synthetic_smoke_predictions.csv"
     if not path.exists():
         return None
 
