@@ -1,0 +1,32 @@
+# Local datasets and derived ROI crops
+/datasets/
+/India/
+/Italy/
+/ROI/
+
+# Trained model assets and experiment outputs
+/Models/
+**/runs/
+**/*.pt
+**/*.pth
+**/*.ckpt
+
+# Flutter/Dart generated files and local IDE state
+**/build/
+**/.dart_tool/
+**/.idea/
+**/.gradle/
+**/.cxx/
+**/local.properties
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/coverage/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/Pods/
+**/DerivedData/
+**/xcuserdata/
