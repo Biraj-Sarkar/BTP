@@ -30,3 +30,7 @@
 **/Pods/
 **/DerivedData/
 **/xcuserdata/
+
+# Backend local secrets and Python cache
+**/.env
+**/__pycache__/
