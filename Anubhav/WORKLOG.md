@@ -5,6 +5,84 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ---
 
+## Week of 8–14 Oct 2026
+
+**14 Oct — Attention U-Net beats the U-Net extractor; selection and shipping made repeatable**
+The extractor was a U-Net because U-Net is the default encoder-decoder segmentation
+architecture, not because anything had been measured against it. Two candidates were
+compared, and the comparison was moved off the regression probe onto **segmentation
+metrics alone**.
+
+**Why the change of method.** Extractors had been ranked by fitting a ridge
+regression on colour inside each mask and reporting R² against laboratory
+haemoglobin. That scores the extractor and a stand-in model together, and the
+stand-in is far weaker than the network that will read these crops. Segmentation
+models have their own evaluation, which measures only the mask. The comparison now
+reports Dice, IoU, precision, recall, HD95 and the failure distribution, and no
+haemoglobin figure at all.
+
+**Result on 129 held-out subjects** — none of the three produced a single empty mask:
+
+| architecture | params | Dice | IoU | precision | recall | HD95 px |
+|---|---|---|---|---|---|---|
+| U-Net (deployed) | 6.30M | 0.8372 | 0.7288 | 0.8239 | 0.8637 | 2.8 |
+| UNet++ | 6.61M | 0.8446 | 0.7379 | 0.8266 | 0.8746 | **2.2** |
+| **Attention U-Net** | 6.33M | **0.8476** | **0.7427** | **0.8320** | 0.8737 | 2.5 |
+
+**Only one comparison resolves.** Paired per-image Wilcoxon with a bootstrap
+interval: Attention U-Net beats U-Net by **+0.0105 Dice, 95% CI [+0.003, +0.020],
+p 0.007**, winning 75 of 129 images. UNet++ beats U-Net by a similar margin but its
+interval touches zero (p 0.088), and the two new architectures are **not separable**
+from each other (p 0.155). The honest claim is therefore narrow: Attention U-Net is
+better than the extractor we run; it is not demonstrably better than UNet++.
+
+Two details worth more than the headline. The gain is **mostly in precision**, which
+is the error direction that costs us — a mask spilling onto lid skin contaminates the
+colour read inside it — whereas UNet++ gains almost entirely in recall. And the
+**worst case improves far more than the mean**: U-Net's worst image scores 0.363,
+both new architectures reach ~0.54, with the spread narrowing. For a screening tool
+the floor matters more than the average. Counterweight recorded too: UNet++ has the
+best median, so the mean advantage comes from the bad cases, not typical ones. HD95
+disagrees with Dice and favours UNet++ (2.2 against 2.5).
+
+**Infrastructure, so this is not a one-off.**
+- `src/anemia/architectures.py` is now the only place a model is built. Both the
+  trainer and the read-only loader call it, and the bundle records `arch`, so a model
+  cannot be served by a decoder it was not trained with. Existing bundles load
+  unchanged — `arch` defaults to `unet`.
+- Attention U-Net is **not in `segmentation_models_pytorch`**, so the additive gates
+  and decoder are implemented here, with decoder widths matched to the library's
+  U-Net so the comparison is about the gates rather than capacity.
+- `--test-fraction` added to the trainer. The epoch was being chosen on validation
+  Dice and that same number reported, which is the maximum of a noisy sequence and
+  optimistic by construction. A third split, untouched by training and selection, is
+  what gets reported now.
+- `--no-select` trains on every subject for a fixed epoch count: the shipping run.
+- `scripts/select_architecture.py` runs both stages and keeps a leaderboard with a
+  **split fingerprint** (data roots, seed, fractions, epochs, augmentation, resulting
+  test subjects). A fourth architecture later is one command; a run whose fingerprint
+  differs is refused, because a leaderboard mixing two splits would rank architectures
+  by which subjects they were tested on. Bundles already on disk are adopted only
+  after checking the subjects they actually held out, not their filename.
+
+**Shipped:** Attention U-Net retrained on all 648 images for 36 epochs →
+`runs/segmenter/attention_full.pt`, verified to load through the normal serving path.
+Its estimate is the stage-1 figure of 0.8476; those weights saw every subject and have
+no held-out score of their own, and the leaderboard records that caveat.
+**The deployed `runs/segmenter/unet.pt` is deliberately not replaced** — swapping it
+invalidates every cached crop and every downstream feature, and the existing
+robustness question (experiment 13) is still open.
+
+**Limits recorded:** one seed per architecture, and the margin is about one point of
+Dice, so it is not yet separable from run-to-run variance — a second seed would settle
+this and the older stability question together. And Dice measures agreement with the
+annotator, who is a proxy: 117 of 218 masks in one dataset were bounding rectangles
+and were discarded.
+→ `experiments/20_architectures/`, `src/anemia/architectures.py`,
+`scripts/select_architecture.py`, `scripts/train_segmenter.py`, `CODE_GUIDE.md`
+
+---
+
 ## Week of 24–30 Sep 2026
 
 **30 Sep — How to use the extractor from other training code, documented**

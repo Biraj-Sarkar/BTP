@@ -63,6 +63,7 @@ from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from anemia.architectures import ARCHITECTURES, build  # noqa: E402
 from anemia.segment_learned import (  # noqa: E402
     BUNDLE_FORMAT,
     BUNDLE_VERSION,
@@ -273,6 +274,30 @@ def dice_loss(logits: torch.Tensor, target: torch.Tensor, eps: float = 1.0) -> t
 
 
 @torch.no_grad()
+def evaluate_full(model, loader, device, threshold: float):
+    """Mean Dice, mean IoU, and the per-image Dice list.
+
+    The distribution matters as much as the mean: one architecture can match
+    another on average while failing outright on a handful of captures, which
+    is what an empty mask at serving time looks like.
+    """
+
+    model.eval()
+    dices, ious = [], []
+    for images, targets in loader:
+        images, targets = images.to(device), targets.to(device)
+        predicted = (torch.sigmoid(model(images)) >= threshold).float()
+        inter = (predicted * targets).sum(dim=(1, 2, 3))
+        total = predicted.sum(dim=(1, 2, 3)) + targets.sum(dim=(1, 2, 3))
+        union = total - inter
+        dices.extend(((2 * inter + 1e-6) / (total + 1e-6)).cpu().tolist())
+        ious.extend(((inter + 1e-6) / (union + 1e-6)).cpu().tolist())
+    return (float(np.mean(dices)) if dices else float("nan"),
+            float(np.mean(ious)) if ious else float("nan"),
+            dices)
+
+
+@torch.no_grad()
 def evaluate(model, loader, device, threshold: float) -> float:
     """Mean Dice at the serving threshold, so this number predicts deployment."""
 
@@ -332,12 +357,23 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=Path("runs/segmenter/unet.pt"))
     parser.add_argument("--init", type=Path, default=None,
                         help="Warm-start from an existing bundle (use when new data arrives).")
+    parser.add_argument("--arch", default="unet", choices=list(ARCHITECTURES),
+                        help="decoder architecture; see anemia.architectures")
     parser.add_argument("--encoder", default="efficientnet-b0")
     parser.add_argument("--input-size", type=int, default=320)
     parser.add_argument("--epochs", type=int, default=40)
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--val-fraction", type=float, default=0.2)
+    parser.add_argument("--no-select", action="store_true",
+                        help="train on every subject for exactly --epochs and save the final "
+                             "weights. No validation, so no epoch selection and no held-out "
+                             "score: this is the shipping run, after an architecture has been "
+                             "chosen on a split. Pass the epoch count that selection found.")
+    parser.add_argument("--test-fraction", type=float, default=0.0,
+                        help="subjects held out from both training and model selection. "
+                             "Non-zero makes the reported Dice an honest held-out figure: "
+                             "val Dice is optimistic because the epoch is chosen on it.")
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=0)
@@ -364,27 +400,35 @@ def main() -> int:
     # Split by subject, never by image.
     subjects = sorted({subject_of(image) for image, _ in pairs})
     random.Random(args.seed).shuffle(subjects)
-    cut = max(1, int(len(subjects) * args.val_fraction))
-    val_subjects = set(subjects[:cut])
-    train_pairs = [p for p in pairs if subject_of(p[0]) not in val_subjects]
-    val_pairs = [p for p in pairs if subject_of(p[0]) in val_subjects]
-    print(f"{len(subjects)} subjects -> {len(train_pairs)} train / {len(val_pairs)} val images")
+    if args.no_select:
+        # Everything trains. Nothing is held back, so nothing can be measured
+        # here — the estimate for this model is the selection run's test score.
+        n_test = n_val = 0
+        test_subjects = val_subjects = set()
+    else:
+        n_test = int(len(subjects) * args.test_fraction)
+        n_val = max(1, int(len(subjects) * args.val_fraction))
+        test_subjects = set(subjects[:n_test])
+        val_subjects = set(subjects[n_test:n_test + n_val])
+    group = lambda p: ("test" if subject_of(p[0]) in test_subjects
+                       else "val" if subject_of(p[0]) in val_subjects else "train")
+    train_pairs = [p for p in pairs if group(p) == "train"]
+    val_pairs = [p for p in pairs if group(p) == "val"]
+    test_pairs = [p for p in pairs if group(p) == "test"]
+    print(f"{len(subjects)} subjects -> {len(train_pairs)} train / {len(val_pairs)} val"
+          + (f" / {len(test_pairs)} test images" if test_pairs else " images"))
 
     config = SegmenterConfig(
-        encoder=args.encoder, input_size=args.input_size, threshold=args.threshold
+        arch=args.arch, encoder=args.encoder,
+        input_size=args.input_size, threshold=args.threshold
     )
     device = pick_device(args.device)
     print(f"device: {device}")
 
-    import segmentation_models_pytorch as smp
-
     # Pretrained encoder unless we are continuing from our own bundle.
-    model = smp.Unet(
-        encoder_name=config.encoder,
-        encoder_weights=None if args.init else "imagenet",
-        in_channels=3,
-        classes=1,
-    )
+    model = build(config.arch, config.encoder, pretrained=not args.init)
+    print(f"architecture: {config.arch} / {config.encoder} "
+          f"({sum(p.numel() for p in model.parameters()) / 1e6:.2f}M parameters)")
     if args.init:
         bundle = torch.load(args.init, map_location="cpu", weights_only=False)
         model.load_state_dict(bundle["state_dict"])
@@ -420,6 +464,10 @@ def main() -> int:
             running += float(loss.detach())
         scheduler.step()
 
+        if args.no_select:
+            print(f"epoch {epoch:3d}/{args.epochs}  loss {running / max(len(train_loader), 1):.4f}")
+            continue
+
         val_dice = evaluate(model, val_loader, device, config.threshold)
         marker = ""
         if val_dice > best_dice:
@@ -443,7 +491,54 @@ def main() -> int:
         print(f"epoch {epoch:3d}/{args.epochs}  loss {running / max(len(train_loader), 1):.4f}  "
               f"val Dice {val_dice:.4f}{marker}")
 
+    if args.no_select:
+        # One save, at the end, of a model trained on every available subject.
+        save_bundle(
+            args.out, model, config,
+            provenance={
+                "trained_at": started,
+                "datasets": [str(d) for d in args.data],
+                "warm_started_from": str(args.init) if args.init else None,
+                "train_images": len(train_pairs), "val_images": 0,
+                "val_subjects": [],
+                "epochs_requested": args.epochs,
+                "augment": args.augment, "seed": args.seed,
+                "selection": "none — trained on all subjects for a fixed epoch count",
+            },
+            metrics={"val_dice": float("nan"), "best_epoch": args.epochs},
+        )
+        print(f"\ntrained on all {len(train_pairs)} images for {args.epochs} epochs")
+        print("no held-out score: this run keeps nothing back. Use the selection "
+              "run's test score as the estimate for this model.")
+        print(f"bundle written to {args.out}")
+        return 0
+
     print(f"\nbest val Dice {best_dice:.4f} at epoch {best_epoch}")
+
+    # Score the *selected* checkpoint on subjects used for neither training nor
+    # selection. Validation Dice is optimistic precisely because the epoch was
+    # chosen on it; this number is not.
+    if test_pairs:
+        model.load_state_dict(
+            torch.load(args.out, map_location="cpu", weights_only=False)["state_dict"])
+        model.to(device)
+        test_loader = DataLoader(
+            ConjunctivaDataset(test_pairs, config, train=False),
+            batch_size=args.batch_size, shuffle=False, num_workers=2,
+        )
+        test_dice, test_iou, per_image = evaluate_full(model, test_loader, device, config.threshold)
+        empty = sum(1 for d in per_image if d == 0.0)
+        print(f"held-out test Dice {test_dice:.4f}  IoU {test_iou:.4f}  "
+              f"({len(per_image)} images, {empty} empty masks)")
+        bundle = torch.load(args.out, map_location="cpu", weights_only=False)
+        bundle["metrics"].update({
+            "test_dice": test_dice, "test_iou": test_iou,
+            "test_images": len(per_image), "test_empty_masks": empty,
+            "test_dice_per_image": per_image,
+            "test_subjects": sorted(test_subjects),
+        })
+        torch.save(bundle, args.out)
+
     print(f"bundle written to {args.out}")
     print(f"serve it with:  ANEMIA_SEGMENTER={args.out}")
     return 0

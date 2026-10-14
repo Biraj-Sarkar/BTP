@@ -50,6 +50,10 @@ class SegmenterConfig:
     trained at 384px still serves correctly after the default here changes.
     """
 
+    arch: str = "unet"
+    """Decoder architecture (see `anemia.architectures`). Defaults to `unet` so
+    that bundles written before architectures were selectable still load."""
+
     encoder: str = "efficientnet-b0"
     input_size: int = 320
     threshold: float = 0.5
@@ -105,14 +109,12 @@ class LearnedSegmenter:
             device or ("cuda" if torch.cuda.is_available() else "cpu")
         )
 
-        import segmentation_models_pytorch as smp
+        from .architectures import build
 
-        self.model = smp.Unet(
-            encoder_name=self.config.encoder,
-            encoder_weights=None,  # weights come from the bundle, not the hub
-            in_channels=3,
-            classes=1,
-        )
+        # Weights come from the bundle, not the hub, so the encoder is built
+        # empty. The architecture is read from the bundle too: a model served
+        # by the wrong decoder would fail to load, which is the intent.
+        self.model = build(self.config.arch, self.config.encoder, pretrained=False)
         self.model.load_state_dict(bundle["state_dict"])
         self.model.to(self.device)
         # Frozen BatchNorm: in train mode the running statistics would drift
@@ -122,7 +124,7 @@ class LearnedSegmenter:
         # Feature caches key off this. A retrained segmenter produces different
         # masks, so it must not silently reuse features cached under the old
         # one — the trained_at stamp changes on every run.
-        self.cache_key = f"unet-{self.provenance.get('trained_at', 'unknown')}"
+        self.cache_key = f"{self.config.arch}-{self.provenance.get('trained_at', 'unknown')}"
 
     @property
     def min_mask_ratio(self) -> float:

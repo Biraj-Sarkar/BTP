@@ -131,6 +131,24 @@ preprocessing, training, or serving. `heuristic_segmenter.cache_key`
 (`classical-v2`) namespaces the crop cache — bump it whenever a classical
 algorithm changes, or training may silently reuse crops cut by the old one.
 
+### `architectures.py`
+The single place a segmentation model is constructed. Both the trainer and the
+read-only loader call `build(arch, encoder, pretrained)`, so a bundle can never
+be served by a different decoder than the one that trained it: the bundle records
+`arch` and the loader rebuilds from that string.
+
+- `unet` — the original. Default, and what every bundle written before this
+  existed resolves to.
+- `unetplusplus` — nested dense skips, from `segmentation_models_pytorch`.
+- `attention` — Attention U-Net. The library has no such model, so the additive
+  attention gates and the decoder are implemented here against the same encoder,
+  with decoder widths matched to the library's U-Net so a comparison is about the
+  gates rather than capacity.
+- `unet-scse` — the library's own decoder attention, a different mechanism
+  (it recalibrates after concatenation rather than gating the skip before it).
+
+Compared in `experiments/20_architectures/`.
+
 ### `preprocess.py`
 The `prepare()` function every image passes through, at train time and at serve
 time: white balance → segment → tight crop → letterbox → resize.
