@@ -4,18 +4,28 @@ import logging
 import cv2, numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from inference import BackendModels
-app=FastAPI(title="BTP Anaemia Backend",version="1.0"); models=None
+app=FastAPI(title="BTP Anaemia Backend",version="1.0"); models=None; model_error=None
 logger = logging.getLogger("btp_backend")
 def get_models():
-    global models
-    if models is None: models=BackendModels.load()
+    global models, model_error
+    if models is None:
+        try:
+            models=BackendModels.load(); model_error=None
+        except Exception as exc:
+            model_error=str(exc)
+            raise
     return models
 async def decode(image):
     raw=await image.read(); decoded=cv2.imdecode(np.frombuffer(raw,np.uint8),cv2.IMREAD_COLOR)
     if decoded is None: raise HTTPException(400,"Invalid image file")
     return cv2.cvtColor(decoded,cv2.COLOR_BGR2RGB)
 @app.get("/health")
-def health(): return {"status":"ok","extractor":"unet","models_loaded":models is not None}
+def health():
+    try:
+        get_models()
+        return {"status":"ok","extractor":"unet","model": "anubhav", "models_loaded":True}
+    except Exception:
+        return {"status":"error","extractor":"unet","models_loaded":False,"error":model_error}
 @app.get("/")
 def root(): return {"status":"ok","service":"btp-anemia-backend","docs":"/docs"}
 @app.post("/predict")

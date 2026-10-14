@@ -59,11 +59,16 @@ class BackendModels:
     @classmethod
     def load(cls):
         unet=UNetExtractor(_asset("HF_UNET_REPO","HF_UNET_PATH","unet.pt")); anubhav=None; hb=None
-        try: anubhav=AnubhavRegressor(torch.load(_asset("HF_ANUBHAV_REPO","HF_ANUBHAV_PATH","best.pt"),map_location="cpu",weights_only=False))
-        except (RuntimeError,ValueError,FileNotFoundError): pass
-        try:
-            blob=torch.load(_asset("HF_HB_REPO","HF_HB_PATH","best_model.pt"),map_location="cpu",weights_only=False); stats=json.loads(_asset("HF_HB_REPO","HF_HB_STATS_PATH","data_statistics.json").read_text()); hb=HBPredictor(int(blob["num_sexes"]),blob["model_state"]); return cls(unet,anubhav,hb,float(stats["age_mean"]),float(stats["age_std"]),stats["sex_to_index"])
-        except (RuntimeError,ValueError,FileNotFoundError): pass
+        anubhav=AnubhavRegressor(torch.load(_asset("HF_ANUBHAV_REPO","HF_ANUBHAV_PATH","best.pt"),map_location="cpu",weights_only=False))
+        # ConvNeXt is large. Render's small instances should load only the
+        # selected serving model; Anubhav is the default and is already the
+        # primary predictor used by this API.
+        if os.getenv("HB_MODEL", "anubhav").strip().lower() in {"hbpredictor", "hb"}:
+            try:
+                blob=torch.load(_asset("HF_HB_REPO","HF_HB_PATH","best_model.pt"),map_location="cpu",weights_only=False); stats=json.loads(_asset("HF_HB_REPO","HF_HB_STATS_PATH","data_statistics.json").read_text()); hb=HBPredictor(int(blob["num_sexes"]),blob["model_state"]); return cls(unet,anubhav,hb,float(stats["age_mean"]),float(stats["age_std"]),stats["sex_to_index"])
+            except (RuntimeError,ValueError,FileNotFoundError): pass
+        if anubhav is None:
+            raise RuntimeError("Anubhav Hb checkpoint was not loaded")
         return cls(unet,anubhav,hb,43.95,16.21,{"f":0,"m":1})
     def predict(self,image_rgb,age,sex):
         work=cv2.resize(image_rgb,(512,512)); means=work.reshape(-1,3).mean(0); balanced=np.clip(work*(means.mean()/np.maximum(means,1e-6)),0,255).astype(np.uint8); mask=self.extractor(balanced)

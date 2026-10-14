@@ -17,6 +17,8 @@ Set `HF_MODEL_REPO` when all files share one repository, or set
 `HF_UNET_REPO`, `HF_ANUBHAV_REPO`, and `HF_HB_REPO` separately. The default
 filenames are `unet.pt`, `best.pt`, `best_model.pt`, and `data_statistics.json`.
 Private repositories use the `HF_TOKEN` environment variable.
+The API serves the Anubhav model by default. Set `HB_MODEL=hbpredictor` only
+if you want the larger ConvNeXt predictor instead.
 
 ```powershell
 cd D:\BTP\BTP-Anemia-Model-Suite\Backend
