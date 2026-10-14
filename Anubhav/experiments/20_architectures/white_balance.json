@@ -1,0 +1,62 @@
+{
+  "cells": {
+    "trained raw / served raw": {
+      "dice": 0.847630306010939,
+      "iou": 0.742718773444475,
+      "precision": 0.8320472425865063,
+      "recall": 0.8737203503281027
+    },
+    "trained raw / served gw": {
+      "dice": 0.8360436586392237,
+      "iou": 0.7273876553411025,
+      "precision": 0.8443788906424707,
+      "recall": 0.8390922948857681
+    },
+    "trained gw / served raw": {
+      "dice": 0.8328822531802874,
+      "iou": 0.721349834163571,
+      "precision": 0.7884622907690975,
+      "recall": 0.8971100111940926
+    },
+    "trained gw / served gw": {
+      "dice": 0.8407135976758989,
+      "iou": 0.7322351537824446,
+      "precision": 0.8164929216877457,
+      "recall": 0.8788549420605496
+    }
+  },
+  "comparisons": {
+    "Does white balance help? (matched vs matched)": {
+      "a": [
+        "trained raw",
+        "served raw"
+      ],
+      "b": [
+        "trained gw",
+        "served gw"
+      ],
+      "mean_diff": 0.0069167083350400475,
+      "ci": [
+        0.0012487799378051137,
+        0.011774806176522124
+      ],
+      "p": 0.001476499619734262
+    },
+    "What did the mismatch cost? (matched vs what the pipeline did)": {
+      "a": [
+        "trained raw",
+        "served raw"
+      ],
+      "b": [
+        "trained raw",
+        "served gw"
+      ],
+      "mean_diff": 0.011586647371715266,
+      "ci": [
+        0.00660015743597938,
+        0.01670456905482187
+      ],
+      "p": 3.6820141757543166e-05
+    }
+  }
+}

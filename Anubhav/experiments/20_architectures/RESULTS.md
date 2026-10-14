@@ -208,6 +208,174 @@ changes every cached crop and every feature measured downstream, so it should be
 a deliberate step taken with the extractor's robustness question (experiment 13)
 settled, not a side effect of this experiment.
 
+## Side-by-side masks on the original 52 captures
+
+`python experiments/20_architectures/overlays.py` → `overlays/sheet_01..08.jpg`,
+`agreement.csv`. All three stage-1 bundles are run over the 52 captures the
+project started with, masks drawn side by side, sheets ordered **worst agreement
+first**.
+
+**These captures carry no segmentation annotations**, so nothing here is an
+accuracy measurement. What can be measured is how far the three architectures
+agree with each other.
+
+### They agree much less here than their held-out scores suggest
+
+| | |
+|---|---|
+| Mean pairwise IoU across the 52 | **0.648** |
+| Median | 0.704 |
+| Captures where all three concur (IoU ≥ 0.80) | **12 of 52** |
+| Captures where they diverge (IoU < 0.60) | 18 of 52 |
+| Empty masks | 0 |
+
+| pair | mean IoU |
+|---|---|
+| U-Net vs Attention U-Net | 0.677 |
+| U-Net vs UNet++ | 0.650 |
+| UNet++ vs Attention U-Net | 0.618 |
+
+On held-out images from the training distribution all three reach Dice ≈ 0.84.
+On this cohort they agree with *each other* at IoU 0.648. **The architecture
+choice is a 0.01 Dice difference; the disagreement between architectures on these
+captures is roughly thirty times larger.** Whatever separates these images from
+the training data matters far more than which decoder is used.
+
+### Disagreement goes with thin masks
+
+| | median mask coverage |
+|---|---|
+| Captures where the models concur | 3.97% |
+| Captures where they diverge | 2.30% |
+
+Coverage correlates with agreement at r +0.62 (UNet++) and +0.58 (Attention
+U-Net). Visually the pattern is consistent: on high-agreement captures all three
+trace a plausible conjunctival crescent at 3–5% of frame; on low-agreement ones
+they return thin slivers, frequently following the wet lid margin rather than the
+body of the conjunctiva, and each picks a different part of it. `sheet_01.jpg`
+holds the worst cases, `sheet_08.jpg` the best — the difference between them is
+obvious without any metric.
+
+### The obvious hypothesis, tested and not supported
+
+If extraction is unreliable on these captures, the colour measured inside those
+masks is not conjunctival colour — which would be an alternative explanation for
+this cohort showing no colour signal, and one that experiment 16 did not test
+(it ruled out *processing* by shrinking external photographs, which says nothing
+about where the mask lands on these ones).
+
+Restricting the colour–haemoglobin correlation to the captures where all three
+architectures concur does **not** recover the signal:
+
+| subset | n | red vs Hb | blue vs Hb |
+|---|---|---|---|
+| all patients | 26 | +0.090 (p 0.66) | +0.066 (p 0.75) |
+| models concur (IoU ≥ 0.70) | 12 | −0.368 (p 0.24) | +0.533 (p 0.07) |
+| models diverge (IoU < 0.70) | 14 | +0.350 (p 0.22) | −0.200 (p 0.49) |
+
+The two subsets point in opposite directions and neither is significant. **The
+extraction-failure explanation is not supported.** With 12 and 14 patients the
+test has very little power, so it cannot rule out a modest effect either — but it
+gives no reason to believe it, and the earlier conclusion stands unchanged.
+
+### What this does establish
+
+- **Agreement between architectures is a usable proxy for extraction confidence
+  where no annotation exists.** It is cheap, needs no labels, and flagged the
+  bimodal behaviour of this cohort immediately.
+- **Disagreement is not error.** All three can be wrong together, and on a cohort
+  this far from the training data that is plausible. What unanimity rules out is
+  one architecture failing alone.
+- **The real gap is annotations on captures like these.** Labelling even 15 of
+  these 52 would convert every statement above from "the models disagree" into
+  "the models are wrong, by this much, in this direction". That is now the
+  highest-value next step for the extractor, ahead of a second training seed.
+
+## Is white balance helping the extractor? No — and it was also a bug
+
+`python experiments/20_architectures/white_balance.py` → `white_balance.json`.
+
+### The bug found on the way
+
+Segmenter training reads raw image/mask pairs. `preprocess.prepare()`
+white-balanced the frame **before** handing it to the segmenter. So every bundle
+in this project was trained on raw pixels and served balanced ones.
+
+That is not cosmetic. Same model, same photograph, mask computed on the raw
+image against the gray-world image, over the 52-capture cohort:
+
+| architecture | IoU raw vs gw | coverage raw | coverage gw | captures below IoU 0.8 |
+|---|---|---|---|---|
+| U-Net | 0.670 | 3.69% | 2.55% | 39 / 52 |
+| UNet++ | 0.573 | 2.95% | 1.92% | 39 / 52 |
+| Attention U-Net | 0.642 | 3.20% | 2.27% | 32 / 52 |
+
+White balance shrinks the mask by about a third and changes which pixels it
+covers on three-quarters of captures.
+
+### The 2×2
+
+`attention_gw.pt` is Attention U-Net trained with white balance applied,
+identical to `attention.pt` in seed, split, augmentation, encoder and epochs.
+Both scored against annotator masks on the same 129 held-out subjects.
+
+Mean Dice, `*` marking the cells where training and serving agree:
+
+| | served raw | served gray-world |
+|---|---|---|
+| **trained raw** | **\*0.8476** | 0.8360 |
+| **trained gray-world** | 0.8329 | **\*0.8407** |
+
+| configuration | Dice | IoU | precision | recall |
+|---|---|---|---|---|
+| trained raw / served raw | **0.8476** | **0.7427** | 0.8320 | 0.8737 |
+| trained raw / served gw | 0.8360 | 0.7274 | **0.8444** | 0.8391 |
+| trained gw / served raw | 0.8329 | 0.7213 | 0.7885 | **0.8971** |
+| trained gw / served gw | 0.8407 | 0.7322 | 0.8165 | 0.8789 |
+
+### Two answers, both resolved
+
+**Does white balance help? No.** Matched raw beats matched gray-world by
+**+0.0069 Dice, 95% CI [+0.0012, +0.0118], p = 0.0015.** Training and serving on
+raw pixels is better than training and serving on balanced ones.
+
+**What did the mismatch cost? +0.0116 Dice**, 95% CI [+0.0066, +0.0167],
+p = 3.7e-05 — the gap between what the pipeline was doing (trained raw, served
+gray-world) and the matched configuration.
+
+> **The bug cost more than the architecture upgrade gained.** Switching U-Net to
+> Attention U-Net is worth +0.0105 Dice. Removing white balance from the
+> segmenter's input is worth +0.0116 on its own. The cheapest improvement
+> available was not a better decoder.
+
+The two mismatched cells also fail in opposite, legible directions. Serving a
+raw-trained model balanced images raises precision to 0.8444 and drops recall to
+0.8391 — the mask shrinks and becomes conservative. Serving a gw-trained model
+raw images does the reverse: recall 0.8971, precision 0.7885 — the mask spills.
+
+### Taken with experiment 18, gray-world now loses everywhere
+
+Experiment 18 found gray-world costs accuracy in the **colour** measurement,
+within and across sites. This finds it also costs accuracy in the **mask**. There
+is no longer any stage of the pipeline where it has been measured to help.
+
+### What changed in the code
+
+- `--gray-world` on the trainer, so a model can be trained under the condition it
+  will be served.
+- `SegmenterConfig.gray_world` records that condition in the bundle, defaulting to
+  `False` — how every earlier bundle was in fact trained.
+- `LearnedSegmenter.wants_gray_world` exposes it, and `preprocess.prepare()`
+  conditions the segmenter's input to match, independently of which pixels colour
+  is finally read from. An extractor that declares nothing keeps the old
+  behaviour.
+
+**This changes masks in deployment.** `runs/segmenter/unet.pt` declares
+`wants_gray_world = False`, so it is now segmented on raw pixels rather than
+balanced ones — the condition it was trained for, and per the table above that
+moves the mask on most captures. Cached crops and any figure measured through
+`prepare()` are stale until re-run.
+
 ## Limitations known before the result arrives
 
 - **These metrics measure agreement with the annotator, who is a proxy.** The

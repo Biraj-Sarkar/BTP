@@ -156,6 +156,20 @@ time: white balance → segment → tight crop → letterbox → resize.
 Also holds `assess_quality()` (the enforced QC gate) and `CropCache` (the disk
 cache described in §1.3).
 
+#### White balance is the extractor's choice, not the caller's
+
+A learned segmenter is as sensitive to a global colour shift as to anything else
+in its input, so it must be served the kind of image it trained on. The bundle
+records that as `gray_world`, `LearnedSegmenter.wants_gray_world` exposes it, and
+`prepare()` conditions the segmenter's input to match — independently of
+`PreprocessConfig.gray_world`, which governs only the pixels colour is finally
+read from. An extractor that declares nothing keeps the previous behaviour.
+
+This was a real defect: training read raw pairs while `prepare()` white-balanced
+the frame first, so every bundle was trained on raw pixels and served balanced
+ones. It cost +0.0116 Dice — more than switching architecture gained. See
+`experiments/20_architectures/` §white balance.
+
 #### Using the extractor from your own training code
 
 `prepare()` returns a `Prepared`, whose `.crop` is a square `model_size` RGB

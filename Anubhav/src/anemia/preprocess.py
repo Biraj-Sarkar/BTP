@@ -140,7 +140,19 @@ def prepare(
     working = resize(image_rgb, preprocess.work_size)
     balanced = gray_world_white_balance(working) if preprocess.gray_world else working
 
-    mask, backend = segmenter(balanced)
+    # Segment the kind of image the extractor was trained on. A learned segmenter
+    # is as sensitive to a global colour shift as to anything else in its input,
+    # so handing a model trained on raw pixels a white-balanced frame (or the
+    # reverse) is a train/serve mismatch — measured at IoU 0.57-0.67 between the
+    # two masks on the 52-capture cohort, with coverage falling by about a third.
+    # An extractor that declares nothing keeps the previous behaviour.
+    wants = getattr(segmenter, "wants_gray_world", None)
+    if wants is None or wants == preprocess.gray_world:
+        segment_input = balanced
+    else:
+        segment_input = gray_world_white_balance(working) if wants else working
+
+    mask, backend = segmenter(segment_input)
 
     # The mask-size floor belongs to the extractor, not to the capture. 1.5% of
     # the frame was calibrated for the classical chain, whose masks cover ~10%

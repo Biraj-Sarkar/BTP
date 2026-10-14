@@ -62,6 +62,11 @@ class SegmenterConfig:
     std: Tuple[float, float, float] = (0.229, 0.224, 0.225)
     min_area_fraction: float = 0.002
 
+    gray_world: bool = False
+    """Whether the image was white-balanced before the network saw it during
+    training. Serving must match: `preprocess.prepare()` reads this. False is
+    how every bundle written before this field existed was trained."""
+
     @classmethod
     def from_dict(cls, raw: dict) -> "SegmenterConfig":
         fields = {f for f in cls.__dataclass_fields__}
@@ -125,6 +130,19 @@ class LearnedSegmenter:
         # masks, so it must not silently reuse features cached under the old
         # one — the trained_at stamp changes on every run.
         self.cache_key = f"{self.config.arch}-{self.provenance.get('trained_at', 'unknown')}"
+
+    @property
+    def wants_gray_world(self) -> bool:
+        """The kind of image this bundle was trained on.
+
+        A segmentation network is as sensitive to a global colour shift as to
+        anything else in its input, so serving it white-balanced images when it
+        trained on raw ones (or the reverse) is a train/serve mismatch.
+        `preprocess.prepare()` reads this and conditions the segmenter's input
+        accordingly, independently of which pixels colour is finally read from.
+        """
+
+        return bool(self.config.gray_world)
 
     @property
     def min_mask_ratio(self) -> float:

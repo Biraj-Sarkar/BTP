@@ -64,6 +64,7 @@ from torch.utils.data import DataLoader, Dataset
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from anemia.architectures import ARCHITECTURES, build  # noqa: E402
+from anemia.imaging import gray_world_white_balance  # noqa: E402
 from anemia.segment_learned import (  # noqa: E402
     BUNDLE_FORMAT,
     BUNDLE_VERSION,
@@ -162,6 +163,10 @@ class ConjunctivaDataset(Dataset):
         self.pairs = list(pairs)
         self.config = config
         self.train = train
+        # Whether to white-balance before the network sees the image. This must
+        # match what `preprocess.prepare()` feeds the segmenter at serving time,
+        # or the model is served a kind of image it never trained on.
+        self.gray_world = config.gray_world
 
         import albumentations as A
 
@@ -242,6 +247,8 @@ class ConjunctivaDataset(Dataset):
             raise RuntimeError(f"Could not read pair {image_path} / {mask_path}")
 
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        if self.gray_world:
+            rgb = gray_world_white_balance(rgb)
         if mask.shape != rgb.shape[:2]:
             mask = cv2.resize(mask, (rgb.shape[1], rgb.shape[0]), interpolation=cv2.INTER_NEAREST)
         # Datasets encode the region as 255, as 1, or as any non-zero label.
@@ -357,6 +364,11 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=Path("runs/segmenter/unet.pt"))
     parser.add_argument("--init", type=Path, default=None,
                         help="Warm-start from an existing bundle (use when new data arrives).")
+    parser.add_argument("--gray-world", action="store_true",
+                        help="white-balance images during training. Set this to match "
+                             "PreprocessConfig.gray_world at serving time; the two "
+                             "disagreeing means the model is served images unlike "
+                             "anything it trained on.")
     parser.add_argument("--arch", default="unet", choices=list(ARCHITECTURES),
                         help="decoder architecture; see anemia.architectures")
     parser.add_argument("--encoder", default="efficientnet-b0")
@@ -420,7 +432,8 @@ def main() -> int:
 
     config = SegmenterConfig(
         arch=args.arch, encoder=args.encoder,
-        input_size=args.input_size, threshold=args.threshold
+        input_size=args.input_size, threshold=args.threshold,
+        gray_world=args.gray_world,
     )
     device = pick_device(args.device)
     print(f"device: {device}")
