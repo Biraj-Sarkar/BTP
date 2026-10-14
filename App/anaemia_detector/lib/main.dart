@@ -1,12 +1,20 @@
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'components/image.dart';
+import 'firebase_options.dart';
 import 'results.dart';
 
-void main() => runApp(const AnaemiaDetectorApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const AnaemiaDetectorApp());
+}
 
 class AnaemiaDetectorApp extends StatelessWidget {
   const AnaemiaDetectorApp({super.key});
@@ -26,10 +34,11 @@ class AnaemiaDetectorApp extends StatelessWidget {
 
 /// Sends the selected image in a multipart field named `image`.
 // Override for an Android emulator or a physical phone, for example:
+// Override for local development, for example:
 // flutter run --dart-define=SERVER_BASE_URL=http://10.0.2.2:8000
 const _serverBaseUrl = String.fromEnvironment(
   'SERVER_BASE_URL',
-  defaultValue: 'http://localhost:8000',
+  defaultValue: 'https://btp-9obt.onrender.com',
 );
 
 Future<ScreeningResult> submitForAnemia({

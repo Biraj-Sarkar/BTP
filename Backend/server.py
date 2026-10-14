@@ -1,9 +1,11 @@
 """Standalone API: upload photo and demographics, receive ROI/Hb screening."""
 from __future__ import annotations
+import logging
 import cv2, numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from inference import BackendModels
 app=FastAPI(title="BTP Anaemia Backend",version="1.0"); models=None
+logger = logging.getLogger("btp_backend")
 def get_models():
     global models
     if models is None: models=BackendModels.load()
@@ -14,8 +16,13 @@ async def decode(image):
     return cv2.cvtColor(decoded,cv2.COLOR_BGR2RGB)
 @app.get("/health")
 def health(): return {"status":"ok","extractor":"unet","models_loaded":models is not None}
+@app.get("/")
+def root(): return {"status":"ok","service":"btp-anemia-backend","docs":"/docs"}
 @app.post("/predict")
 @app.post("/anemia-detection")
 async def predict(image: UploadFile=File(...), age_years: float=Form(...), sex: str=Form(...)):
     try: return get_models().predict(await decode(image),age_years,sex)
     except (ValueError,RuntimeError) as exc: raise HTTPException(422,str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Prediction request failed")
+        raise HTTPException(503, "Model service is unavailable; check the server logs") from exc
