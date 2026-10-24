@@ -6,24 +6,18 @@ their source files and training instructions remain easy to inspect.
 
 ## Contents
 
-- `algorithms/Anubhav/` – conjunctival-image anemia/Hb pipeline, segmentation,
-  preprocessing, regression, serving code, and tests.
-- `algorithms/HBPredictor/` – ConvNeXt-Tiny multimodal Hb regressor using an
-  extracted conjunctival ROI plus age and sex.
-- `App/` – unchanged copy of the Flutter application from `project/App`.
-- `datasets/` – supplied capture metadata and reference images.
+- `App/` – Flutter mobile client for anemia detection.
+- `Backend/` – Server-side FastAPI inference service and model loading.
+- `extractor/` – Conjunctival ROI extraction using pretrained U-Net and quality control.
+- `predictor/` – Production hemoglobin prediction pipeline supporting ResNet, VGG, and MobileNet.
+- `algorithms/Anubhav/` – Retained experimental reference pipeline.
+- `Models/` – U-Net segmentation checkpoint (`Models/UNet_extractor/unet.pt`) and trained predictor weights.
+- `ROI/` – Pre-extracted 224x224 conjunctiva ROIs and manifest.
+- `datasets/` – Clinical captures, metadata CSV, and reference images.
 
-## Dataset status
+## Architecture & Workflows
 
-The supplied CSV contains patient metadata, Hb labels, and JSON image paths;
-the supplied reference images are staged alongside it. See `datasets/README.md`
-for the expected image and ROI layout for each model. No model training is
-claimed by this cleanup step.
+1. **Extraction (`extractor/`)**: Eye image → Color balancing → U-Net inference → Mask morphological refinement → Quality checks → 224x224 ROI crop.
+2. **Prediction (`predictor/`)**: ROI → Preprocessing & Augmentation → ResNet / VGG / MobileNet Regressor → Standardized score denormalization → Hb prediction (g/dL).
+3. **Backend (`Backend/`)**: FastAPI server orchestrating extraction, prediction, and WHO threshold-based anemia classification.
 
-## Source mapping
-
-The package contains the complete named `BTP-anubhav-ai-psychiatrist-research`
-Anubhav pipeline, the HBPredictor package, and an unchanged copy of the app.
-Generated experiments, bundled sample images, and training artifacts were
-removed from `algorithms/Anubhav`; the shared reference data remains under
-`datasets/`.

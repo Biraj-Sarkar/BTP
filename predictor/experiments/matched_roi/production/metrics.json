@@ -1,0 +1,63 @@
+{
+  "architecture": "resnet",
+  "variant": "resnet18",
+  "best_epoch": 2,
+  "training_duration_seconds": 78.4,
+  "inference_latency_ms_per_image": 37.48,
+  "parameters": {
+    "total": 11177025,
+    "trainable": 11177025
+  },
+  "best_val_mae_g_dl": 1.443,
+  "test_metrics": {
+    "count": 25,
+    "mae_g_dl": 1.401,
+    "rmse_g_dl": 1.904,
+    "bias_g_dl": 0.171,
+    "r2": -0.4963,
+    "pearson_r": 0.113,
+    "pearson_p": 0.59073,
+    "spearman_rho": 0.0944,
+    "loa_lower_g_dl": -3.623,
+    "loa_upper_g_dl": 3.964,
+    "baseline_mae_g_dl": 1.241,
+    "mae_improvement_vs_baseline": -0.16,
+    "screening": {
+      "cutoff_g_dl": 12.0,
+      "tp": 13,
+      "tn": 3,
+      "fp": 4,
+      "fn": 5,
+      "sensitivity": 0.722,
+      "specificity": 0.429,
+      "ppv": 0.765,
+      "npv": 0.375,
+      "accuracy": 0.64,
+      "f1_score": 0.743
+    },
+    "loss": 0.4507883524894714
+  },
+  "config": {
+    "architecture": "resnet",
+    "variant": "resnet18",
+    "pretrained": true,
+    "dropout": 0.3,
+    "epochs": 8,
+    "batch_size": 16,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "loss_type": "smooth_l1",
+    "severe_hb_weight": 1.2,
+    "patience": 3,
+    "seed": 42,
+    "fixed_split_manifest": "predictor\\experiments\\roi_provenance\\production_manifest.csv",
+    "split_counts": {
+      "train": 122,
+      "val": 27,
+      "test": 25
+    },
+    "target_mean": 11.75,
+    "target_std": 1.8828932219448615,
+    "filter_usable": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "records": 183,
+  "matched_training_eligible": 174,
+  "excluded": 9,
+  "splits": {
+    "train": 122,
+    "val": 27,
+    "test": 25
+  },
+  "excluded_by_reason": {
+    "missing_or_invalid_label": 0,
+    "production_extraction_or_roi": 8,
+    "attention_extraction_or_roi": 8
+  },
+  "production_manifest": "predictor\\experiments\\roi_provenance\\production_manifest.csv",
+  "attention_manifest": "predictor\\experiments\\roi_provenance\\attention_manifest.csv",
+  "exclusions_path": "predictor\\experiments\\matched_roi_predictors\\exclusions.csv"
+}

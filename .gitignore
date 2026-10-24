@@ -3,10 +3,12 @@
 /India/
 /Italy/
 /ROI/
+/segmentation_dataset/
 
 # Trained model assets and experiment outputs
 /Models/
 **/runs/
+/extractor/experiments/
 **/*.pt
 **/*.pth
 **/*.ckpt

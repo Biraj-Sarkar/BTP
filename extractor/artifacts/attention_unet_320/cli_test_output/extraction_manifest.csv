@@ -1,0 +1,2 @@
+image,roi_file,passed,backend,mask_ratio,focus,reasons
+1731.jpg,roi_1731.png,True,unet,0.005817413330078125,646.5209293327644,

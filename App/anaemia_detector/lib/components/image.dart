@@ -35,7 +35,7 @@ class _ImagePageState extends State<ImagePage> {
         final extractionResult = await submitForExtraction(
           imagePath: _image!.path,
           extractTarget: _extractTarget,
-          includeVisuals: false,
+          includeVisuals: true,
         );
         if (mounted) {
           await Navigator.of(context).push(
@@ -144,7 +144,6 @@ class _ImagePageState extends State<ImagePage> {
               decoration: const InputDecoration(labelText: 'Extract target'),
               items: const [
                 DropdownMenuItem(value: 'conjunctiva', child: Text('Conjunctiva')),
-                DropdownMenuItem(value: 'palpebral_conjunctiva', child: Text('Palpebral conjunctiva')),
               ],
               onChanged: _submitting
                   ? null

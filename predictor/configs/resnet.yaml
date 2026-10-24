@@ -1,0 +1,24 @@
+architecture: resnet
+variant: resnet18
+pretrained: true
+dropout: 0.3
+freeze_until: null
+
+# Training
+epochs: 8
+batch_size: 16
+learning_rate: 0.0003
+weight_decay: 0.0001
+loss_type: smooth_l1
+severe_hb_weight: 1.2
+patience: 3
+
+# Dataset & Splits
+manifest_path: "ROI/roi_manifest.csv"
+output_dir: "predictor/runs/resnet"
+val_fraction: 0.15
+test_fraction: 0.15
+stratify_bins: 4
+seed: 42
+filter_usable: true
+

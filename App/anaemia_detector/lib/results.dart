@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class ScreeningResult {
@@ -33,6 +36,7 @@ class ExtractionResult {
     required this.usable,
     required this.message,
     required this.quality,
+    required this.visuals,
   });
 
   factory ExtractionResult.fromJson(Map<String, dynamic> json) => ExtractionResult(
@@ -41,6 +45,7 @@ class ExtractionResult {
     usable: json['usable'] == true,
     message: (json['message'] ?? '').toString(),
     quality: (json['quality'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{},
+    visuals: (json['visuals'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{},
   );
 
   final String target;
@@ -48,6 +53,7 @@ class ExtractionResult {
   final bool usable;
   final String message;
   final Map<String, dynamic> quality;
+  final Map<String, dynamic> visuals;
 }
 
 class ResultsPage extends StatelessWidget {
@@ -106,6 +112,7 @@ class ResultsPage extends StatelessWidget {
       ])),
     );
   }
+
 }
 
 class ExtractionResultsPage extends StatelessWidget {
@@ -120,7 +127,7 @@ class ExtractionResultsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Extraction result')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -153,10 +160,49 @@ class ExtractionResultsPage extends StatelessWidget {
             const SizedBox(height: 14),
             if (result.message.isNotEmpty)
               Text(result.message, textAlign: TextAlign.center),
-            const Spacer(),
+            if (result.visuals.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              _Visual(label: 'Original input', data: result.visuals['original']),
+              _Visual(label: 'Segmentation mask', data: result.visuals['mask']),
+              _Visual(label: 'Masked image', data: result.visuals['masked']),
+              _Visual(label: 'Extracted ROI', data: result.visuals['roi']),
+            ],
+            const SizedBox(height: 24),
             FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Analyse another image')),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Visual extends StatelessWidget {
+  const _Visual({required this.label, required this.data});
+
+  final String label;
+  final dynamic data;
+
+  @override
+  Widget build(BuildContext context) {
+    if (data is! String || data.isEmpty) return const SizedBox.shrink();
+    Uint8List bytes;
+    try {
+      bytes = base64Decode(data);
+    } on FormatException {
+      return Text('$label unavailable');
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(bytes, fit: BoxFit.contain),
+          ),
+        ],
       ),
     );
   }

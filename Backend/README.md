@@ -9,16 +9,14 @@ app_port: 7860
 
 # Standalone backend
 
-This folder is independent of `algorithms/`. It downloads the U-Net and Hb
-checkpoints from Hugging Face on first use, extracts a conjunctiva ROI, and
-returns haemoglobin plus the sex-based screening result.
+This folder is independent of `algorithms/`. It loads the approved production
+U-Net and ResNet18 checkpoints from the repository, extracts a conjunctiva ROI,
+and returns haemoglobin plus the sex-based screening result. Experimental
+Attention U-Net and matched predictor checkpoints are not selected by the
+backend.
 
-Set `HF_MODEL_REPO` when all files share one repository, or set
-`HF_UNET_REPO`, `HF_ANUBHAV_REPO`, and `HF_HB_REPO` separately. The default
-filenames are `unet.pt`, `best.pt`, `best_model.pt`, and `data_statistics.json`.
-Private repositories use the `HF_TOKEN` environment variable.
-The API serves the Anubhav model by default. Set `HB_MODEL=hbpredictor` only
-if you want the larger ConvNeXt predictor instead.
+The `/extract` endpoint can optionally return base64-encoded original, mask,
+masked, and 224x224 ROI images for the Flutter visualization screen.
 
 ```powershell
 cd D:\BTP\BTP-Anemia-Model-Suite\Backend

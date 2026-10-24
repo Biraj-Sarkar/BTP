@@ -1,0 +1,23 @@
+{
+  "split": "val",
+  "records": 27,
+  "predictor_checkpoint": "predictor\\runs\\resnet\\best.pt",
+  "predictor_architecture": "resnet",
+  "candidate": {
+    "count": 27,
+    "empty_masks": 0,
+    "mae_g_dl": 1.2185185185185186,
+    "rmse_g_dl": 1.5608829410162557,
+    "bias_g_dl": -0.7829629629629627,
+    "mean_runtime_ms": 383.92214442999966
+  },
+  "production": {
+    "count": 27,
+    "empty_masks": 0,
+    "mae_g_dl": 1.1,
+    "rmse_g_dl": 1.3652051806176186,
+    "bias_g_dl": -0.3829629629629629,
+    "mean_runtime_ms": 348.21343702626314
+  },
+  "test_split_used": false
+}

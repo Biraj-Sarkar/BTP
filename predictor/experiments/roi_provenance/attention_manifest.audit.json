@@ -1,0 +1,17 @@
+{
+  "records": 183,
+  "splits": {
+    "train": 129,
+    "val": 27,
+    "test": 27
+  },
+  "passed": 182,
+  "empty": 1,
+  "failed": 1,
+  "valid_labels": 176,
+  "training_eligible": 175,
+  "roi_format_valid": 183,
+  "backend": "attention_unet_candidate",
+  "architecture": "attention_unet",
+  "checkpoint_sha256": "c7c8eea36c2f162297e7dc1d5683051b8090faac881a5cd98ec62588593f1498"
+}
