@@ -253,6 +253,82 @@ class TestLearnedSegmenter:
         assert any("too small" in r for r in rejected.quality.reasons)
         assert not any("too small" in r for r in accepted.quality.reasons)
 
+    @pytest.mark.parametrize("wants_gw", [False, True])
+    @pytest.mark.parametrize("colour_gw", [False, True])
+    def test_segmenter_is_served_the_image_it_trained_on(self, wants_gw, colour_gw):
+        """A learned segmenter must see raw or balanced pixels as it was trained.
+
+        Training once read raw pairs while `prepare()` balanced the frame first,
+        so every bundle was trained on raw pixels and served balanced ones — a
+        mismatch that cost 0.0116 Dice. The segmenter's input must follow the
+        bundle, whatever `PreprocessConfig.gray_world` says about crop colour.
+        """
+
+        from anemia.imaging import resize
+
+        image, _ = make_eye(seed=14)
+        cast = np.clip(image.astype(np.float32) * [1.0, 0.8, 0.6], 0, 255).astype(np.uint8)
+        cfg = PreprocessConfig(gray_world=colour_gw)
+        working = resize(cast, cfg.work_size)
+        balanced = gray_world_white_balance(working)
+        assert not np.array_equal(working, balanced), "test image needs a colour cast"
+
+        received = {}
+
+        def segmenter(rgb):
+            received["image"] = rgb
+            return np.zeros(rgb.shape[:2], np.uint8), "fake"
+        segmenter.wants_gray_world = wants_gw
+
+        prepare(cast, segmenter, cfg, QualityConfig())
+        expected = balanced if wants_gw else working
+        assert np.array_equal(received["image"], expected)
+
+    def test_extractor_without_a_declaration_keeps_the_old_behaviour(self):
+        """Classical extractors declare nothing and still follow the config."""
+
+        from anemia.imaging import resize
+
+        image, _ = make_eye(seed=15)
+        cast = np.clip(image.astype(np.float32) * [1.0, 0.8, 0.6], 0, 255).astype(np.uint8)
+        cfg = PreprocessConfig(gray_world=True)
+        received = {}
+
+        def segmenter(rgb):
+            received["image"] = rgb
+            return np.zeros(rgb.shape[:2], np.uint8), "fake"
+
+        prepare(cast, segmenter, cfg, QualityConfig())
+        assert np.array_equal(received["image"],
+                              gray_world_white_balance(resize(cast, cfg.work_size)))
+
+    def test_attention_bundle_round_trips_with_its_white_balance_flag(self, tmp_path):
+        """The hand-written Attention U-Net must load through the serving path."""
+
+        pytest.importorskip("segmentation_models_pytorch")
+        pytest.importorskip("torch")
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+        from train_segmenter import save_bundle
+
+        from anemia.architectures import build
+        from anemia.segment_learned import LearnedSegmenter, SegmenterConfig
+
+        config = SegmenterConfig(arch="attention", encoder="resnet18", input_size=64,
+                                 gray_world=True)
+        path = tmp_path / "attention_gw.pt"
+        save_bundle(path, build("attention", "resnet18", pretrained=False), config,
+                    provenance={"trained_at": "2026-01-01T00:00:00", "datasets": ["synthetic"]},
+                    metrics={"val_dice": 0.5})
+
+        segmenter = LearnedSegmenter(path)
+        image, _ = make_eye(seed=16)
+        mask, _ = segmenter(image)
+
+        assert segmenter.config.arch == "attention"
+        assert segmenter.wants_gray_world is True
+        assert segmenter.cache_key.startswith("attention-")
+        assert mask.shape == image.shape[:2]
+
     def test_probability_map_is_exposed_for_weighted_pooling(self, tmp_path):
         from anemia.segment_learned import LearnedSegmenter
 

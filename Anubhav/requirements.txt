@@ -8,6 +8,9 @@ openpyxl>=3.1          # pandas .xlsx reader for the dataset metadata sheets
 torch>=2.2
 torchvision>=0.17
 transformers>=4.40     # Mask2Former segmentation backbone
+segmentation-models-pytorch>=0.5   # learned extractor: U-Net, UNet++, Attention U-Net encoder
+albumentations>=2.0    # augmentation in scripts/train_segmenter.py
+scipy>=1.11            # paired tests and distance transforms in experiments/20
 
 certifi>=2024.2         # macOS python often ships without a usable CA bundle
 

@@ -212,7 +212,10 @@ def main() -> int:
         winner = max(board["results"], key=lambda a: board["results"][a]["test_dice"] or -1)
         record = board["results"][winner]
         epochs = record["best_epoch"]
-        out = SHIP_DIR / f"{winner}_full.pt"
+        # Selection trains on raw pixels, so the shipped bundle is the raw variant.
+        # A white-balanced variant is trained directly with train_segmenter.py
+        # --gray-world and named <arch>_gw_full.pt, so the pair is unambiguous.
+        out = SHIP_DIR / f"{winner}_raw_full.pt"
         out.parent.mkdir(parents=True, exist_ok=True)
         print(f"stage 2 · shipping run\n  winner      {winner} "
               f"(test Dice {record['test_dice']:.4f})\n"

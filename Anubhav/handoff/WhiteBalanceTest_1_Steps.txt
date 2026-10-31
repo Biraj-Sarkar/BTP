@@ -1,0 +1,100 @@
+WHITE BALANCE TEST — WHAT TO DO
+===============================
+
+WHAT THIS IS
+
+There are two conjunctiva extractors (Attention U-Net). They are identical except for one thing: one uses gray-world white balance and one does not.
+
+The question: does white balance help or hurt YOUR haemoglobin prediction?
+
+On the segmentation side, the one without white balance finds the conjunctiva slightly better (Dice 0.8476 vs 0.8407). But that says nothing about haemoglobin error. Only your ResNet can answer that, on the hospital data.
+
+So: train your ResNet once on each set of crops, keep everything else the same, and compare.
+
+
+STEP 1 — GET THE CODE AND THE TWO MODELS
+
+1. git pull  (branch: anubhav/ai-psychiatrist-research)
+
+2. Check these two files exist in Anubhav/runs/segmenter/ and are about 24 MB each:
+     attention_raw_full.pt     (no white balance)
+     attention_gw_full.pt      (white balance)
+   If either is only a few hundred bytes, stop and tell me.
+
+3. Install packages once, from inside the Anubhav folder:
+     pip install -r requirements.txt
+
+
+STEP 2 — MAKE THE CROPS
+
+This runs on your machine. Nothing is uploaded anywhere.
+
+From inside the Anubhav folder:
+
+     python scripts/extract_crops.py --images PATH/TO/HOSPITAL/PHOTOS --out crops
+
+Try it first with  --limit 20  added at the end, to check it works.
+
+You get:
+     crops/raw/            crops WITHOUT white balance
+     crops/gw/             crops WITH white balance
+     crops/manifest.csv    which photos both models could use
+     crops/extractors.json which model files made the crops
+
+At the end it prints a line like:  usable in all: 48 of 52
+Only those photos go into BOTH runs. That keeps the comparison on the same patients.
+
+
+STEP 3 — OPEN CHATGPT OR GEMINI AND UPLOAD ONLY THESE
+
+1. WhiteBalanceTest_2_Prompt.txt  (the other file I sent)
+2. Your ResNet script(s): the .py files that load data, train and evaluate
+3. The first 5 lines of crops/manifest.csv (the header row plus 4 rows)
+4. Just the COLUMN NAMES of your label file, for example: image, patient_id, hb, age, sex
+
+Then type:  Follow the instructions in WhiteBalanceTest_2_Prompt.txt
+
+DO NOT upload:
+     - photos or crops
+     - the .pt model files
+     - your label spreadsheet or any patient data
+Hospital data stays on your machine.
+
+
+STEP 4 — RUN WHAT IT GIVES YOU
+
+It should:
+     a) point out anything in your code that would make the comparison unfair
+     b) give you a version of your script that takes  --crops crops/raw  or  --crops crops/gw
+     c) give you a separate analysis script
+
+Train twice, once per crop folder, with everything else identical. Then run the analysis script.
+
+The thing most likely to go wrong: COLOUR AUGMENTATION.
+ColorJitter, brightness, hue or saturation changes must be OFF in both runs. Otherwise the network learns to ignore exactly the colour difference we are testing, and the result means nothing. The prompt tells the LLM this, but check it yourself.
+
+If training is slow, do 1 seed first to make sure everything works, then 3 seeds for the real result.
+
+
+STEP 5 — SEND ME BACK
+
+1. The results table the analysis script prints (both runs)
+2. The paired comparison line (mean difference, 95% CI, p-value)
+3. How many patients were used
+4. crops/extractors.json
+
+The two model hashes in extractors.json should start with:
+     raw:  fae0296b
+     gw:   8db1d14b
+If they don't, you're using different model files.
+
+
+HOW TO READ THE RESULT
+
+- No-white-balance clearly better (95% CI does not include 0)  ->  white balance hurts, we turn it off
+- White-balance clearly better (95% CI does not include 0)     ->  white balance helps, we keep it
+- 95% CI includes 0  ->  no measurable difference with this much data
+
+The third one is a real result too. Don't pick a winner from the averages alone.
+
+Call me if anything breaks.

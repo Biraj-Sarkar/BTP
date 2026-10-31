@@ -327,6 +327,29 @@ normal outcome, not a bug.
 
 ## Scripts
 
+### `scripts/train_segmenter.py`
+The only code that writes extractor parameters. Trains one architecture
+(`--arch`) and writes a self-describing bundle. `--test-fraction` holds subjects
+back from both training and epoch selection and scores the chosen checkpoint on
+them; `--no-select` trains on every subject for a fixed epoch count, which is the
+shipping run; `--gray-world` white-balances during training and records that in
+the bundle, so serving can match it.
+
+### `scripts/select_architecture.py`
+Two stages. Stage 1 trains each candidate architecture on one shared split and
+records held-out scores in a leaderboard, with a fingerprint of the split so a
+later architecture can be appended without retraining the others — and is
+refused if the split no longer matches. `--ship` retrains the winner on every
+subject as `runs/segmenter/<arch>_raw_full.pt`.
+
+### `scripts/extract_crops.py`
+Runs one or more extractors over a folder of photographs and writes one folder of
+224×224 PNG crops per extractor, plus a manifest of which photographs every
+extractor accepted. Built for the white-balance comparison in
+`WHITE_BALANCE_TEST.md`: `raw` and `gw` resolve to the two Attention U-Net
+bundles, and each extractor's crop colour follows the condition it was trained
+under, so one switch selects a complete, consistent pipeline.
+
 ### `scripts/benchmark_segmenters.py`
 Scores every backend against real ground-truth masks and prints a Dice/IoU
 table. This produces the before/after comparison that justifies the segmentation

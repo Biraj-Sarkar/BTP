@@ -10,5 +10,15 @@ datasets/
 .hf_cache/
 
 # Training outputs
-runs/
+runs/*
 *.pt
+
+# ...except the two production extractors, which the regressor needs and which
+# are small enough for plain git (~25 MB each; GitHub rejects files over 100 MB).
+# Git cannot re-include a file inside an excluded directory, so the directory is
+# re-included first and its other contents excluded again. These lines must stay
+# after `*.pt`, because the last matching rule wins.
+!runs/segmenter/
+runs/segmenter/*
+!runs/segmenter/attention_raw_full.pt
+!runs/segmenter/attention_gw_full.pt

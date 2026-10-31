@@ -242,6 +242,8 @@ src/anemia/
   config.py           tunables; serialised next to every checkpoint
   imaging.py          colour ops, QC scores, letterbox crop (no torch)
   segment.py          segmentation backends behind one callable contract
+  segment_learned.py  trained extractor, read-only: loads a bundle, never writes one
+  architectures.py    U-Net / UNet++ / Attention U-Net, built in one place
   preprocess.py       capture -> model-ready crop, with the QC gate
   data.py             dataset loaders + WHO thresholds
   splits.py           patient-grouped, Hb-stratified CV
@@ -251,7 +253,8 @@ src/anemia/
   train_segmenter.py  Mask2Former fine-tuning
   predict.py          serving path (imports nothing from train)
 serve/app.py          FastAPI service
-scripts/              benchmarking and synthetic data
+scripts/              training the extractor, choosing its architecture,
+                      extracting crops, benchmarking, synthetic data
 ```
 
 ## Honest reporting

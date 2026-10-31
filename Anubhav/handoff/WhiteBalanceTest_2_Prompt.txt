@@ -1,0 +1,156 @@
+# TASK: A controlled experiment on a haemoglobin regression model
+
+You are helping me run a fair, controlled comparison on my own machine. Read this whole file before writing any code. Follow the steps in order.
+
+## 1. Background
+
+I have a ResNet-18 regressor that predicts blood haemoglobin (Hb, in g/dL) from a 224x224 RGB image of the palpebral conjunctiva (the inside of the lower eyelid). I have hospital photographs with laboratory Hb, a patient ID, age and sex.
+
+The images my regressor sees are "crops" made by a separate segmentation model (an "extractor"). There are now two extractors, identical in every way except one:
+
+- "raw": the segmenter was trained and run on raw pixels, and the crops keep raw colour.
+- "gw": the segmenter was trained and run on gray-world white-balanced images, and the crops are white-balanced.
+
+The question: does gray-world white balance help, hurt, or make no difference to Hb prediction error?
+
+On segmentation alone, "raw" matches human-annotated masks slightly better (Dice 0.8476 vs 0.8407). That does not answer this question. Only my regressor can.
+
+## 2. What already exists on my machine
+
+I have already run a script that made both sets of crops:
+
+- crops/raw/...  PNG crops, 224x224, RGB, background black outside the conjunctiva
+- crops/gw/...   the same photographs, made by the "gw" extractor
+- crops/manifest.csv  one row per original photograph
+
+Both folders use the same relative paths as the original photographs, ending in .png. Each crop is named after the photograph it came from.
+
+The manifest's important columns:
+
+- image: relative path of the ORIGINAL photograph
+- usable_in_all: True if BOTH extractors accepted this photograph
+- raw_crop, gw_crop: crop paths relative to the crops/ folder (empty if rejected)
+- raw_passed, gw_passed: whether each extractor accepted it
+- raw_reasons, gw_reasons: why it was rejected, if it was
+
+## 3. Files I will give you
+
+1. My training and evaluation script(s)
+2. The first few lines of crops/manifest.csv
+3. The column names of my label file. NOT the data.
+
+Never ask me for photographs, crops, or patient-level data. Everything runs on my machine. If I paste patient data by mistake, tell me to remove it.
+
+## 4. How to start
+
+Before writing code:
+
+1. Read my scripts.
+2. Summarise in a few lines how my current pipeline loads data, splits it, trains, and evaluates.
+3. Ask me what you still need to know. At minimum:
+   - How my labels connect to the photographs (filename? patient ID?)
+   - Whether a patient can have more than one photograph (e.g. both eyes)
+   - How I currently split train/test, and how I choose the number of epochs
+   - What augmentation I currently use
+   - Whether I have a GPU
+4. Wait for my answers.
+
+## 5. The rules. The experiment is only valid if all of them hold
+
+Check my code against each rule and tell me exactly where it breaks one.
+
+- R1. Same photographs in both arms. Use only manifest rows where usable_in_all is True. Each arm must not use its own accepted set.
+- R2. Split by patient, never by image (GroupKFold or equivalent on patient ID). All photographs of one patient go in the same fold. Use 5 folds.
+- R3. Identical folds and identical random seeds in both arms. At least 3 seeds. If compute is limited, run 1 seed first to check everything works, then 3.
+- R4. Everything else identical in both arms: architecture, pretrained weights, optimiser, learning rate, batch size, loss, number of epochs or early-stopping rule, input normalisation. The ONLY difference between arms is which crop folder is read.
+- R5. Colour augmentation OFF in both arms. That means no ColorJitter, brightness, contrast, saturation, hue or gamma changes, no random grayscale, and no extra white balance or per-image colour normalisation. These would teach the network to ignore exactly the colour difference being tested. Geometric augmentation (flips, small rotations, small crops) is fine. Fixed ImageNet mean/std normalisation is fine.
+- R6. Load images as RGB. OpenCV's cv2.imread returns BGR and must be converted. PIL is fine.
+- R7. Never choose epochs or hyperparameters using the test fold. Use an inner validation split taken from the training patients, or a fixed epoch count. Do it the same way in both arms.
+- R8. The crops are already 224x224. Do not resize or crop them in a way that alters colour.
+
+## 6. Deliverable A: the training change
+
+Change my existing script as little as possible. Do not rewrite my pipeline.
+
+- Add one argument, e.g. --crops crops/raw  vs  --crops crops/gw. The arm is the only thing it changes.
+- Add --seed and make all randomness depend on it: Python, NumPy, PyTorch, and the data loader.
+- Write out-of-fold predictions to a CSV with these columns: patient_id, image, arm, seed, fold, hb_true, hb_pred, age, sex
+
+Show each changed function or block in full, with a one-line reason for every change.
+
+## 7. Deliverable B: a separate analysis script
+
+It reads the out-of-fold prediction CSVs from both arms and reports the following.
+
+### Per arm
+
+- MAE, RMSE and R-squared, computed per seed, then mean and standard deviation across seeds
+- Bland-Altman bias and 95% limits of agreement
+- Anaemia sensitivity and specificity
+
+Use these WHO cutoffs. A patient is anaemic if Hb is BELOW the value:
+
+| Group | Cutoff (g/dL) |
+|---|---|
+| under 6 months | 13.5 |
+| 6 months to under 5 years | 11.0 |
+| 5 to under 12 years | 11.5 |
+| 12 to under 15 years | 12.0 |
+| 15 and over, male | 13.0 |
+| 15 and over, female | 12.0 (11.0 if pregnant) |
+| age or sex unknown | 12.0 |
+
+These match the project's own function exactly. If the project repository is on the same machine, you may import it instead of retyping the table:
+  from anemia.data import anemia_threshold   (the module is in Anubhav/src)
+
+### The paired comparison (this is the answer)
+
+1. For each patient, average the prediction over seeds, and over photographs if a patient has more than one. Do this separately for each arm.
+2. For each patient: d = |error_gw| - |error_raw|
+   Positive d means "raw" was closer to the truth, i.e. white balance hurt for that patient.
+3. Report:
+   - the mean of d
+   - a 95% bootstrap confidence interval (resample PATIENTS with replacement, 2000 resamples)
+   - a Wilcoxon signed-rank p-value
+4. Report the seed-to-seed standard deviation of MAE within each arm, so the difference between arms can be compared against run-to-run noise.
+
+### The conclusion, using exactly this rule
+
+- CI entirely above 0  ->  "White balance hurts Hb prediction."
+- CI entirely below 0  ->  "White balance helps Hb prediction."
+- CI includes 0  ->  "No detectable effect at this sample size."
+
+Never declare a winner from the average error alone.
+
+## 8. Final output to print
+
+The analysis script must end by printing this block, filled in:
+
+```
+WHITE BALANCE TEST RESULT
+patients used:            ___ (photographs: ___)
+folds x seeds:            5 x ___
+colour augmentation:      off (confirm)
+
+                    raw            gw
+MAE (g/dL)          ___ +/- ___    ___ +/- ___
+RMSE (g/dL)         ___            ___
+R-squared           ___            ___
+Bland-Altman bias   ___            ___
+95% LoA             [___, ___]     [___, ___]
+sensitivity         ___            ___
+specificity         ___            ___
+
+paired d = |err_gw| - |err_raw|
+mean d:     ___ g/dL
+95% CI:     [___, ___]
+Wilcoxon p: ___
+
+CONCLUSION: ___
+```
+
+## 9. How to work with me
+
+- Explain briefly. I want to understand each step, not just run it.
+- If something in my code makes a rule impossible to follow, say so plainly and propose the smallest fix.
+- If you are unsure about something in my data, ask. Do not guess.

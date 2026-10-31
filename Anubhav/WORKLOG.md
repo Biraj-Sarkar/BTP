@@ -5,6 +5,98 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ---
 
+## Week of 29 Oct – 4 Nov 2026
+
+**31 Oct — Hand-off files for running the white-balance test through ChatGPT or Gemini**
+A chat assistant cannot see the repository, and the person running the test cannot
+upload it, so the protocol was split into two self-contained plain-text files in
+`handoff/`, written to be sent over a messaging app:
+
+- `WhiteBalanceTest_1_Steps.txt`, for the person: pull, check the two bundles arrived
+  at ~24 MB, extract crops, **which four things to upload to the assistant and which
+  never to upload** (photographs, crops, bundles, patient data), what to send back,
+  the expected bundle hash prefixes, and how to read the three possible outcomes.
+- `WhiteBalanceTest_2_Prompt.txt`, for the assistant: background, the manifest's
+  columns, the questions to ask before writing code, eight numbered rules, the code
+  changes wanted, the analysis, the WHO cutoff table, the decision rule, and a fixed
+  results block to fill in so results come back in a comparable form.
+
+The inline prompt in `WHITE_BALANCE_TEST.md` was removed in favour of a pointer, after
+the two copies were found to define the paired difference with **opposite signs** —
+the kind of drift that turns a correct result into a reversed conclusion. There is now
+one copy, with d = |error_gw| − |error_raw|, positive meaning white balance hurt.
+
+**`requirements.txt` was missing `segmentation-models-pytorch`**, which every learned
+extractor needs, so a fresh install would have failed at the first import on the
+first step of the hand-off. Added, along with `albumentations` (segmenter training)
+and `scipy` (experiment 20's statistics), both also used but undeclared.
+→ `handoff/`, `WHITE_BALANCE_TEST.md`, `requirements.txt`
+
+**31 Oct — The two production extractors are now committed to git**
+They had to be sent by hand because `runs/` and `*.pt` are both gitignored. At ~25 MB
+each they are well under GitHub's 100 MB limit, so plain git carries them and a pull
+delivers them. `.gitignore` gains a narrow exception for exactly
+`runs/segmenter/attention_raw_full.pt` and `attention_gw_full.pt`. Git cannot
+re-include a file inside an excluded directory, so `runs/` became `runs/*`, the
+`segmenter/` directory is re-included, its other contents excluded again, and the two
+files re-included — after `*.pt`, since the last matching rule wins. Verified that the
+deployed `unet.pt`, the old `unet_v*.pt`, the stage-1 bundles and every other file in
+`runs/` remain ignored.
+
+The cost, accepted deliberately: every committed version of a bundle stays in the
+repository's history permanently, so retraining and re-committing adds ~25 MB each
+time. If that becomes frequent, Git LFS is the right move.
+→ `.gitignore`, `WHITE_BALANCE_TEST.md`
+
+**31 Oct — Two production extractors for the white-balance test, and a tool to compare them downstream**
+Segmentation answered whether white balance helps the *mask* (it does not, −0.0069
+Dice). Whether it changes *haemoglobin error* depends on the regressor, so the test has
+to run there, on the hospital data. Three pieces make that a single command plus one
+documented protocol.
+
+**Two Attention U-Nets trained on all 648 images**, identical except for white balance:
+`runs/segmenter/attention_raw_full.pt` (raw pixels, 36 epochs) and
+`runs/segmenter/attention_gw_full.pt` (gray-world, 23 epochs) — each at the epoch count
+its own stage-1 run selected. The earlier `attention_full.pt` was renamed to
+`attention_raw_full.pt` so the pair names itself, and `select_architecture.py --ship`
+now writes `<arch>_raw_full.pt`, since selection always trains on raw pixels.
+
+**`scripts/extract_crops.py`** runs any set of extractors over a folder of photographs
+and writes one folder of 224×224 PNG crops per extractor — the same crops
+`prepare()` produces at serving time — plus `manifest.csv` and `extractors.json`
+recording which bundle, by hash, produced which folder. Two design points:
+
+- **Crop colour follows the extractor.** The `gw` crops are white-balanced end to end,
+  the `raw` crops are not, so "with versus without" is one switch and the two
+  conditions cannot be crossed by accident. `--crop-colour raw|gw` fixes the colour for
+  both instead, to separate the mask's effect from the colour's if a difference appears.
+- **`usable_in_all`** marks photographs that every extractor's quality control
+  accepted. Scoring each pipeline on its own accepted set would compare them on
+  different patients. On the 52-capture cohort: 49 accepted by each, 48 by both.
+
+**`WHITE_BALANCE_TEST.md`** gives the protocol — same photographs, patient-grouped
+folds, identical seeds and hyperparameters, colour augmentation off in both arms
+(it would train the network to ignore exactly the difference being tested), crops
+loaded as RGB, paired per-patient comparison with a bootstrap interval — and a
+self-contained prompt for the regressor builder's coding assistant. The WHO cutoffs in
+it match `anemia_threshold()` exactly, including under-5s and pregnancy, so both sides
+label anaemia identically.
+
+**Tests: 44 → 50.** The train/serve white-balance matching in `prepare()`, the most
+consequential change of the last week, had no test. Now covered for all four
+combinations of segmenter condition and crop colour, plus the fallback for extractors
+that declare nothing, plus a round-trip of the hand-written Attention U-Net through the
+read-only loader with its white-balance flag.
+
+Also corrected: `RESULTS.md` and the deck gave the stage-1 split as 389 / 130 / 129;
+the bundles record 390 / 129 / 129. README and CODE_GUIDE script listings brought up
+to date — neither knew `segment_learned.py`, `architectures.py` or the extractor
+training scripts existed.
+→ `scripts/extract_crops.py`, `WHITE_BALANCE_TEST.md`, `tests/test_pipeline.py`,
+`scripts/select_architecture.py`, `README.md`, `CODE_GUIDE.md`
+
+---
+
 ## Week of 8–14 Oct 2026
 
 **14 Oct — White balance was hurting the extractor, and was also a train/serve bug**

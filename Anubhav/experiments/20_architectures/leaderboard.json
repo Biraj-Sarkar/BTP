@@ -176,7 +176,7 @@
   "shipped": {
     "arch": "attention",
     "epochs": 36,
-    "bundle": "/Users/anubhavjindal/Desktop/BTP/Anubhav/runs/segmenter/attention_full.pt",
+    "bundle": "/Users/anubhavjindal/Desktop/BTP/Anubhav/runs/segmenter/attention_raw_full.pt",
     "estimate_from_selection": 0.8470160314279009,
     "estimate_note": "stage-1 test Dice for this architecture; the shipped weights saw all subjects and have no held-out score of their own"
   }

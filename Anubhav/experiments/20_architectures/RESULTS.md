@@ -86,7 +86,7 @@ Two notes on why this set rather than a single number:
    bootstrap interval, rather than by comparing two means from unrelated samples.
    The count of images each architecture wins is reported beside the mean.
 
-Split: 648 annotated images from 648 subjects — 389 train, 130 validation, 129
+Split: 648 annotated images from 648 subjects — 390 train, 129 validation, 129
 test. Identical seed, augmentation (`rotation`), encoder and 40 epochs
 throughout, so the decoder is the only variable.
 
@@ -197,7 +197,7 @@ images.
 ## Shipped model
 
 Stage 2 retrained Attention U-Net on all 648 images for 36 epochs — the epoch
-selection chose — and wrote `runs/segmenter/attention_full.pt`.
+selection chose — and wrote `runs/segmenter/attention_raw_full.pt`.
 
 **Estimated performance: Dice 0.8476 on held-out subjects**, carried over from
 stage 1. Those weights saw 60% of the subjects; the shipped weights saw all of
@@ -375,6 +375,28 @@ is no longer any stage of the pipeline where it has been measured to help.
 balanced ones — the condition it was trained for, and per the table above that
 moves the mask on most captures. Cached crops and any figure measured through
 `prepare()` are stale until re-run.
+
+## Handing the white-balance question downstream
+
+Dice settles which extractor matches the annotators better. It does not settle
+whether white balance changes **haemoglobin error from the regressor that will
+actually be used**, on the hospital's camera. That needs the regressor, so two
+production extractors were trained for that test:
+
+| file | segmenter trained on | crop colour | trained on | epochs |
+|---|---|---|---|---|
+| `runs/segmenter/attention_raw_full.pt` | raw pixels | raw | all 648 images | 36 |
+| `runs/segmenter/attention_gw_full.pt` | gray-world | gray-world | all 648 images | 23 |
+
+Each uses the epoch count its own stage-1 run selected (36 for raw, 23 for
+gray-world), which is the shipping protocol. Their held-out estimates are the
+stage-1 figures, 0.8476 and 0.8407; neither full model has a score of its own.
+
+`scripts/extract_crops.py` produces both sets of crops in one run, and
+`WHITE_BALANCE_TEST.md` gives the protocol for comparing them on the regressor —
+same photographs, same patient-grouped folds and seeds, colour augmentation off,
+paired per-patient comparison — together with a prompt for the regressor
+builder's coding assistant.
 
 ## Limitations known before the result arrives
 
