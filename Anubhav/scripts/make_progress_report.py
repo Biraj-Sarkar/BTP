@@ -17,6 +17,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
     Image,
+    KeepTogether,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -24,6 +25,10 @@ from reportlab.platypus import (
     TableStyle,
 )
 from reportlab.platypus.flowables import BalancedColumns, Flowable, HRFlowable
+
+# Masks from the three architectures on the 26-subject captures; produced by
+# experiments/20_architectures/overlays.py. Included in Section 8 when present.
+ARCH_FIGURE = Path(__file__).resolve().parents[1] / "experiments/20_architectures/report_figure.jpg"
 
 ACCENT = colors.HexColor("#8C2F39")
 INK = colors.HexColor("#1A1A1A")
@@ -237,40 +242,56 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     story.append(HRFlowable(width="100%", thickness=0.6, color=RULE, spaceBefore=2, spaceAfter=7))
     story.append(para(
         "<b>Abstract</b> &mdash; Screening for anaemia from smartphone photographs of the palpebral "
-        "conjunctiva needs two components: an extractor that isolates the tissue, and a model that maps "
-        "its colour to haemoglobin. A classical rule-based extractor is compared with a U-Net trained on "
-        "648 annotated images, on 243 patients with laboratory haemoglobin across two cohorts. On 116 "
-        "photographs never used in segmentation training, the learned extractor explains R\u00b2 0.354 of "
-        "haemoglobin variance against 0.074 for the classical one. A ridge model on chromaticity inside "
-        "the learned mask, fitted on 190 external patients, reaches held-out MAE 1.505 g/dL against a "
-        "1.965 baseline (R\u00b2 +0.317). Two findings bound deployment. Models fitted on one "
-        "cohort\u2019s cameras fail on the other\u2019s (R\u00b2 \u22121.9). And a local cohort of 26 "
-        "children does not show the physiological colour signal: image processing, illumination, "
-        "capture session and demographics are ruled out, while the degree of eyelid eversion, which "
-        "varies widely between captures, measurably changes conjunctival colour under both extractors. "
-        "The limiting factor is now the capture protocol rather than extraction.", "abstract"))
+        "conjunctiva needs two components: an extractor that isolates the tissue, and a regressor that "
+        "maps it to haemoglobin. This report covers the extractor. A learned U-Net, trained on 648 "
+        "annotated images, captures haemoglobin-related colour far better than a classical rule-based "
+        "extractor on 243 patients with laboratory haemoglobin (R² 0.354 against 0.074 on 116 photographs "
+        "it never trained on, read through a deliberately simple colour probe). Evaluated as segmentation "
+        "models on 129 held-out subjects, an Attention U-Net improves on the U-Net (Dice 0.848 against "
+        "0.837; paired difference +0.010, p = 0.007) and cannot be separated from UNet++. Gray-world white "
+        "balance, applied since the start, lowers segmentation accuracy, and serving the segmenter "
+        "balanced images it was never trained on cost more (0.012 Dice) than the change of architecture "
+        "gained. Two findings bound what this means for deployment: colour measured by one camera does "
+        "not transfer to another, and a third public dataset of 26 children shows no colour signal, in "
+        "part because how far the eyelid is pulled down changes conjunctival colour. The limiting factor "
+        "is now the capture protocol and the deployment camera, not extraction.", "abstract"))
     story.append(para(
         "<b>Keywords</b> &mdash; anaemia screening; palpebral conjunctiva; haemoglobin estimation; "
-        "image segmentation; U-Net; domain shift; capture protocol", "keywords"))
+        "image segmentation; U-Net; Attention U-Net; white balance; domain shift; capture protocol", "keywords"))
     story.append(HRFlowable(width="100%", thickness=0.6, color=RULE, spaceBefore=7, spaceAfter=4))
     story.append(BODY_START)
 
     # ---------------------------------------------------------------- summary
     story.append(para("1. Summary", "h1"))
     story.append(para(
-        "<b>This period.</b> A learned conjunctiva extractor was trained on 648 annotated images and "
-        "compared with the classical extractor on <b>243 patients</b> rather than 26, using a public "
-        "cohort of 217 subjects with laboratory haemoglobin. It explains roughly three times the "
-        "variance (R\u00b2 0.354 against 0.074 on 116 photographs it never trained on), and is now the "
-        "extractor in use. The deployed model is fitted on 190 of those subjects and reaches held-out "
-        "MAE 1.505 g/dL and R\u00b2 <b>+0.317</b> against a baseline of 1.965 and \u22120.011. Two "
-        "findings bound what that means: models do not transfer between the two cohorts\u2019 cameras, "
-        "and a local cohort of 26 children does not show the colour signal at all, which an investigation "
-        "traces in part to how far the eyelid was pulled down. Both are reported in Section 7, which supersedes "
-        "Section 6 on extraction and on the deployed model."
+        "<b>Scope.</b> The project is divided into two workstreams: the extractor, which finds the "
+        "conjunctiva and returns a clean crop, and the haemoglobin regressor (a ResNet trained on that "
+        "crop) together with the mobile application. This report covers the extractor and the evaluation "
+        "methodology; the regressor and the application are developed in parallel and are not reported "
+        "here."
     ))
     story.append(para(
-        "This period was spent building the image-processing and learning pipeline end to end: data "
+        "<b>This period.</b> Three encoder-decoder architectures &mdash; U-Net, UNet++ and Attention "
+        "U-Net &mdash; were compared as segmentation models, with the metrics such models are judged by "
+        "(Dice, IoU, precision, recall, boundary distance and the failure distribution) on 129 subjects "
+        "held out from both training and model selection. Attention U-Net is the only one whose advantage "
+        "over the U-Net resolves. Investigating white balance exposed a defect: the segmenter was trained "
+        "on raw pixels but served white-balanced ones, which cost more accuracy than the architecture "
+        "change gained; serving now matches training. Two production extractors, identical except for "
+        "white balance, were trained on all 648 images so that the regressor can settle whether white "
+        "balance affects haemoglobin error. Section 8."
+    ))
+    story.append(para(
+        "<b>Previous period.</b> The learned extractor was compared with the classical one on <b>243 "
+        "patients</b> rather than 26, using a public cohort of 217 subjects with laboratory haemoglobin. "
+        "Read through a simple colour probe, it explains roughly three times the variance (R² 0.354 "
+        "against 0.074 on 116 photographs it never trained on). The same probe established that colour "
+        "does not transfer between cameras, and that a third public dataset of 26 children does not show "
+        "the colour signal at all, traced in part to how far the eyelid was pulled down. Section 7, which "
+        "supersedes Section 6 on extraction."
+    ))
+    story.append(para(
+        "The first period was spent building the image-processing and learning pipeline end to end: data "
         "loading and clinical labelling, conjunctiva extraction, quality control, the regression "
         "scaffold, an evaluation methodology, and a serving API. The guiding constraints are an "
         "eventually deployed screening app and small clinical cohorts &mdash; both punish silent "
@@ -279,7 +300,8 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "predict-the-mean baseline."
     ))
     story.append(para(
-        "A real labelled cohort was obtained: 52 photographs of 26 children, both eyes, with laboratory "
+        "A publicly available dataset served as the first real test set: 52 photographs of 26 children, "
+        "both eyes, with laboratory "
         "haemoglobin and a full blood count. Screening it produced two findings. The pipeline processes "
         "real photographs without error and 94% pass quality control, but a plain colour-threshold "
         "extraction &mdash; which scores almost perfectly on synthetic images &mdash; proved "
@@ -322,6 +344,7 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         ["ResNet", "Residual Network (CNN architecture)", "OLS", "Ordinary Least Squares"],
         ["CBC", "Complete Blood Count", "L1 / L2", "Absolute / squared coefficient penalties"],
         ["U-Net", "Encoder\u2013decoder segmentation network", "SD", "Standard Deviation"],
+        ["HD95", "95th-percentile boundary distance (pixels)", "gw", "Gray-world white balance"],
     ], [24 * mm, 60 * mm, 24 * mm, 60 * mm]))
 
     # ------------------------------------------------------------- rebuild
@@ -376,10 +399,12 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     # ------------------------------------------------------- real images
     story.append(para("4. Evaluation on real photographs", "h1"))
     story.append(para(
-        "A local cohort of 26 children was obtained: both eyes photographed, giving 52 close-up captures "
+        "The first real test set is a publicly available dataset of 26 children, both eyes photographed, "
+        "giving 52 close-up captures "
         "of the everted lower eyelid, accompanied by laboratory haemoglobin, date of birth, gender, and a "
         "full blood count. The captures are well framed and in focus &mdash; tighter on the conjunctiva "
-        "than typical field photography."
+        "than typical field photography. The dataset was not collected for this project; its source is "
+        "to be cited (Section 10)."
     ))
     story.append(para("4.1 Cohort", "h2"))
     story.append(table([
@@ -489,7 +514,7 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     ))
     story.append(para("5.1 Measured against laboratory haemoglobin", "h2"))
     story.append(para(
-        "Both were scored on the local cohort using identical masks, so only the colour treatment "
+        "Both were scored on the 26-subject set using identical masks, so only the colour treatment "
         "differed. A structural point governs the comparison: equalising the lightness channel leaves "
         "a\u002a/b\u002a mathematically unchanged, so for the values the regressor consumes, that path is "
         "equivalent to no colour correction at all. The real contest is corrected versus uncorrected "
@@ -575,7 +600,7 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     story.append(para("6. Quantitative evaluation", "h1"))
     story.append(para(
         "<i>This section records the 26-patient phase with the classical extractor. Its conclusions on "
-        "extraction and on the deployed model are superseded by Section 7.</i>"
+        "extraction are superseded by Sections 7 and 8.</i>"
     ))
     story.append(para(
         "How the haemoglobin figure is produced, and how well it performs. No library converts an eye "
@@ -948,11 +973,20 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     ], [84 * mm, 84 * mm]))
 
     # ------------------------------------------------- learned extraction
-    story.append(para("7. Learned extraction, a larger cohort, and the deployed model", "h1"))
+    story.append(para("7. Learned extraction and a larger cohort", "h1"))
     story.append(para(
-        "This section supersedes Section 6 on two points: which extractor to use, and which model is "
-        "deployed. Section 6 is retained as the record of the 26-patient phase, whose central limitation "
-        "&mdash; too few patients to separate the candidates &mdash; is what the work below addresses."
+        "This section supersedes Section 6 on which extractor to use. Section 6 is retained as the record "
+        "of the 26-patient phase, whose central limitation &mdash; too few patients to separate the "
+        "candidates &mdash; is what the work below addresses."
+    ))
+    story.append(para(
+        "<b>How extractors are compared in this section.</b> An extractor is scored by fitting a ridge "
+        "regression on mean colour inside its mask and measuring held-out R² against laboratory "
+        "haemoglobin. That is a probe: it measures how much haemoglobin signal survives the mask, read "
+        "through a deliberately weak regressor, and it is not the haemoglobin model. It answers a question "
+        "segmentation metrics cannot &mdash; whether colour inside the mask carries the signal at all &mdash; "
+        "but as the basis for choosing between extractors it is replaced in Section 8 by segmentation "
+        "metrics, which measure the mask alone."
     ))
 
     story.append(para("7.1 A trainable extractor", "h2"))
@@ -984,8 +1018,8 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     ))
     story.append(para(
         "Two training results shaped the final model. Fine-tuning on the new dataset alone produced a "
-        "model with its <b>best validation Dice (0.871) that returned an empty mask on 42 of the 52 local "
-        "captures</b> &mdash; catastrophic forgetting, invisible to any metric on the new data; training "
+        "model with its <b>best validation Dice (0.871) that returned an empty mask on 42 of the 52 captures "
+        "of the 26-subject set</b> &mdash; catastrophic forgetting, invisible to any metric on the new data; training "
         "on both datasets together removed it. And widening rotation augmentation (&plusmn;20&deg; "
         "&rarr; &plusmn;45&deg;) improved accuracy, while additionally widening scale augmentation "
         "roughly doubled mask area and cost most of the accuracy gained. The deployed extractor uses "
@@ -1001,7 +1035,7 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "test of held-out R²."
     ))
     story.append(table([
-        ["Extractor", "Local 26: R² (p)", "External 217: R²", "External, never in segmenter training (116): R²"],
+        ["Extractor", "26-subject set: R² (p)", "External 217: R²", "External, never in segmenter training (116): R²"],
         ["<b>Learned, rotation augmentation</b>", "<b>+0.294</b> (0.001)", "<b>0.336</b>", "<b>0.354</b>"],
         ["Learned, standard augmentation", "+0.148 (0.013)", "0.320", "&mdash;"],
         ["Learned, rotation + scale augmentation", "−0.072 (0.165)", "0.337", "&mdash;"],
@@ -1015,14 +1049,14 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "photographs, the last column repeats the comparison on the 116 it never saw. Its advantage "
         "there is larger, not smaller (0.354 against 0.074), so the result does not depend on "
         "segmentation training data leaking into evaluation. Its masks are also the purest measured: "
-        "median redness inside the mask 16.0 on the local cohort against 9.6 for the classical chain, "
+        "median redness inside the mask 16.0 on the 26-subject set against 9.6 for the classical chain, "
         "whose masks extend onto sclera."
     ))
 
     story.append(para("7.3 Robustness to how a photograph is taken", "h2"))
     story.append(para(
         "Accuracy on one camera’s captures says nothing about robustness to angle, distance or "
-        "exposure. Each local capture was rotated, zoomed, dimmed, brightened, blurred and recompressed, "
+        "exposure. Each capture of the 26-subject set was rotated, zoomed, dimmed, brightened, blurred and recompressed, "
         "and each extractor scored on whether it found the same tissue as on the original (IoU, with "
         "the geometric change undone) and on outright failures across 520 perturbed images:"
     ))
@@ -1043,33 +1077,34 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "per configuration cannot distinguish a real trade-off from run-to-run variance."
     ))
 
-    story.append(para("7.4 The local cohort lacks the colour signal", "h2"))
+    story.append(para("7.4 The 26-subject set lacks the colour signal", "h2"))
     story.append(para(
         "Haemoglobin absorbs blue and green light far more than red, so physiology predicts redder, less "
         "blue conjunctiva at higher haemoglobin. Correlation of mean chromaticity inside the mask with "
         "laboratory haemoglobin:"
     ))
     story.append(table([
-        ["Cohort and extractor", "Red chromaticity r", "Blue chromaticity r", "Reading"],
+        ["Dataset and extractor", "Red chromaticity r", "Blue chromaticity r", "Reading"],
         ["External 217, learned, no white balance", "+0.672", "\u22120.674", "Physiological"],
         ["External 116 unseen, learned, gray-world", "+0.515", "\u22120.618", "Physiological"],
-        ["<b>Local 26, learned, no white balance</b>", "\u22120.261 (p 0.20)", "+0.332 (p 0.10)",
+        ["<b>26-subject, learned, no white balance</b>", "\u22120.261 (p 0.20)", "+0.332 (p 0.10)",
          "<b>No signal</b>"],
-        ["Local 26, learned, gray-world", "\u22120.329 (p 0.10)", "<b>+0.522 (p 0.006)</b>",
+        ["26-subject, learned, gray-world", "\u22120.329 (p 0.10)", "<b>+0.522 (p 0.006)</b>",
          "Blue reversed"],
-        ["Local 26, classical, no white balance", "+0.136", "\u22120.028", "No signal"],
+        ["26-subject, classical, no white balance", "+0.136", "\u22120.028", "No signal"],
     ], [66 * mm, 34 * mm, 34 * mm, 34 * mm]))
     story.append(Spacer(1, 4))
     story.append(para(
-        "The local red correlation is not distinguishable from zero, so the cohort is better described as "
+        "The red correlation in the 26-subject set is not distinguishable from zero, so the set is better "
+        "described as "
         "<b>lacking</b> the signal than as inverted; the difference from the external cohort is not in "
-        "doubt (p &lt; 10<super>\u22126</super>). The local images are hand-cropped exports: no EXIF or colour "
+        "doubt (p &lt; 10<super>\u22126</super>). Its images are hand-cropped exports: no EXIF or colour "
         "profile, 52 different dimensions, 29&ndash;97 KB at JPEG quality ~75. Labels map to images "
         "correctly and the two eyes of each child agree in measured colour (r &asymp; 0.6)."
     ))
     story.append(para(
         "Five explanations were tested and ruled out. The deciding one was processing: the external "
-        "photographs were downscaled until their conjunctival crescents matched the local ones in pixels "
+        "photographs were downscaled until their conjunctival crescents matched those of the 26-subject set in pixels "
         "(\u00d70.146) and then JPEG-compressed twice, down to quality 40, and the correlation stayed at "
         "+0.673. The other four:"
     ))
@@ -1095,12 +1130,18 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "is <b>not established</b>. Averaged over both eyes, lower-haemoglobin children were everted harder "
         "(&rho; &minus;0.46, p = 0.018), but the fully blind right-eye ratings give &rho; &minus;0.24 "
         "(p = 0.23); the rater had seen ten left-eye images with their values beforehand. Controlling for "
-        "eversion moves every association toward zero without eliminating it. A local model fitted with "
+        "eversion moves every association toward zero without eliminating it. A model fitted on the 26-subject set with "
         "the learned extractor reaches held-out R\u00b2 +0.260 on a relationship that contradicts physiology "
         "and 217 other subjects, so <b>it is not used</b>; the practical remedy is a fixed capture protocol."
     ))
 
-    story.append(para("7.5 The deployed model", "h2"))
+    story.append(para("7.5 The probe model, stated", "h2"))
+    story.append(para(
+        "This is the probe used to compare extractors, not the haemoglobin model, which is a ResNet "
+        "trained on the extracted crop and developed in parallel. Its figures were measured before the "
+        "correction in Section 8.5: the segmenter was served white-balanced images although trained on raw "
+        "ones, and colour was read from balanced pixels. They describe the pipeline as it then was."
+    ))
     story.append(para(
         "Learned extractor, chromaticity features, ridge regression, fitted on the external cohort with "
         "the quality gate applied first (27 of 217 captures rejected, all for blur):"
@@ -1132,7 +1173,7 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "R² &asymp; 0.32: two non-anaemic external patients at 15.0 and 16.9 g/dL were estimated at "
         "11.3 and 12.0, and flagged anaemic. Classification near the WHO thresholds is correspondingly "
         "weak. And the quality gate&rsquo;s minimum mask size, calibrated for the classical extractor’s "
-        "larger masks, had rejected 30 of 52 local captures as &ldquo;conjunctiva too small&rdquo; under "
+        "larger masks, had rejected 30 of the 26-subject set&rsquo;s 52 captures as &ldquo;conjunctiva too small&rdquo; under "
         "the learned extractor; the floor is now set per extractor."
     ))
 
@@ -1141,13 +1182,13 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "These transfer measurements were made with the <i>first</i> learned extractor, before the "
         "deployed one was trained, and have not yet been repeated with it. Within the external cohort, "
         "chromaticity features reached held-out R² 0.350. Fitted on one "
-        "cohort and applied to the other, they reach <b>−1.944</b> (external to local) and "
-        "<b>−1.160</b> (local to external), far worse than predicting the mean. The cohorts’ red "
-        "chromaticity sits 3.4 local standard deviations apart, and Section 7.4 shows the local cohort "
+        "cohort and applied to the other, they reach <b>−1.944</b> (external to the 26-subject set) and "
+        "<b>−1.160</b> (26-subject set to external), far worse than predicting the mean. The cohorts’ red "
+        "chromaticity sits 3.4 standard deviations of the 26-subject set apart, and Section 7.4 shows that set "
         "does not carry the colour signal at all."
     ))
     story.append(table([
-        ["Features", "Within external R²", "External &rarr; local R²"],
+        ["Features", "Within external R²", "External &rarr; 26-subject R²"],
         ["Absolute chromaticity", "0.346", "−2.010"],
         ["Conjunctiva a* minus sclera a* (same photograph)", "0.221", "<b>+0.032</b>"],
         ["51 sclera-relative features, ridge", "0.362", "−2.344"],
@@ -1159,8 +1200,8 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "what the camera did &mdash; is the only approach tested that transfers at all, and only to "
         "roughly baseline. Richer feature sets help within a cohort (38 statistics reach 0.421 at "
         "n = 217) but penalised selection optimises for accuracy in the training cohort, not portability. "
-        "Nothing in the deployed extractor&rsquo;s design addresses camera dependence, so <b>the deployed "
-        "model should be treated as calibrated to the cameras it was fitted on</b> until transfer is "
+        "Nothing in the deployed extractor&rsquo;s design addresses camera dependence, so <b>any colour "
+        "model fitted here should be treated as calibrated to the cameras it was fitted on</b> until transfer is "
         "re-measured with it. "
         "Using it at a new site requires either recalibration on labelled captures from that site or a "
         "colour reference in the frame."
@@ -1310,11 +1351,184 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "by site, and an evaluation on images masked outside the region, are how this is caught.",
         wide=True))
 
+    # --------------------------------------------------------- architectures
+    story.append(para("8. Choosing the architecture, evaluated as segmentation", "h1"))
+    story.append(para(
+        "Section 7 compared extractors through a colour probe, which scores the mask together with a "
+        "deliberately weak regressor. An encoder-decoder segmentation model has its own established "
+        "evaluation, which scores the mask alone against an annotator&rsquo;s outline. That is the basis "
+        "for every comparison in this section, and no haemoglobin figure appears in it."
+    ))
+
+    story.append(para("8.1 How a segmentation model is scored", "h2"))
+    story.append(para(
+        "The model emits one probability per pixel; thresholded at 0.5 it gives a predicted mask, which is "
+        "compared with the annotator&rsquo;s. Each metric describes a different way the two can differ. "
+        "Below, P is the predicted region, T the annotated one, and overlap their common pixels."
+    ))
+    story.append(table([
+        ["Metric", "Definition", "What it shows here"],
+        ["Dice", "2 &times; overlap / (P + T)", "Region overlap; the convention in medical segmentation"],
+        ["IoU", "overlap / (P + T &minus; overlap)", "Same idea, stricter; ranks identically, so a check"],
+        ["Precision", "overlap / P", "Low: the mask spilled onto lashes, lid or sclera"],
+        ["Recall", "overlap / T", "Low: the mask is too small"],
+        ["HD95", "95th-percentile boundary distance (px)", "Whether the outline is in the right place"],
+        ["Distribution", "10th percentile, worst case, empty masks", "Failures that a mean hides"],
+    ], [34 * mm, 56 * mm, 78 * mm]))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "Three rules make the comparison trustworthy. <b>Split by subject</b>, never by image, since both "
+        "eyes of one person are nearly the same photograph. <b>Score on subjects used for neither training "
+        "nor model selection</b>: the epoch is chosen on validation Dice, which is therefore optimistic, so "
+        "a third split is held back and scored once. <b>Compare per image, paired</b>: every architecture "
+        "sees identical test images, so differences are tested per image (Wilcoxon signed-rank and a paired "
+        "bootstrap interval) rather than as two means. The 648 annotated images, from 648 subjects, were "
+        "split 390 / 129 / 129, with the same seed, rotation augmentation, ImageNet-pretrained "
+        "EfficientNet-B0 encoder, 320 px input and 40 epochs throughout, so the decoder is the only variable."
+    ))
+
+    story.append(para("8.2 The candidates", "h2"))
+    story.append(para(
+        "<b>U-Net</b> passes each encoder feature map straight across to the decoder through a skip "
+        "connection. <b>UNet++</b> replaces each skip with a grid of intermediate convolution blocks, so the "
+        "decoder receives features that are already partly refined rather than a raw deep feature map next "
+        "to a freshly upsampled one. <b>Attention U-Net</b> keeps the plain skip but gates it: the coarser "
+        "decoder feature map scores every spatial position of the skip, and the skip is multiplied by that "
+        "score before concatenation, so the decoder can suppress what it does not need &mdash; here, the "
+        "high-resolution eyelash and lid-margin edges that sit beside the conjunctiva."
+    ))
+    story.append(para(
+        "The segmentation library used provides UNet++ but not Attention U-Net, so the attention gates were "
+        "implemented against the same encoder, with decoder widths matched to the library&rsquo;s U-Net. The "
+        "three have 6.3M, 6.6M and 6.3M parameters, so a difference between them is decoder design rather "
+        "than capacity. One construction function serves both training and inference, and every trained "
+        "file records its architecture, so a model cannot be served by a decoder it was not trained with."
+    ))
+
+    results = [para("8.3 Results", "h2"), table([
+        ["Architecture", "Dice", "IoU", "Precision", "Recall", "HD95 px", "Worst image"],
+        ["U-Net", "0.8372", "0.7288", "0.8239", "0.8637", "2.8", "0.363"],
+        ["UNet++", "0.8446", "0.7379", "0.8266", "<b>0.8746</b>", "<b>2.2</b>", "0.541"],
+        ["<b>Attention U-Net</b>", "<b>0.8476</b>", "<b>0.7427</b>", "<b>0.8320</b>", "0.8737", "2.5",
+         "<b>0.544</b>"],
+    ], [38 * mm, 20 * mm, 20 * mm, 22 * mm, 20 * mm, 22 * mm, 26 * mm]), Spacer(1, 4), table([
+        ["Paired comparison", "Mean Dice difference", "95% CI", "p", "Images won", "Resolved"],
+        ["U-Net &minus; UNet++", "&minus;0.0075", "[&minus;0.017, +0.000]", "0.088", "55 / 74", "no"],
+        ["<b>U-Net &minus; Attention U-Net</b>", "<b>&minus;0.0105</b>", "<b>[&minus;0.020, &minus;0.003]</b>",
+         "<b>0.007</b>", "54 / 75", "<b>yes</b>"],
+        ["UNet++ &minus; Attention U-Net", "&minus;0.0030", "[&minus;0.008, +0.002]", "0.155", "61 / 68", "no"],
+    ], [48 * mm, 30 * mm, 32 * mm, 14 * mm, 22 * mm, 22 * mm])]
+    # Two wide tables read as one result; a page break between them separates
+    # the scores from the test that says which differences are real.
+    kept = KeepTogether(results)
+    kept._two_col_wide = True
+    story.append(kept)
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "No architecture produced an empty mask on any of the 129 held-out images, and Dice and IoU rank "
+        "them identically. <b>Only one comparison resolves</b>: Attention U-Net beats the U-Net with an "
+        "interval excluding zero; UNet++ beats it by a similar margin but its interval touches zero, and the "
+        "two newer architectures cannot be separated. Attention U-Net is selected on that basis and because "
+        "it leads on Dice, IoU and precision. Precision matters most here, since a mask that spills onto lid "
+        "skin contaminates the colour read inside it, and UNet++ gains almost entirely in recall instead. "
+        "The larger effect is on the floor: the worst image rises from 0.363 to about 0.54 under either "
+        "newer architecture. Two qualifications: UNet++ places its boundary most accurately (HD95 2.2 px "
+        "against 2.5) and has the best median, and with one training seed per architecture a margin of one "
+        "point of Dice is not yet separable from run-to-run variance."
+    ))
+
+    story.append(para("8.4 Behaviour on the 26-subject captures", "h2"))
+    story.append(para(
+        "The 52 captures of Section 4 carry no segmentation annotations, so masks there cannot be scored "
+        "against a reference. Agreement between the three architectures can still be measured, and it is "
+        "far lower than their held-out scores would suggest:"
+    ))
+    story.append(table([
+        ["Measure", "Value"],
+        ["Mean pairwise IoU between architectures", "<b>0.648</b> (median 0.704)"],
+        ["Captures where all three agree (IoU 0.80 or more)", "12 of 52"],
+        ["Captures where they diverge (IoU below 0.60)", "18 of 52"],
+        ["Median mask coverage, agreeing against diverging", "3.97% against 2.30% of frame"],
+    ], [104 * mm, 64 * mm]))
+    if ARCH_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(ARCH_FIGURE)).getSize()
+        story.append(Spacer(1, 3))
+        story.append(Image(str(ARCH_FIGURE), width=138 * mm, height=138 * mm * h_px / w_px))
+        story.append(para(
+            "Masks from the three architectures on the captures with the worst (top), median and best "
+            "(bottom) agreement. Columns: capture, U-Net, UNet++, Attention U-Net; percentages are mask "
+            "coverage of the frame.", "caption"))
+        story.append(Spacer(1, 5))
+    story.append(para(
+        "Where the architectures agree, all three trace a plausible crescent; where they diverge they return "
+        "thin slivers, often along the wet lid margin, each choosing a different part of it. The choice of "
+        "architecture is a difference of 0.01 in Dice; the disagreement on these captures is roughly thirty "
+        "times larger, so whatever separates them from the training data matters more than the decoder. One "
+        "hypothesis this raised &mdash; that the missing colour signal of Section 7.4 is an extraction "
+        "failure &mdash; was tested and <b>not supported</b>: among the 12 patients whose captures the "
+        "architectures agree on best (mean IoU 0.70 or more), the red correlation is &minus;0.37 (p 0.24), "
+        "against +0.35 (p 0.22) among the other 14. Annotating a subset of these captures is the way to turn "
+        "disagreement into measured error."
+    ))
+
+    story.append(para("8.5 White balance inside the extractor", "h2"))
+    story.append(para(
+        "Segmenter training read raw image&ndash;mask pairs, while the serving path white-balanced each frame "
+        "before segmenting it, so every learned extractor had been trained on raw pixels and served balanced "
+        "ones. The masks one model draws on the raw and the balanced version of the same photograph agree "
+        "at only IoU 0.57 to 0.67 across the three architectures on the 52 captures, and balancing shrinks "
+        "the mask by about a third. To measure the cost, and to ask whether white balance helps at all, "
+        "Attention U-Net was also trained with white balance applied, identical in every other respect, and "
+        "each model was scored under both serving conditions on the same 129 held-out subjects:"
+    ))
+    story.append(table([
+        ["Trained on / served", "Dice", "IoU", "Precision", "Recall"],
+        ["<b>raw / raw</b> (matched)", "<b>0.8476</b>", "<b>0.7427</b>", "0.8320", "0.8737"],
+        ["raw / gray-world (the pipeline as it was)", "0.8360", "0.7274", "<b>0.8444</b>", "0.8391"],
+        ["gray-world / raw", "0.8329", "0.7213", "0.7885", "<b>0.8971</b>"],
+        ["gray-world / gray-world (matched)", "0.8407", "0.7322", "0.8165", "0.8789"],
+    ], [66 * mm, 24 * mm, 24 * mm, 28 * mm, 26 * mm]))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "<b>White balance does not help the extractor</b>: matched raw beats matched gray-world by +0.0069 "
+        "Dice (95% CI +0.0012 to +0.0118, p = 0.0015). <b>The mismatch cost +0.0116</b> (95% CI +0.0066 to "
+        "+0.0167, p &lt; 10<super>&minus;4</super>), more than the change of architecture gained. The two "
+        "mismatched conditions fail in opposite directions: a raw-trained model served balanced images draws "
+        "a smaller, more conservative mask, and a balance-trained model served raw images spills. Taken with "
+        "Section 7.7, which found gray-world costs accuracy when colour is read, no stage of the pipeline has "
+        "been measured where it helps. Each extractor now records the condition it was trained under and "
+        "the serving path matches it. This changed deployed masks, so figures measured through the serving "
+        "path before the correction, including Section 7.5, describe the pipeline as it then was."
+    ))
+
+    story.append(para("8.6 Selection, shipping and the regressor test", "h2"))
+    story.append(para(
+        "Selection follows the standard use of a split: candidates are trained on the training subjects, "
+        "each one&rsquo;s epoch chosen on the validation subjects, and each scored once on the test subjects. "
+        "The winner is then retrained on every subject for the epoch count selection found, since nothing is "
+        "left to stop early on. The shipped weights therefore have no held-out score of their own; the "
+        "figure quoted for them is the selection score of their architecture. A leaderboard records a "
+        "fingerprint of the split, so a later architecture can be added without retraining the others, and "
+        "is refused if the split has changed."
+    ))
+    story.append(para(
+        "Two production extractors were trained on all 648 images: Attention U-Net on raw pixels (36 epochs), "
+        "and the same architecture with white balance (23 epochs), each at the epoch count its own selection "
+        "run chose. Segmentation settles which matches the annotators better; whether white balance changes "
+        "<i>haemoglobin</i> error depends on the regressor and the hospital camera. A tool extracts both sets "
+        "of crops from any folder of photographs, with crop colour following each extractor&rsquo;s training "
+        "condition and a manifest of the photographs both accept, and a written protocol specifies the "
+        "comparison on the regressor: the same photographs, patient-grouped folds, identical seeds and "
+        "settings, colour augmentation disabled, and a paired per-patient comparison. The deployed U-Net has "
+        "not been replaced; doing so invalidates every cached crop and is left as a deliberate decision."
+    ))
+
     # ------------------------------------------------------------- status
-    story.append(para("8. Verification status", "h1"))
-    story.append(para("8.1 Verified", "h2"))
+    story.append(para("9. Verification status", "h1"))
+    story.append(para("9.1 Verified", "h2"))
     story.extend(bullets([
-        "All pipeline stages execute end to end; 44 of 44 automated tests pass, including the HTTP "
+        "All pipeline stages execute end to end; 50 of 50 automated tests pass, including the HTTP "
         "contract the mobile application depends on.",
         "The service answers on the path the mobile application calls, returns every field the "
         "application reads, and returns a retake prompt for captures that fail quality control.",
@@ -1322,21 +1536,25 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "extractor on 217 subjects, including 116 photographs it never saw in training (Section 7.2).",
         "The Eyes-Defy-Anemia loader is verified against the real download: 217 patients, all ages and "
         "sexes parsed, including 19 haemoglobin values stored as text with a decimal comma.",
-        "A deployed model beats its baseline on unseen patients by a clear margin: held-out MAE 1.505 "
-        "against 1.965 on 190 patients (Section 7.5).",
+        "The colour probe beats its baseline on unseen patients: held-out MAE 1.505 against 1.965 on "
+        "190 patients (Section 7.5), measured before the correction in Section 8.5.",
+        "Attention U-Net segments better than the U-Net on 129 held-out subjects: Dice 0.8476 against "
+        "0.8372, paired difference +0.0105 (95% CI +0.003 to +0.020, p = 0.007) (Section 8.3).",
+        "Each extractor is served the kind of image it was trained on, with automated tests covering "
+        "every combination (Section 8.5).",
         "Quality control enforces every statistic it measures, including illuminant neutrality and "
         "clipping.",
         "The per-patient WHO threshold is validated against real laboratory values: a fixed single "
-        "cutoff misclassifies 15% of the local cohort, all as false negatives (Section 4.4).",
+        "cutoff misclassifies 15% of the 26-subject set, all as false negatives (Section 4.4).",
         "A three-category screening output, with the category probability taken from the model&rsquo;s own "
         "errors, catches 93% of anaemic patients while leaving 12% undecided, under a protocol that tunes "
         "nothing on the patients being scored (Section 7.8).",
     ]))
-    story.append(para("8.2 Measured and found wanting", "h2"))
+    story.append(para("9.2 Measured and found wanting", "h2"))
     story.extend(bullets([
         "The classical extractor&rsquo;s masks extend onto sclera: median redness 9.6 against 16.0 for the "
         "learned extractor on the same pixels, and held-out R² 0.074 on unseen external photographs.",
-        "The local cohort shows no physiological colour signal under either extractor, and eyelid "
+        "The 26-subject set shows no physiological colour signal under either extractor, and eyelid "
         "eversion, which varies widely between its captures, changes measured colour (Section 7.4).",
         "No model tested transfers between the two cohorts&rsquo; cameras better than roughly baseline "
         "(Section 7.6).",
@@ -1349,9 +1567,13 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "adopted (Section 7.9).",
         "Widening the extractor&rsquo;s mask lowers accuracy monotonically across eight variants, so the "
         "signal is not being clipped by too tight a mask (Section 7.9).",
+        "Gray-world white balance lowers segmentation accuracy: matched raw beats matched gray-world by "
+        "0.0069 Dice, and serving a raw-trained segmenter balanced images cost 0.0116 (Section 8.5).",
+        "On the 26-subject captures the three architectures agree at only IoU 0.648, far below what their "
+        "held-out scores suggest (Section 8.4).",
         "The blur threshold looks slightly too aggressive for real captures.",
     ]))
-    story.append(para("8.3 Not yet established", "h2"))
+    story.append(para("9.3 Not yet established", "h2"))
     story.extend(bullets([
         "Accuracy on the hospital&rsquo;s own camera. No figure in this report applies to it without "
         "recalibration (Section 7.6).",
@@ -1365,13 +1587,19 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "example for testing, not an agreed target.",
         "Whether a model trained end to end reads the conjunctiva or the photograph around it; the "
         "site-held-out and masked-input evaluations in Section 7.9 are not yet run on a network.",
+        "Whether white balance changes haemoglobin error from the regressor. The comparison is specified "
+        "and the two extractors it needs are trained (Section 8.6).",
+        "Whether the one-point Dice margin between architectures exceeds run-to-run variance; each was "
+        "trained with a single seed.",
+        "How wrong the extractors are on captures unlike their training data; the 26-subject captures have "
+        "no annotations (Section 8.4).",
         "No clinical validation of any kind has been performed.",
     ]))
 
     # ------------------------------------------------------------- data
-    story.append(para("9. Data", "h1"))
+    story.append(para("10. Data", "h1"))
     story.append(para(
-        "Three public datasets are in use or identified, and a small labelled cohort is held locally. "
+        "Four public datasets are in use or identified. "
         "The professor has arranged hospital data, which will be the primary source. The image data is "
         "not committed to the repository; <font face='Courier'>DATASETS.md</font> records sources, "
         "licences, download commands and the manifests needed to reconstruct every training set."
@@ -1379,26 +1607,28 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     story.append(table([
         ["Source", "Images", "Hb", "Masks", "Role"],
         ["Eyes-Defy-Anemia", "217", "Yes", "101 usable",
-         "Trains the extractor; the 217-patient cohort the deployed model is fitted on"],
+         "Trains and tests the extractor (101 masks); 217 patients with haemoglobin for the colour probe"],
         ["Eye Conjunctiva Segmentation Dataset", "547", "No", "Yes, &times;2",
-         "Smartphone captures with two annotators; trains the extractor"],
+         "Smartphone captures with two annotators; trains and tests the extractor"],
         ["CP-AnemiC", "710", "Yes", "No", "Not yet downloaded; regression only"],
-        ["Local cohort", "52", "Yes", "No",
-         "26 children, both eyes, full blood count. Hand-cropped exports; no colour signal, and eyelid "
+        ["26-subject set", "52", "Yes", "No",
+         "26 children, both eyes, full blood count; source to be cited. Hand-cropped exports; no colour "
+         "signal, and eyelid "
          "eversion varies between captures (Section 7.4)"],
     ], [44 * mm, 15 * mm, 10 * mm, 20 * mm, 79 * mm]))
     story.append(Spacer(1, 4))
     story.append(para(
         "Results are reported per cohort and not pooled: the cohorts differ in camera and population, "
-        "their colour features are several standard deviations apart, and in the local cohort the "
-        "direction of the relationship differs. The local cohort carries a full blood count alongside "
+        "their colour features are several standard deviations apart, and in the 26-subject set the "
+        "direction of the relationship differs. The 26-subject set carries a full blood count alongside "
         "haemoglobin; RDW and MCV distinguish iron-deficiency anaemia from other types, a possible later "
-        "extension. Provenance and licensing of the local images are unconfirmed, which matters if any "
-        "figure derived from them appears in a published write-up."
+        "extension. It is a publicly available dataset rather than one collected for this project, but "
+        "its original source and licence are not yet recorded here; both must be cited before any figure "
+        "derived from it appears in a published write-up."
     ))
 
     # ------------------------------------------------------------- risks
-    story.append(para("10. Risks", "h1"))
+    story.append(para("11. Risks", "h1"))
     story.append(table([
         ["Risk", "Mitigation"],
         ["The model does not transfer to the hospital&rsquo;s camera",
@@ -1409,31 +1639,36 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         ["Hospital data arrives in an unanticipated format",
          "Loaders are isolated behind a common record type; an inspection script verifies a dataset "
          "before training"],
+        ["A model is served images unlike those it was trained on",
+         "Each extractor records its training condition, serving matches it, and tests cover every "
+         "combination (Section 8.5)"],
         ["Results overstated in the write-up",
          "Baselines, permutation tests, grouped splits and held-out reporting are built into the "
          "pipeline rather than left to discipline"],
     ], [62 * mm, 106 * mm]))
 
     # ------------------------------------------------------------- next
-    story.append(para("11. Next steps", "h1"))
+    story.append(para("12. Next steps", "h1"))
     story.append(table([
         ["#", "Step", "Outcome"],
-        ["1", "Obtain hospital captures with laboratory haemoglobin and recalibrate the deployed model on "
-         "them", "The first figure that applies to the deployment camera"],
-        ["2", "Select features by cross-camera overlap using unlabelled images from the target site, then "
-         "fit", "A model built to transfer rather than hoped to"],
-        ["3", "Standardise capture: fixed gentle eversion, consistent framing, original camera files, and "
-         "time since blood draw recorded; add a second blind eversion rater",
-         "Removes the confound found in Section 7.4"],
-        ["4", "Discuss a printed colour reference in the capture protocol",
+        ["1", "Run the white-balance comparison on the hospital data with the ResNet regressor, using the "
+         "two production extractors and the written protocol",
+         "Whether white balance changes haemoglobin error, which segmentation alone cannot say"],
+        ["2", "Annotate at least 15 of the 26-subject captures",
+         "Turns disagreement between architectures into measured error on captures unlike the training "
+         "data (Section 8.4)"],
+        ["3", "Train each architecture with a second seed",
+         "Whether the one-point Dice margin, and the U-Net&rsquo;s robustness loss, exceed run-to-run "
+         "variance"],
+        ["4", "Decide whether to replace the deployed U-Net with Attention U-Net trained on raw pixels",
+         "Better masks; invalidates cached crops and downstream features"],
+        ["5", "Standardise capture: fixed gentle eversion, consistent framing, original camera files, and "
+         "time since blood draw recorded", "Removes the confound found in Section 7.4"],
+        ["6", "Discuss a printed colour reference in the capture protocol",
          "Camera-independent colour, if adopted"],
-        ["5", "Repeat the extractor training with a second seed",
-         "Whether the zoom and blur robustness loss is real"],
-        ["6", "Download CP-AnemiC and verify its loader", "Up to 710 further labelled images"],
-        ["7", "Evaluate the partner&rsquo;s neural network against the deployed linear model on both cohorts",
-         "Whether a network earns its complexity"],
-        ["8", "Re-test gray-world against uncorrected colour on hospital captures, then set the pipeline default",
-         "Settles Section 7.7 on the camera that will actually be used"],
+        ["7", "Record the source and licence of the 26-subject dataset",
+         "Required before any figure derived from it is published"],
+        ["8", "Download CP-AnemiC and verify its loader", "Up to 710 further labelled images"],
     ], [8 * mm, 96 * mm, 64 * mm]))
 
     story.append(Spacer(1, 8))
@@ -1441,15 +1676,15 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "<b>Method record.</b> Every approach tried, including those rejected, is recorded with its "
         "reason in <font face='Courier'>RESEARCH_LOG.md</font> and <font face='Courier'>WORKLOG.md</font>, "
         "with each experiment reproducible from <font face='Courier'>experiments/</font>."
-        "<br/><br/><b>Assessment.</b> The extraction question is answered: the learned extractor measures "
-        "haemoglobin-related colour substantially better than the classical one, on 217 subjects and on "
-        "photographs it never trained on. The scientific premise holds at scale &mdash; conjunctival "
-        "colour tracks laboratory haemoglobin in the physiological direction, and the deployed model "
-        "beats its baseline on unseen patients. The open problem has moved from extraction to "
-        "<b>portability and capture</b>: colour measured by one camera does not transfer to another, and "
-        "one local cohort shows no colour signal, in part because eyelid eversion, which varies between "
-        "captures, changes conjunctival colour. Neither is solved by more data from the same cameras; "
-        "both need data captured under a fixed protocol on the camera that will be used.", wide=True))
+        "<br/><br/><b>Assessment.</b> Extraction is in good shape, and its choice now rests on the right "
+        "evidence: evaluated as segmentation on held-out subjects, Attention U-Net improves on the U-Net, "
+        "and correcting a train&ndash;serve white-balance mismatch improved it by more again. The colour "
+        "probe established that conjunctival colour tracks laboratory haemoglobin at scale. The open "
+        "problems are portability and capture: colour measured by one camera does not transfer to another, "
+        "the extractors disagree on captures unlike their training data, and a third public dataset shows "
+        "no colour signal, in part because eyelid eversion changes conjunctival colour. None is solved by "
+        "more data from the same cameras; all need captures taken under a fixed protocol on the camera that "
+        "will be used, which is what the hospital data provides.", wide=True))
 
     doc.build(columnize(story), onFirstPage=decorate, onLaterPages=decorate)
 

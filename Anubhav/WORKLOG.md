@@ -7,6 +7,40 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 29 Oct – 4 Nov 2026
 
+**31 Oct — Progress report brought up to date: new Section 8, provenance and framing corrected**
+`Progress_Report.pdf` had fallen behind in three ways, all fixed. 18 pages, up from 15.
+
+**Provenance.** It described the 26-subject set as "a local cohort … obtained" in
+seventeen places. It is a publicly available dataset, not one collected for this
+project. Every mention now says so, and the Data section records that its original
+source and licence still have to be cited before any figure from it is published —
+added as next step 7.
+
+**Framing.** Section 7 ranked extractors by a ridge regression on colour inside the mask
+and called the result "the deployed model". It is now described throughout as a
+**probe** — it measures how much haemoglobin signal survives the mask through a
+deliberately weak regressor — and is explicitly not the haemoglobin model, which is a
+ResNet developed in parallel. §7.5 also records that its figures were measured before
+the white-balance correction. The summary gains a scope statement: the report covers
+extraction and evaluation; the regressor and the application are not reported here.
+
+**New Section 8, "Choosing the architecture, evaluated as segmentation"** — experiment 20:
+how a segmentation model is scored and the three rules that make a comparison fair; the
+three candidates; the overlap and paired results (only Attention U-Net vs U-Net
+resolves); agreement on the 26-subject captures with a figure of the worst, median and
+best cases (`overlays.py` now also writes `report_figure.jpg`); the white-balance
+mismatch and 2×2; and the select-then-ship protocol with the two production extractors
+and the regressor test. Verification status, risks, next steps and the closing
+assessment updated to match; sections 8–11 renumbered 9–12.
+
+**Visual QA for the first time.** Earlier regenerations were checked by extracted text
+only. `pymupdf` now renders pages, which caught three layout faults text checks could
+not: a definitions column too narrow for "Precision" and "Distribution", a results table
+split across a page break from its paired test, and a figure that left half a page blank.
+All fixed, the two result tables held together with their heading.
+→ `scripts/make_progress_report.py`, `Progress_Report.pdf`,
+`experiments/20_architectures/overlays.py`, `report_figure.jpg`
+
 **31 Oct — Hand-off files for running the white-balance test through ChatGPT or Gemini**
 A chat assistant cannot see the repository, and the person running the test cannot
 upload it, so the protocol was split into two self-contained plain-text files in

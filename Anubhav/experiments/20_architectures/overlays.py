@@ -178,7 +178,14 @@ def main() -> None:
         # JPEG: these sheets are photographs, and PNG costs ~8x the space for no gain.
         cv2.imwrite(str(out_dir / f"sheet_{n:02d}.jpg"), sheet,
                     [cv2.IMWRITE_JPEG_QUALITY, 88])
+    # One compact figure for the progress report: worst, median and best agreement.
+    picks = [order[0], order[len(order) // 2], order[-1]]
+    figure = np.vstack([np.vstack([panels[p.as_posix()], np.full((8, panels[p.as_posix()].shape[1], 3),
+                                                                   245, np.uint8)]) for p in picks])
+    cv2.imwrite(str(HERE / "report_figure.jpg"), figure, [cv2.IMWRITE_JPEG_QUALITY, 90])
+
     print(f"\nWrote {len(list(out_dir.glob('sheet_*.jpg')))} sheets to {out_dir}")
+    print(f"Wrote {HERE / 'report_figure.jpg'} (worst, median and best agreement)")
     print(f"Wrote {HERE / 'agreement.csv'}")
 
 
