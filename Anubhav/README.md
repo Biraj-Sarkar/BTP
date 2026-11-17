@@ -212,9 +212,20 @@ features measured inside a different mask are not comparable.
 
 ## Serving
 
+Either model can be served; set one variable. The linear model:
+
+```bash
+ANEMIA_LINEAR_MODEL=runs/linear_model.json uvicorn serve.app:app --port 8000
+```
+
+A trained neural checkpoint:
+
 ```bash
 ANEMIA_CHECKPOINT=runs/hb/best.pt ANEMIA_SEGMENTER=runs/segmenter uvicorn serve.app:app --port 8000
 ```
+
+`runs/` is not in git, so the model file has to be copied onto the machine that
+serves it. `GET /health` reports which model is loaded.
 
 `POST /anemia-detection` (also `POST /predict`) takes an image plus optional `age_years`, `sex`, `pregnant`, and
 returns `hb_g_dl`, `anemic`, `threshold_g_dl`, `usable`, and a `quality` block.

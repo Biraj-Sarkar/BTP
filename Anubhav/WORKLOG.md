@@ -7,6 +7,35 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ## Week of 12–18 Nov 2026
 
+**17 Nov — Serving path re-checked after the white-patch change; README serving command**
+- The deployed linear model, end to end on real photographs: `predict_folder.py`
+  scored all 26 local patients; `uvicorn serve.app:app` with
+  `ANEMIA_LINEAR_MODEL=runs/linear_model.json` answered `GET /health` and
+  `POST /anemia-detection` / `POST /predict` over HTTP (200, a full quality
+  block). The model records gray-world and is served with it.
+- README "Serving" showed only the neural-checkpoint command, whose file
+  (`runs/hb/best.pt`) is not on this machine; the linear-model command is now
+  listed first, with a note that `runs/` is not in git.
+- The API still has no `/extract` route.
+
+**17 Nov — The four-correction figure is in the progress report (Section 7.10)**
+Asked for: add the slide figure to the progress report too.
+
+- **Report-sized version:** `make_white_balance_figure.py --target report` →
+  `figures/white_balance_comparison_india_report.png`. The slide figure scaled
+  to the report's 168 mm would put its text at about 4.5 pt, so the same panels
+  are drawn at that width with print type sizes (5–7.5 pt) and no footnote; the
+  caption carries it. The slide PNGs are byte-for-byte unchanged (checked).
+- **Report:** placed after the paragraph on the new default in Section 7.10,
+  with a caption: three pipeline settings plus the proposed sclera correction
+  (not a pipeline option), how the photograph was chosen, same mask in all four,
+  what each row shows, and that "plastic off grey" is close to but not the same
+  measure as the table's angle; Italian example values in the caption. Still 27
+  pages; only pages 16–17 moved. Built with `figures/phantom_contact_sheet.png`
+  again (downloaded).
+- Docs: CODE_GUIDE (`--target report`), REPORT_POINTS (figure available);
+  the personal study notes got the white-patch default once they downloaded.
+
 **17 Nov — Slide figure: one photograph under four colour corrections**
 Asked for: a figure for a slide showing the difference between no correction,
 gray-world and white-patch on an example; then "add sclera one too", as it is a

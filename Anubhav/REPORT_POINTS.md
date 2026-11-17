@@ -356,6 +356,16 @@ Points only. Changed 17 Nov 2026; nothing about haemoglobin was measured.
   - add the device plastic as a reference arm and model the Italian batch.
 - **Wording rules:** "chosen because it estimates the light most closely", not
   "improves accuracy"; say plainly that it is untested on haemoglobin.
+- **Figure available:** one photograph under no correction, gray-world,
+  white-patch and the proposed sclera correction, same mask in all four
+  (`figures/white_balance_comparison_india_report.png` at column-spanning
+  width; `_india.png` / `_italy.png` 16:9 for slides; made by
+  `scripts/make_white_balance_figure.py`).
+  - chosen as typical, not flattering: closest to the site's median angles;
+  - plastic off grey, India: none 4.7°, gray-world 5.0°, white-patch 1.5°,
+    sclera 2.4° (Italy 2.9°, 4.9°, 0.5°, 1.0°);
+  - "plastic off grey" = the plastic's angle from neutral after correction;
+    close to, not identical with, experiment 26's angle to the plastic.
 
 ### Still to do
 

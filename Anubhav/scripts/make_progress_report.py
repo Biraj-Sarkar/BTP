@@ -41,6 +41,9 @@ GROUPED_FIGURE = Path(__file__).resolve().parents[1] / "experiments/24_grouped_s
 # experiments/25_precision_weighted/figure.py. Included in Section 8.11 when present.
 PRECISION_FIGURE = Path(__file__).resolve().parents[1] / "experiments/25_precision_weighted/report_figure.png"
 CORRECTION_FIGURE = Path(__file__).resolve().parents[1] / "experiments/26_correction_prechecks/report_figure.png"
+# One photograph under the four colour corrections; produced by
+# scripts/make_white_balance_figure.py --target report. Included in Section 7.10 when present.
+WB_EXAMPLE_FIGURE = Path(__file__).resolve().parents[1] / "figures/white_balance_comparison_india_report.png"
 
 ACCENT = colors.HexColor("#8C2F39")
 INK = colors.HexColor("#1A1A1A")
@@ -1466,8 +1469,26 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "correction they were fitted with and are still served with it. On 20 photographs the "
         "pipeline&rsquo;s estimate of the light matches the one measured here exactly. It was chosen "
         "because it estimated the light most closely; its effect on haemoglobin error has not been "
-        "measured (Section 12, step 3)."
+        "measured (Section 12, step 3). The figure below shows one photograph under each correction, the "
+        "sclera included."
     ))
+    if WB_EXAMPLE_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(WB_EXAMPLE_FIGURE)).getSize()
+        story.append(Spacer(1, 2))
+        story.append(Image(str(WB_EXAMPLE_FIGURE), width=TEXT_W, height=TEXT_W * h_px / w_px))
+        story.append(para(
+            "One Indian photograph under the pipeline&rsquo;s three settings and the proposed sclera "
+            "correction, which is not a pipeline option. Of the photographs with the plastic measured, it is "
+            "the one whose four angles lie closest to India&rsquo;s medians. The mask is the deployed "
+            "U-Net&rsquo;s in every column, so only colour differs. Top: the corrected frame; blue outlines "
+            "the pixels taken as white, and nothing below the dashed line is used. Middle: the crop the "
+            "regressor reads, the conjunctiva&rsquo;s mean colour, and the plastic at a fixed brightness. "
+            "Bottom: &lsquo;plastic off grey&rsquo; is the plastic&rsquo;s angle from neutral after "
+            "correction, close to but not the same measure as the table&rsquo;s angle to the plastic. The "
+            "Italian photograph chosen the same way gives 2.9&deg;, 4.9&deg;, 0.5&deg; and 1.0&deg;.",
+            "caption"))
+        story.append(Spacer(1, 5))
 
     # --------------------------------------------------------- architectures
     story.append(para("8. Choosing the architecture, evaluated as segmentation", "h1"))

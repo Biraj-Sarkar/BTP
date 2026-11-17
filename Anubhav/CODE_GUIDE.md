@@ -394,7 +394,10 @@ corrected frame, where white-patch and sclera read the light, the regressor's
 crop, and the device plastic's colour after each correction.
 `--example india|italy` writes `figures/white_balance_comparison_<example>.png`;
 each example is the photograph closest to its site's median angles (all four)
-in experiment 26.
+in experiment 26. `--target report` draws the same panels at the report's text
+width (168 mm, type sizes set for print, no footnote) as
+`figures/white_balance_comparison_<example>_report.png`; the India one is in
+Section 7.10 of the progress report.
 
 ### `scripts/benchmark_segmenters.py`
 Scores every backend against real ground-truth masks and prints a Dice/IoU
