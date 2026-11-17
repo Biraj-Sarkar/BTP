@@ -5,6 +5,569 @@ Every substantive change gets an entry: what was done, and where it lives.
 
 ---
 
+## Week of 12–18 Nov 2026
+
+**17 Nov — Slide figure: one photograph under four colour corrections**
+Asked for: a figure for a slide showing the difference between no correction,
+gray-world and white-patch on an example; then "add sclera one too", as it is a
+proposed correction as well.
+`scripts/make_white_balance_figure.py` → `figures/white_balance_comparison_india.png`
+(and `_italy.png`).
+
+- **Typical example, not a flattering one:** for each site, the photograph whose
+  four angles to the device plastic are closest to the site medians (India
+  patient 14, Italy patient 118). Italy patient 60, chosen first on three
+  angles, had an atypical sclera angle (1.8° against a median of 0.95°).
+- **What it shows:** the first three columns come from `prepare()` with only
+  `white_balance` changed. The sclera column is not a pipeline option: it uses
+  experiment 26's `sclera_mask`, and its sclera colour equals experiment 26's
+  for both photographs (difference 0.0). It is cut into a crop exactly as
+  `prepare()` does, which the script asserts against the pipeline's own crops.
+  The deployed U-Net's mask is the same in all four. The white-patch and sclera
+  frames mark the pixels used.
+- **Rows:** the corrected frame; the regressor's crop; flat swatches of the
+  conjunctiva's mean colour and of the plastic after correction; the plastic's
+  angle from grey, the conjunctiva's log(R/G), and the gains.
+- **India example** (none / gray-world / white-patch / sclera): plastic off grey
+  4.7° / 5.0° / 1.5° / 2.4°; conjunctiva log(R/G) 0.563 / 0.429 / 0.592 / 0.546.
+- `imaging.white_patch_pixels()` was split out of `white_patch_estimate()` so
+  the figure marks exactly the pixels the pipeline averages; 83 tests still
+  pass.
+
+**17 Nov — White-patch is now the default colour correction (untested on haemoglobin)**
+Asked for: make white-patch the default; the haemoglobin test goes to future
+work, as end-semester exams leave no time to run it before the report.
+
+- **Method:** `imaging.white_patch_white_balance` (with `white_patch_estimate`,
+  `below_lower_lid`). It takes the brightest 1% (R+G+B) of pixels with no channel
+  ≥ 250 (dilated 5×5), excluding everything more than 10 px below the
+  conjunctiva's lower edge. Gains are mean(white)/white, and the frame is left
+  alone if fewer than 50 pixels qualify. This is the experiment 26 `bright_eye`
+  estimate; on 20 random Eyes-defy photographs the two agree to 0.000°.
+- **Setting:** `PreprocessConfig.white_balance` = `"white_patch"` (default),
+  `"gray_world"` or `"none"`. The old `gray_world=True/False` argument still
+  constructs (mapped to "gray_world"/"none").
+- **`prepare()` order:** segment, then correct the full frame, then crop.
+  `segmenter_input()` keeps the segmenter's input as before (learned: its
+  training condition; classical: gray-world unless correction is off), so masks
+  do not change. `colour_correct()` applies the method.
+- **Saved models keep their correction:**
+  - `LinearModel` stores `white_balance`; old files load from `gray_world`
+    (absent = gray-world). All four files in `runs/` load as gray-world.
+  - Neural checkpoints carry the method in `config.preprocess.white_balance`.
+    `AnemiaPredictor` reads it there, falling back to the checkpoint's
+    `gray_world` field; `model.py` is unchanged.
+  - `predict_folder.py` reads it from the model file.
+- **Crop cache:** gray-world and none keep their old cache key, so existing
+  crops stay valid; white-patch gets its own.
+- **Tools:**
+  - `stages` trace: panel 02 is now the extractor's input, and panel 05 the
+    corrected frame.
+  - `scripts/extract_crops.py --crop-colour wp`.
+  - `scripts/train_segmenter.py`: `--gray-world` help text corrected.
+- **Tests:** 10 new and 2 extended in `tests/test_pipeline.py` (18 more cases). These cover the
+  default, the old switch, clipped pixels ignored, the plastic below the lid
+  ignored, neutral output, the fallback, `prepare()` using the mask, cache keys
+  and old model files. Full suite: 83 passed.
+- **Docs:**
+  - PIPELINE.md §2 and §3.1;
+  - CODE_GUIDE.md (preprocess order, extractor section, example, point 2);
+  - README.md (stage panels); GLOSSARY.md;
+  - WHITE_BALANCE_TEST.md (the optional `wp` flag only; the test is unchanged);
+  - the experiment 26 RESULTS note;
+  - REPORT_POINTS.md (new section, points only).
+- **Report:**
+  - §7.7: "the deployed model was not refitted";
+  - §7.10: a new paragraph on the default;
+  - §9.3: an open question;
+  - §12 step 3: notes it is the default, untested.
+  - The report is now 27 pages; pages 3, 6, 15 and 27 were checked by eye.
+
+**13 Nov — Experiment 26: checks before the colour-correction screen; plain brightest-pixel is no correction, the sclera is not white, and the Italian set is two capture batches**
+Asked for: the two pre-checks agreed in discussion (clipping census, sclera
+yellowness against age), before screening further corrections for the
+regressor's crop. No haemoglobin model was fitted.
+`experiments/26_correction_prechecks/` (`run.py`, `figure.py` →
+`report_figure.png`, `RESULTS.md`, `measurements.csv`, `results.json`,
+`sclera_grading.json`, `grading/`).
+
+- **Sclera detector:** a rule (brightest 30% of a band above the conjunctiva, no
+  clipped or clearly red pixels), fixed from overlays, then graded by eye on all
+  217 with site, age and colour hidden. 216 pass; Italy 45 excluded.
+- **Reference for the light:** the capture device's white plastic, visible below
+  the lower lid in 211 photographs. EXIF shows manual white balance and no flash.
+- **Clipping:** all three channels reach 255 in 96% of photographs, so plain
+  max-RGB is no correction. Half the brightest unclipped pixels are the plastic.
+  Glare on the conjunctiva is negligible.
+- **Estimates against the plastic** (degrees, India / Italy): no correction
+  4.7 / 2.8, gray-world 4.9 / 5.2, brightest above the lid 1.5 / 0.8, sclera
+  2.3 / 1.0.
+- **Sclera:** yellowness rises about 0.6 b* per decade with the light removed, in
+  both sites and within one Italian batch. Its redness follows haemoglobin (ρ +0.44
+  to +0.51). In India, dividing by it would make older patients read about
+  0.4 g/dL per decade lower.
+- **Found along the way:** the Italian set is two capture batches. Patients 1–31
+  were photographed on five days from late May to mid July 2019 (mean age 66,
+  Hb 11.5, less red light). Patients 32–123 were photographed on eight days in
+  June (age 44, Hb 14.6). Pooled Italian results partly measure the light,
+  including Section 7.7's within-Italy and cross-site tests.
+- **Added after the first results:** the analysis of what each correction does to
+  the conjunctiva, and the batch check. RESULTS says so.
+
+Files: `scripts/make_progress_report.py` → `Progress_Report.pdf`:
+- new §7.10 with figure and table;
+- a note in §7.7;
+- abstract and §1;
+- §9.2 (three bullets) and §9.3;
+- the §10 data row;
+- §12 step 3: brightest pixels above the lid, a plastic arm, the Italian batch
+  modelled.
+
+The report is now 26 pages; pages 1, 13–15 and 24–26 were checked by eye. Also
+updated: `experiments/README.md` (row 26), notes in experiments 15 and 18,
+`DATASETS.md` (the batches and camera EXIF) and `REPORT_POINTS.md`. 65 tests pass.
+
+**13 Nov — Report §12 step 3 replaced: further colour corrections to be screened with one extractor; the five-split gray-world extractor repeat dropped**
+Discussion first. The extractor gains nothing from colour correction (Section 8.5:
+matched raw beats matched gray-world), and each extractor is already served the
+condition it was trained on. White balance exists for the colour the haemoglobin
+regressor reads. The crop has its surroundings removed, so any correction has to
+be computed on the full photograph before the crop is cut, which `prepare()`
+already does. Correction methods therefore need testing on the crop with one
+extractor, not across six architectures, and the planned repeat of the matched
+white-balance comparison over five splits (five gray-world models) is dropped.
+
+- **New step 3:** extend Section 7.7 (gray-world against none, mask held fixed,
+  217 external patients) to two further corrections: the brightest unclipped
+  pixels as white, and the sclera as white. Each is computed on the full
+  photograph, with one extractor so the mask stays fixed. The winners go to step
+  1, the hospital comparison with the regressor.
+- **Known concerns, recorded in the step:** sclera colour shifts with jaundice
+  and age; glare clips at 255, so plain brightest-pixel correction becomes no
+  correction unless clipped pixels are excluded.
+- **Nothing run yet.** Pre-checks proposed before the screen: a census of clipped
+  pixels on the 217 photographs, and sclera yellowness against age.
+- **The +0.0069 Dice gray-world cost stays provisional** (one split), now marked
+  "not planned" rather than "to be repeated".
+
+Files: `scripts/make_progress_report.py` → `Progress_Report.pdf` (§8.5 last
+sentence, §8.7 white-balance paragraph, §9.3 bullet, §12 step 3; still 25
+pages, pages 17–18, 23 and 24 checked by eye),
+`experiments/20_architectures/RESULTS.md` and
+`experiments/21_repeated_splits/RESULTS.md` (note that the repeat is not planned).
+
+**13 Nov — Experiment 25: experiment 24's models rescored with precision-weighted F0.5 and a threshold sweep; same order, best F0.5 threshold ≈ 0.97, Dice-chosen threshold gains nothing**
+Discussion first: precision matters more than recall for the extractor (a wrongly
+included pixel pulls the colour toward the wrong tissue; a missed one only removes
+some conjunctiva). The weighted score already exists as F-beta, so no new metric
+was invented. Beta = 0.5 was fixed in advance. No training: the 30 saved models
+of experiment 24 were scored at every threshold from 0.05 to 0.999, and each
+model's threshold was chosen on its own validation images.
+`experiments/25_precision_weighted/` (`run.py`, `figure.py` →
+`report_figure.png`, `RESULTS.md`, `per_split.csv`, `results.json`,
+`pixel_counts.npz`, `per_image_f05.npz`).
+
+- **Check:** Dice, precision and recall at 0.5 reproduce experiment 24 exactly.
+- **Grid:** the first grid stopped at 0.95. The first model scored chose 0.95,
+  an edge, so the run was stopped and the grid extended to 0.999 before any
+  other model was scored. In the final run no model chose 0.999.
+- **F0.5 at 0.5:** Attention U-Net 0.825, U-Net 0.824, UNet++ 0.823, FPN 0.809,
+  LinkNet 0.782, PSPNet 0.740. This is the same order as Dice.
+  - LinkNet's gap to Attention U-Net doubles (−0.043), with Holm p 0.30.
+  - Only PSPNet against Attention U-Net resolves (Holm p 0.025).
+- **Chosen thresholds:** 0.85–0.995 in 29 of 30 models, median 0.97. They land
+  on average 0.02 from the test optimum.
+- **What the chosen threshold buys and costs:**
+  - test F0.5 rose in all 29 models whose threshold moved (+0.021 to +0.050 per
+    architecture), though no single architecture's gain survives Holm (0.09–0.25);
+  - precision rises by 0.06–0.12 and recall falls to 0.71–0.77;
+  - Dice falls by 0.018–0.033;
+  - median mask area goes from about 1.0 to 0.79–0.86 of the true area;
+  - 6 of 3,750 test masks become empty.
+- **Control:** a threshold chosen for Dice scatters between 0.15 and 0.9 and
+  gains nothing (−0.001 to +0.002, all Holm p 1.0). So 0.5 is already right for
+  Dice, and the high threshold is the price of weighting precision.
+- **F0.5 at the chosen thresholds:** UNet++ 0.853, Attention U-Net 0.846, U-Net
+  0.846, FPN 0.841, LinkNet 0.832, PSPNet 0.781.
+  - LinkNet's gap to Attention U-Net shrinks to −0.014 (Holm 0.45) and FPN's to
+    −0.006, so much of their shortfall at 0.5 was spill.
+  - Nothing beats Attention U-Net (UNet++ +0.006, Holm 1.0).
+  - LinkNet is never first; PSPNet is last in every split.
+- **Seed-0 Attention U-Net never exceeds probability 0.53** (conjunctiva logits
+  stop at about 0.13). Its masks are empty from 0.55 up, so its threshold stayed
+  at 0.5. The other 29 models mark pixels even at 0.999. Lesson: thresholds must
+  be chosen per trained model, not copied.
+- **Why the optimum is near 1:** the training loss is cross-entropy plus soft
+  Dice, which pushes probabilities toward 0 and 1.
+- **Not changed:** the deployed threshold (0.5). A stricter mask changes the crop
+  the regressor reads, so the regressor would need training on crops made at the
+  same threshold.
+
+Docs updated:
+- `experiments/README.md` row 25;
+- notes in experiment 20's and 24's `RESULTS.md`;
+- `papers/README.md` row 06 (LinkNet never first under F0.5 either);
+- `REPORT_POINTS.md`: a new F0.5 section with a table and wording, plus
+  "Where each part could go";
+- `Progress_Report.pdf`: a new §8.11 with the figure, a table and three
+  paragraphs, plus the abstract, §1, §9.1, the LinkNet bullet in §9.2, a new
+  §9.3 bullet, and a new §12 step 7 (later steps renumbered). It is now 25
+  pages, checked visually.
+
+65 tests pass; the banned-term check is clean.
+
+**13 Nov — Experiment 24 finished: on person-safe splits the order holds, LinkNet's deficit loses significance, and the leak estimate is small and unresolved**
+All 30 models trained (finished 05:57), scored by experiment 21's code.
+`experiments/24_grouped_splits/RESULTS.md` and a new `figure.py` →
+`report_figure.png`.
+
+- **Dice, person-safe** (mean ± SD over five splits): UNet++ 0.8333 ± 0.0169,
+  Attention U-Net 0.8311 ± 0.0123, U-Net 0.8265 ± 0.0179, FPN 0.8206 ± 0.0181,
+  LinkNet 0.8099 ± 0.0206, PSPNet 0.7640 ± 0.0287.
+  - That is 0.001–0.018 below experiment 21 for every architecture.
+  - The split-to-split SD doubled (0.012–0.029, against 0.006–0.011).
+- **Order:** the U-Net family is on top and tied, and nothing beats Attention
+  U-Net (UNet++ +0.0022, Holm p 0.90). PSPNet is last in every split. LinkNet is
+  never first, but it ranks fourth twice, and U-Net fell to fifth once.
+- **LinkNet's deficits no longer survive Holm.**
+  - Against U-Net: −0.017, Holm p 0.43 (was −0.026, 0.030).
+  - Against UNet++: −0.023, 0.18.
+  - Against FPN: −0.011, 0.43.
+  - The change in each gap is itself not significant (Welch p 0.27–0.59).
+- **Why significance went:** mostly the doubled spread of the paired differences,
+  because a test set of a few capture sessions is a more variable draw.
+  - More splits would not fix this: the corrected variance's n_test/n_train term
+    (0.36) does not shrink, so 10 splits would give p ≈ 0.14 and 20 splits
+    p ≈ 0.10.
+  - Blocked k-fold cross-validation or more data is the route.
+- **Leak estimate** (Eyes-defy as the control):
+  - Mendeley fell by 0.006–0.021, while Eyes-defy did not fall.
+  - The estimate is +0.013 to +0.025 Dice for all six architectures, with every
+    95% CI spanning zero.
+  - It is biased upward, because training lost 24–51 images, almost all of them
+    Mendeley.
+  - It agrees with experiment 23's observational +0.003 to +0.010.
+- **Side observations:**
+  - Best validation epochs came earlier (mean 32 → 27), although a smaller
+    training set should delay them. This fits the leak having flattered
+    validation in experiment 21.
+  - Validation Dice beats test Dice in only 12 of 30 models (30 of 30 before).
+    Validation and test are now different sessions.
+
+Report: new §8.10 with figure and two tables; abstract, §1, §8.3, §8.7, §8.9,
+§9.1 (also 65 tests, was 58), §9.2, §9.3, §12 steps 3 and 6, and the assessment
+updated; 23 pages. Also updated: `experiments/README.md` (rows 21 and 24),
+experiments 20, 21 and 23 RESULTS (pointers and outcome), `REPORT_POINTS.md`
+(points 1 and 2, the person-safe table, softened LinkNet wording, why more splits
+won't settle it), `papers/README.md` row 06, `DATASETS.md`.
+
+**12 Nov — Points on the published LinkNet comparison collected for the IEEE report (`REPORT_POINTS.md`)**
+Read Dhalla et al. 2023 (`papers/conjunctiva-anemia/06_...`) against our
+experiments, and collected sourced bullet points (not prose) in a new
+`REPORT_POINTS.md`: what they did, where the evidence is thin, what experiments
+20–21 show, and where each part could go in the report. Checked rather than
+asserted:
+
+- **The reported accuracy and Dice do not fit the paper's own figure.**
+  - From the definitions, correctly found conjunctiva as a share of all pixels
+    is D(1 − A) / (2(1 − D)). That is at least 45% for LinkNet, and 40–49% for
+    all five models.
+  - The ground-truth masks in its Fig. 3 cover 8–30% of the frame (median 13%),
+    measured from the figure's embedded images.
+  - At that coverage a Dice of 94% would give about 98% accuracy, not 94%.
+- **Its parameter counts match segmentation_models_pytorch with DenseNet-121.**
+  Rebuilt here, the counts are within 0.7–0.9M, and PSPNet uses 2.1M against
+  1.7M reported. So the original-author repositories listed in its Table 2 are
+  not what was run.
+- **Possible leakage, if the split followed the eightfold flip augmentation.**
+  About 4–5 of each test image's 7 flipped copies would sit in training, and
+  the chance of none is under 0.1%. The paper does not state the order.
+- **The rest:**
+  - the top-three gap is 0.11 Dice points on one split, about a tenth to a
+    fifth of our split-to-split SD;
+  - Dice is given as 93.78 and as 93.87;
+  - the evaluated epoch and the loss function are not stated;
+  - "real-time" is not measured;
+  - FCN/FPN mix-up, two wrong citations, and table inconsistencies.
+
+Also corrected: experiments 20 and 21 said the encoder difference was "possibly"
+ResNet-34. The paper used DenseNet-121, now stated, with its 200 epochs and lid
+crops. `papers/README.md` row 06 and the README documentation list updated. The
+faithful reproduction of the paper's recipe is not yet run: it needs scoping,
+because DenseNet-121 at 200 epochs takes hours per model here.
+
+**12 Nov — Person-safe splits wired into the trainer; experiment 24 reruns all six architectures on them**
+Asked to wire in experiment 23's groups and rerun all six architectures.
+
+- **Trainer** (`scripts/train_segmenter.py`): the split moved into
+  `split_subjects`. With no new options it reproduces the old split exactly
+  (checked against all five experiment-21 test and validation sets), so earlier
+  bundles stay valid. New options:
+  - `--groups CSV` keeps each repeat-shot group on one side of the split.
+  - `--block N` deals out capture-ordered files in consecutive blocks.
+  - `--buffer N` leaves out every group within N file numbers of a test file.
+
+  The bundle records all three, the groups file's hash, and which subjects sat
+  out. Seven new tests; **65 pass**.
+- **`groups.csv` gained a `subject` column** (the trainer's id), regenerated by
+  `review.py`. The groups and leakage numbers are unchanged, byte for byte.
+- **New finding while checking the buffer: neighbouring groups are often one
+  person.** At 24 sampled places where one group ends and the next begins, at
+  least 14 are plainly the same person (other eye, or the same eye re-framed),
+  4 are different people, and 6 are unclear. So a group is closer to an eye than
+  to a person, and people may number nearer half of 199. Sheets:
+  `experiments/23_duplicates/review_sheets/9_neighbouring_groups_*.jpg`.
+- **Why blocks:** grouping alone would leave one eye in training and the other
+  in test. The ±2 buffer proposed earlier, applied to test images drawn one by
+  one, takes the neighbouring groups with it and would remove 175–240 images,
+  about half the training set. Dealing out consecutive blocks of about 24 files
+  confines the problem to block edges, and the buffer then costs 28–57 images.
+  This is blocked cross-validation, the standard approach for time-ordered data.
+- **Experiment 24 started** (`experiments/24_grouped_splits/run.py`, about 15 h):
+  - same recipe as experiment 21;
+  - splits 339–366 train / 129–140 val / 118–140 test images, 20 Eyes-defy in
+    every test set;
+  - zero test images with a group partner or a file within 4 numbers in
+    training.
+
+  Eyes-defy test Dice is the control for the leak estimate.
+- **Interrupted and resumed.** The first launch stopped at 19:17 with 13 of 30
+  models done: seeds 0 and 1 complete, plus seed 2's U-Net. The process had been
+  tied to the session that started it. All 13 bundles were checked against the
+  current split code (same test, validation and left-out subjects), and training
+  resumed at 20:04 as a detached process, so it no longer depends on that session.
+  Seed 2's UNet++, stopped at epoch 38, is retrained from scratch.
+
+Also updated: experiment 23 RESULTS (new section, handling steps now point at the
+trainer), DATASETS.md, CONTRIBUTING.md, CODE_GUIDE.md, experiments/README.md, the
+comment in `prepare_conjunctiva_seg.py`. `experiments/21_repeated_splits/run.py`:
+`summarise` now takes the training-set size (default 390, so its output is
+unchanged). Report to be updated when experiment 24 finishes.
+
+**12 Nov — The 547 Mendeley images are at most 199 subjects; two-thirds of every test split had a relative in training (experiment 23)**
+The Mendeley files carry no subject ids or metadata, so the trainer treated each
+image as its own subject. Checked every pair: pixel hashes, perceptual hashes
+under all flips and rotations, and SIFT + RANSAC on all 149,331 Mendeley pairs and
+55,247 Eyes-defy × Mendeley pairs.
+
+- **No exact copies, and no overlap between the two datasets.**
+- **463 of 547 images fall into 115 groups** of 2–10 shots of one subject, most
+  often four (64 groups), with neighbouring file numbers. So there are **at most
+  199 distinct subjects**, and fewer in fact: SIFT misses shots at another angle
+  or of the other eye (files 1–8, 62, 78 inspected). Appearance embeddings
+  (ResNet-18) could not recover those misses.
+- **How the cut-off was set:** by the file numbers and by eye. Among pairs with
+  ≥ 50 matches, 98–100% are within 10 file numbers, against 4% for chance.
+  Distant pairs at 20–50 matches were mostly strangers (12 of 12 inspected at
+  20–30). Rule: ≥ 50 matches, or ≥ 20 with numbers ≤ 10 apart.
+- **Leakage into experiment 21:** 83–93 of 129 test images per split had a
+  same-subject photograph in training.
+- **Little sign it inflated the scores.** Within Mendeley, test images with a
+  partner in training scored +0.003 to +0.010 Dice higher for five of six
+  architectures (LinkNet −0.015), with per-split differences in both directions.
+  That comparison is observational and biased towards zero by the misses. The
+  architecture ranking is unlikely to change: all architectures shared the same
+  splits, and larger models show no sign of exploiting the leak more.
+- **What does change:** any statistic that treated test images as independent
+  was overconfident, above all experiment 20's per-image tests.
+
+Not yet done: wiring `groups.csv` into the splitter, and rerunning the key
+comparison on grouped splits. DATASETS.md now states the subject count (and the
+Eyes-defy licence, CC BY-SA 4.0). Experiments 20 and 21 RESULTS now carry the
+caveat ("648 subjects" was 648 images), and CONTRIBUTING.md notes that `subject_of`
+groups only what file names encode. Report: new §8.9; abstract and §1 sentence;
+"held-out subjects" corrected to "held-out images" in the abstract, §1, §8.5 and
+§8.7; §8.3 no longer claims 648 subjects; §9.2 and §9.3 bullets, §10 data rows and
+§12 step 6 updated; 22 pages. Files:
+`experiments/23_duplicates/` (`find_duplicates.py`, `review.py`, `RESULTS.md`,
+`pairs.csv`, `groups.csv`, `leakage.json`, `summary.json`, `review_sheets/`).
+
+**12 Nov — Resizing does not limit the mask or the colour; it removes fine structure (experiment 22)**
+Three measurements on the annotators' own masks, no training. Each asks what one
+resize step in the pipeline costs: the 576×768 training copies, the app's
+512×512 frame, the segmenter's 320×320 grid, and the 224×224 neural input.
+
+- **Mask.** A perfect model on the 320 grid would score Dice 0.992 against the
+  12-megapixel annotation (Mendeley), 0.998 on Eyes-defy, and 0.989 on the thinnest
+  third of masks. Our models are at about 0.845, so the grid explains at most 0.008
+  of the gap. Enlarging probabilities before thresholding, as the app does, costs
+  four to eight times less than enlarging a thresholded mask.
+- **Colour.** At the app's 512 frame, every colour feature moves by 2–4% of the
+  spread between people on average (worst image 27%). The order of people is
+  unchanged (correlation ≥ 0.999). Smaller images read slightly less red, because
+  edge pixels blend with paler neighbours; the mask's placement does not matter
+  (0.1–0.3%). Rule: fit and serve on the same preprocessing.
+- **Structure.** At 512, features 2–4 pixels across in the original keep a third of
+  their detail, and 4–8 pixels two-thirds. The neural input is cut from the 512
+  frame and *enlarged* (median box 156×58 → 224). Cut from the original photograph
+  instead (923×452 → 224), it keeps 1.5–2.4 times the 2–8 pixel detail at no cost.
+  The 512 squash also stretches the crescent 1.33× before `pad_to_square` runs.
+- **Side finding:** the Mendeley training labels are 1.6% fatter than the
+  annotation in every image (Dice 0.964 against it), because
+  `prepare_conjunctiva_seg.py` reads masks at quarter resolution and counts any
+  non-zero pixel. Small, but it points one way.
+- **For the crop-before-segmentation idea:** not justified by mask resolution. It
+  is justified for the haemoglobin model's input.
+
+Noted in the same discussion, measured but not acted on:
+- **Training and use see different geometry.** Training pads each image to a
+  square and keeps its shape, with ±25% aspect jitter. Validation, test and the
+  app squash it to a square (a 1.33× stretch, just outside that range). The cost
+  needs training to measure.
+- **Colour is read from the 512×512 squashed frame, not the original pixels**
+  (`preprocess.prepare`), which is why measurement 2 follows that path.
+- **Validation Dice is optimistic, as expected.** In all 30 experiment-21 models,
+  the selected epoch's validation Dice exceeded its test Dice, by +0.0135 on
+  average. That is why the test split exists.
+- **Dataset sources, for the record.** 101 images are from Eyes-defy-anemia
+  (Kaggle, `harshwardhanfartale/eyes-defy-anemia`; one image per subject, subject
+  ids present). 547 are from the Mendeley "Eye Conjunctiva Segmentation Dataset"
+  (`yxwjgcndg2`, CC BY 4.0). The Mendeley files carry no subject ids, so the
+  splitter treats each image as its own subject. Whether some images show the
+  same eye is unchecked.
+
+No pipeline code changed. Docs corrected: PIPELINE.md §3.3 said aspect ratio is
+"preserved throughout", but `prepare()` squashes the frame to 512×512 first; the
+overview diagram now shows that step, and CODE_GUIDE.md gives the full order. Report:
+new §8.8, abstract and §1 sentence, §9.1–9.3 bullets, §12 steps 5–6 (neural input from
+the original; check Mendeley for repeat photographs of one eye); §12 now starts on its
+own page with the closing assessment; 22 pages. Files: `experiments/22_resolution/`
+(`measure.py`, `figure.py`, `RESULTS.md`, `summary.json`, three per-image CSVs,
+`report_figure.png`).
+
+**12 Nov — Five splits: the U-Net family is a three-way tie, and the seed-0 win for Attention U-Net was the split**
+All 30 models of experiment 21 trained (six architectures × random states 0, 1, 2, 3,
+42; the 24 new runs took about 12 hours). Each seed is a fresh 390 / 129 / 129 subject
+split and fresh training randomness, everything else held fixed.
+
+| architecture | Dice mean ± SD | Dice variance | IoU mean ± SD | pixel accuracy | mean rank | first |
+|---|---|---|---|---|---|---|
+| Attention U-Net | **0.8464** ± 0.0069 | 4.7e-05 | **0.7409** ± 0.0100 | 0.9958 | 2.0 | 2 / 5 |
+| UNet++ | 0.8462 ± 0.0072 | 5.2e-05 | 0.7404 ± 0.0104 | 0.9958 | 2.2 | 0 / 5 |
+| U-Net | 0.8445 ± 0.0076 | 5.7e-05 | 0.7387 ± 0.0109 | 0.9958 | **1.8** | **3 / 5** |
+| FPN | 0.8353 ± 0.0055 | 3.1e-05 | 0.7238 ± 0.0074 | 0.9954 | 4.0 | 0 / 5 |
+| LinkNet | 0.8187 ± 0.0108 | 1.2e-04 | 0.7016 ± 0.0139 | 0.9952 | 5.0 | 0 / 5 |
+| PSPNet | 0.7654 ± 0.0094 | 8.8e-05 | 0.6318 ± 0.0102 | 0.9937 | 6.0 | 0 / 5 |
+
+- **Two groups.** U-Net, UNet++ and Attention U-Net cannot be separated (all
+  pairwise p > 0.5 under the corrected resampled t-test; they swap places from split
+  to split). FPN, LinkNet and PSPNet finish 4th, 5th and 6th in every split.
+- **The published LinkNet claim fails in 5 of 5 splits**: LinkNet is worse than
+  U-Net, UNet++ and FPN every time, Holm p 0.030 / 0.047 / 0.047 even under the
+  conservative test.
+- **Correction to experiment 20.** Its single-split result that Attention U-Net beats
+  U-Net (+0.0105, Holm p 0.015) does not hold: across splits −0.0019 [−0.0128,
+  +0.0091], p 0.66, with per-split differences −0.0104, −0.0039, +0.0021, +0.0004,
+  +0.0024 — seed 0 was the most favourable of the five. The per-image test was right
+  about those two trained models on those 129 images; it could not see training
+  variance. U-Net also has the highest precision across splits (0.831 vs 0.822).
+  Attention U-Net stays selected because nothing beats it, not because it beats U-Net.
+- **FPN and LinkNet were below Attention U-Net in every split but do not clear the
+  corrected test after Holm** (p 0.36, 0.16). Five splits cannot resolve ~0.01 once
+  the overlap between training sets is accounted for; even a sign test bottoms out
+  at p 0.0625.
+- **Pixel accuracy is uninformative**, as expected: 0.9937–0.9958 against 0.9864 for
+  all-background.
+- **The training-length caveat mostly dissolves**: FPN and PSPNet peaked at median
+  epochs 34 and 33 across splits; only LinkNet peaks late (33–39), and it would need
+  +0.026 Dice to draw level with U-Net.
+- **Knock-on: the white-balance segmentation result (+0.0069, p 0.0015) is the same
+  kind of single-split, two-trained-models evidence**, now marked provisional
+  everywhere. Repeating it needs only the four gray-world Attention U-Nets for seeds
+  1, 2, 3, 42 (~2 hours); the raw arm already exists.
+
+Scoring first crashed on PSPNet: the long-running driver had imported
+`architectures.py` before the MPS pooling fix, so its in-memory copy still had the
+bug (the training subprocesses started fresh and were fine). Rescored with
+`--evaluate-only`; seed-0 numbers match experiment 20 exactly.
+
+New `figure.py` (Dice per split with one line per split; paired difference from
+Attention U-Net with the corrected interval). Report: new §8.7 with both tables and
+the figure; abstract, §1, §8.3 heading and qualifications, §8.5, §9.1–9.3, §12
+steps 3–4 and the closing assessment rewritten for the five-split result; 20 pages.
+Experiment 20's record and the index row now point to the correction. 58 tests pass.
+→ `experiments/21_repeated_splits/` (`RESULTS.md`, `figure.py`, `per_split.csv`,
+`summary.csv`, `results.json`, `per_image_dice.npz`, `report_figure.png`),
+`experiments/20_architectures/RESULTS.md`, `experiments/README.md`,
+`scripts/make_progress_report.py`, `Progress_Report.pdf`, `CODE_GUIDE.md`,
+`WHITE_BALANCE_TEST.md`
+
+---
+
+## Week of 5–11 Nov 2026
+
+**11 Nov — LinkNet, FPN and PSPNet on the shared split: the published claim does not hold here**
+| architecture | params | Dice | IoU | precision | recall | HD95 px |
+|---|---|---|---|---|---|---|
+| Attention U-Net | 6.33M | **0.8476** | **0.7427** | **0.8320** | 0.8737 | 2.5 |
+| UNet++ | 6.61M | 0.8446 | 0.7379 | 0.8266 | 0.8746 | **2.2** |
+| U-Net | 6.30M | 0.8372 | 0.7288 | 0.8239 | 0.8637 | 2.8 |
+| FPN | 5.80M | 0.8263 | 0.7119 | 0.7849 | 0.8846 | 3.0 |
+| LinkNet | 4.21M | 0.8011 | 0.6794 | 0.7232 | **0.9250** | 3.2 |
+| PSPNet | 4.10M | 0.7593 | 0.6245 | 0.7042 | 0.8492 | 4.2 |
+
+On the two pre-specified, Holm-corrected families: **LinkNet is significantly worse than
+U-Net (−0.036), UNet++ (−0.044) and FPN (−0.025)** and beats only PSPNet — the published
+ordering is not reproduced. **Nothing beats Attention U-Net**: every network is
+significantly worse except UNet++, still tied; U-Net still resolves after correction
+(p 0.015). The three losers fail the same way — high recall, low precision, worse
+boundaries — i.e. they spill onto surrounding tissue, which matches their design (coarse
+prediction plus upsampling for FPN and PSPNet; additive skips through a light decoder for
+LinkNet).
+
+Caveat recorded rather than buried: LinkNet, FPN and PSPNet peaked at epochs 38–40 of 40,
+the U-Net family at 30–36. Fair at equal budget, possibly not at each network's best; a
+longer run for those three is the follow-up if experiment 21 confirms the ordering.
+Report §8.2–8.3, abstract and §9.2 updated (19 pages); experiment record and index updated.
+→ `experiments/20_architectures/RESULTS.md`, `results.json`, `scripts/make_progress_report.py`
+
+**11 Nov — Three more architectures, and the comparison repeated over five random splits (running)**
+A published comparison reported LinkNet ahead of U-Net, UNet++, FPN and PSPNet, so all
+three missing networks were added to `architectures.py` — from
+`segmentation_models_pytorch` at its default configuration, which is how such papers
+normally run them — and trained on experiment 20's split through the leaderboard, whose
+fingerprint guarantees the same 390 / 129 / 129 subjects. Two properties worth knowing
+before reading their scores: they are smaller (LinkNet 4.2M, FPN 5.8M, PSPNet 4.1M
+parameters against ~6.3M), and PSPNet by default uses only three encoder stages and
+predicts at 1/8 resolution, a plausible weakness on a thin crescent.
+
+**One split cannot say which architecture is better**, only which did better on those
+129 subjects; a different draw of subjects, initial weights and augmentation order
+moves every score. `experiments/21_repeated_splits/run.py` trains all six under random
+states 0, 1, 2, 3 and 42 — the seed sets the split and the initialisation together — and
+reports Dice, IoU and pixel accuracy (with precision, recall and HD95) as mean, SD,
+variance, range and a 95% CI across splits. Seed 0 reuses experiment 20's bundles after
+checking they were trained identically; 24 new runs, about 16 hours, kept awake with
+`caffeinate` for exactly the job's duration.
+
+Statistical choices, made before any results:
+- **Corrected resampled t-test** (Nadeau and Bengio, 2003) for differences across
+  splits. Two random splits share about 60% of their training subjects, so per-split
+  scores are correlated, and a plain paired t-test is overconfident; the correction
+  scales the variance by (1/J + n_test/n_train). Checked against a hand calculation; on
+  a worked example it moves p from 0.005 to 0.028.
+- **Two comparison families fixed in advance, each Holm-corrected**: the paper's claim
+  (LinkNet against U-Net, UNet++, FPN, PSPNet) and whether anything beats the current
+  choice (each against Attention U-Net). With six architectures there are fifteen
+  pairs, and testing all of them, or testing against whichever wins on the test set,
+  would find differences by chance. `compare.py` uses the same families for the
+  single-split view; all fifteen pairs are still recorded, unadjusted.
+- **Pixel accuracy is reported with its trivial baseline**: predicting background
+  everywhere already scores about 0.986 (measured; first estimated here as 0.97), so it
+  is shown because it is asked for, not because it can separate models.
+
+Also: `select_architecture.py`'s adoption check now refuses white-balanced bundles
+(selection always trains on raw pixels), and every architecture is tested to return a
+single-channel mask at input resolution — FPN and PSPNet predict at reduced resolution
+and upsample. 58 tests pass.
+
+**PSPNet crashed on the Mac GPU** (PyTorch MPS cannot adaptively pool a 40×40 map into 3×3 or 6×6 grids). Pooling has no parameters, so `architectures.py` now computes that one operation on the CPU when the sizes do not divide — identical output (max difference ~1e-10), backpropagation intact, weights still load into a stock `smp.PSPNet`. A GPU test covers it. Seed-0 PSPNet was retrained after the fix; the repeated-split driver picks it up for the other seeds automatically.
+→ `src/anemia/architectures.py`, `experiments/21_repeated_splits/`,
+`experiments/20_architectures/compare.py`, `scripts/select_architecture.py`,
+`tests/test_pipeline.py`, `README.md`, `CODE_GUIDE.md`
+
+---
+
 ## Week of 29 Oct – 4 Nov 2026
 
 **31 Oct — Progress report brought up to date: new Section 8, provenance and framing corrected**

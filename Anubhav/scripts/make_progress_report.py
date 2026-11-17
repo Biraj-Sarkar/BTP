@@ -16,6 +16,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
+    CondPageBreak,
     Image,
     KeepTogether,
     Paragraph,
@@ -29,6 +30,17 @@ from reportlab.platypus.flowables import BalancedColumns, Flowable, HRFlowable
 # Masks from the three architectures on the 26-subject captures; produced by
 # experiments/20_architectures/overlays.py. Included in Section 8 when present.
 ARCH_FIGURE = Path(__file__).resolve().parents[1] / "experiments/20_architectures/report_figure.jpg"
+# Dice per split and paired differences over five random splits; produced by
+# experiments/21_repeated_splits/figure.py. Included in Section 8.7 when present.
+REPEAT_FIGURE = Path(__file__).resolve().parents[1] / "experiments/21_repeated_splits/report_figure.png"
+# experiments/22_resolution/figure.py. Included in Section 8.8 when present.
+RESOLUTION_FIGURE = Path(__file__).resolve().parents[1] / "experiments/22_resolution/report_figure.png"
+# Dice under both split designs and the leak estimate; produced by
+# experiments/24_grouped_splits/figure.py. Included in Section 8.10 when present.
+GROUPED_FIGURE = Path(__file__).resolve().parents[1] / "experiments/24_grouped_splits/report_figure.png"
+# experiments/25_precision_weighted/figure.py. Included in Section 8.11 when present.
+PRECISION_FIGURE = Path(__file__).resolve().parents[1] / "experiments/25_precision_weighted/report_figure.png"
+CORRECTION_FIGURE = Path(__file__).resolve().parents[1] / "experiments/26_correction_prechecks/report_figure.png"
 
 ACCENT = colors.HexColor("#8C2F39")
 INK = colors.HexColor("#1A1A1A")
@@ -156,6 +168,18 @@ def callout(text, tint=BAND, wide=False):
     return t
 
 
+def section_break(min_space=45 * mm):
+    """End the current column block; start a new page if less than `min_space` remains.
+
+    Headings keep with the next paragraph inside a column, but a balanced column
+    block can still split straight after a heading at a page boundary.
+    """
+
+    brk = CondPageBreak(min_space)
+    brk._two_col_wide = True
+    return brk
+
+
 class _BodyStart(Flowable):
     """Marks where the full-width title block ends and the columns begin."""
 
@@ -247,11 +271,16 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "annotated images, captures haemoglobin-related colour far better than a classical rule-based "
         "extractor on 243 patients with laboratory haemoglobin (R² 0.354 against 0.074 on 116 photographs "
         "it never trained on, read through a deliberately simple colour probe). Evaluated as segmentation "
-        "models on 129 held-out subjects, an Attention U-Net improves on the U-Net (Dice 0.848 against "
-        "0.837; paired difference +0.010, p = 0.007) and cannot be separated from UNet++. Gray-world white "
-        "balance, applied since the start, lowers segmentation accuracy, and serving the segmenter "
-        "balanced images it was never trained on cost more (0.012 Dice) than the change of architecture "
-        "gained. Two findings bound what this means for deployment: colour measured by one camera does "
+        "models over five random splits of 129 held-out images each, U-Net, UNet++ and Attention U-Net "
+        "cannot be separated (mean Dice 0.845&ndash;0.846), while FPN, LinkNet and PSPNet rank below all three "
+        "in every split; LinkNet is never the best, contrary to a published "
+        "claim. An advantage of Attention U-Net over U-Net found on one split (p = 0.007) did not survive "
+        "the repetition. Gray-world white balance, applied since the start, lowers segmentation accuracy on "
+        "the split tested, and serving the segmenter balanced images it was never trained on cost 0.012 "
+        "Dice, more than any choice among the leading architectures. Measured against full-resolution annotations, resizing limits neither the mask nor the colour, but it removes fine structure from the regressor&rsquo;s input. The 547 images of one training set turned out to be repeat shots of at "
+        "most 199 subjects, so most test images had a relative in training. Repeated on splits that keep "
+        "each subject on one side, the comparison keeps its order, Dice falls by 0.001&ndash;0.018 (to 0.831 "
+        "for Attention U-Net), and LinkNet&rsquo;s deficit is no longer significant. Scored with F0.5, which weights precision twice as much as recall because spill contaminates the colour, the order is unchanged; the best mask threshold for that score is about 0.97 rather than 0.5. Checks before testing further colour corrections found that the sclera is not a neutral reference, since it yellows with age and its redness follows haemoglobin, and that one public dataset&rsquo;s Italian photographs are two capture batches taken under different light. Two findings bound what this means for deployment: colour measured by one camera does "
         "not transfer to another, and a third public dataset of 26 children shows no colour signal, in "
         "part because how far the eyelid is pulled down changes conjunctival colour. The limiting factor "
         "is now the capture protocol and the deployment camera, not extraction.", "abstract"))
@@ -271,15 +300,28 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "here."
     ))
     story.append(para(
-        "<b>This period.</b> Three encoder-decoder architectures &mdash; U-Net, UNet++ and Attention "
-        "U-Net &mdash; were compared as segmentation models, with the metrics such models are judged by "
-        "(Dice, IoU, precision, recall, boundary distance and the failure distribution) on 129 subjects "
-        "held out from both training and model selection. Attention U-Net is the only one whose advantage "
-        "over the U-Net resolves. Investigating white balance exposed a defect: the segmenter was trained "
+        "<b>This period.</b> Six encoder-decoder architectures &mdash; U-Net, UNet++, Attention U-Net, "
+        "LinkNet, FPN and PSPNet &mdash; were compared as segmentation models, with the metrics such models "
+        "are judged by (Dice, IoU, precision, recall, boundary distance and the failure distribution) on "
+        "images held out from both training and model selection, first on one split and then over five. "
+        "The U-Net family (U-Net, UNet++, Attention U-Net) is tied at the top and the other three rank below "
+        "it in every split; Attention U-Net&rsquo;s lead over the U-Net on the first split did not hold up. "
+        "Investigating white balance exposed a defect: the segmenter was trained "
         "on raw pixels but served white-balanced ones, which cost more accuracy than the architecture "
         "change gained; serving now matches training. Two production extractors, identical except for "
         "white balance, were trained on all 648 images so that the regressor can settle whether white "
-        "balance affects haemoglobin error. Section 8."
+        "balance affects haemoglobin error. Finally, resizing was measured against the full-resolution "
+        "annotations: it limits neither the mask nor the colour, but it removes fine structure, most of it "
+        "in how the regressor&rsquo;s input is built. A search for repeat photographs found that one "
+        "training set holds several shots of most subjects, which leaked into the test splits. Repeated on "
+        "splits that keep each subject on one side, the comparison keeps its order, scores fall by up to "
+        "0.018 Dice, and LinkNet&rsquo;s deficit is no longer significant. Scored with a precision-weighted "
+        "F0.5, the order is again unchanged, and a mask threshold chosen on validation images (about 0.97) "
+        "raises it in every model whose threshold moved, at a cost of 0.02&ndash;0.03 Dice. Section 8. "
+        "Before further colour corrections are tested on the regressor&rsquo;s input, their assumptions "
+        "were checked: plain brightest-pixel correction does nothing on these photographs, the sclera "
+        "yellows with age and its redness follows haemoglobin, and the Italian photographs of one public "
+        "dataset are two capture batches under different light. Section 7.10."
     ))
     story.append(para(
         "<b>Previous period.</b> The learned extractor was compared with the classical one on <b>243 "
@@ -1006,7 +1048,8 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
          "(a rectangle fills its own bounding box, so area / box area &asymp; 1.0 against a median 0.19 "
          "for traced outlines)"],
         ["Eye Conjunctiva Segmentation Dataset (Mendeley, CC BY 4.0)", "547",
-         "Smartphone captures, masks from two independent annotators"],
+         "Smartphone captures, masks from two independent annotators; repeat shots of at most 199 "
+         "subjects (Section 8.9)"],
     ], [52 * mm, 22 * mm, 94 * mm]))
     story.append(Spacer(1, 4))
     story.append(para(
@@ -1231,9 +1274,11 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "exists to do. Gray-world rescales each photograph by its whole-frame average, and how much of the "
         "frame is sclera, iris or skin varies with framing, so the correction applied to the conjunctiva "
         "adds noise unrelated to haemoglobin. One severely anaemic patient (Hb 7.0), missed under gray-world "
-        "because her close-up is dominated by bluish sclera, is caught without it. The deployed pipeline has "
-        "<b>not</b> been changed: both sites belong to one study, and a genuinely different camera has not "
-        "been tested."
+        "because her close-up is dominated by bluish sclera, is caught without it. The deployed model was "
+        "<b>not</b> refitted on this evidence: both sites belong to one study, and a genuinely different "
+        "camera has not been tested. Section 7.10 later found that the Italian photographs are two capture batches under "
+        "different light, which tilts the within-Italy and cross-site comparisons toward no correction; "
+        "in India, a single batch, the difference is small and not significant."
     ))
 
     story.append(para("7.8 What the application should report", "h2"))
@@ -1351,6 +1396,79 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "by site, and an evaluation on images masked outside the region, are how this is caught.",
         wide=True))
 
+    story.append(para("7.10 Checks before testing further colour corrections", "h2"))
+    story.append(para(
+        "Section 12 plans to extend Section 7.7 to two further corrections of the regressor&rsquo;s input: "
+        "the brightest pixels taken as white, and the sclera taken as white. Each rests on an assumption, "
+        "and both were checked on the 217 external photographs before any haemoglobin model was fitted. "
+        "The sclera is found by a rule fixed from overlays alone: the brightest 30% of a band above the "
+        "conjunctiva, without clipped or clearly red pixels. It selects on lightness, so a yellow sclera "
+        "is not dropped for being yellow. Graded by eye on all 217, with site, age and colour hidden, it "
+        "fails on one photograph. The white plastic of the capture device, below the lower lid in 211 "
+        "photographs, serves as a reference for the light: the phone&rsquo;s white balance was set "
+        "manually, so the plastic&rsquo;s colour should record only the light."
+    ))
+    if CORRECTION_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(CORRECTION_FIGURE)).getSize()
+        story.append(Spacer(1, 2))
+        story.append(Image(str(CORRECTION_FIGURE), width=160 * mm, height=160 * mm * h_px / w_px))
+        story.append(para(
+            "Left: angle between each estimate of the light and the device&rsquo;s white plastic, median and "
+            "interquartile range; smaller is closer. Middle: sclera b* minus plastic b* against age; the "
+            "per-decade figures hold haemoglobin and sex. Right: the plastic&rsquo;s colour against "
+            "haemoglobin in the two Italian batches.", "caption"))
+        story.append(Spacer(1, 5))
+    story.append(table([
+        ["Check", "India", "Italy", "Reading"],
+        ["All three channels reach 255 somewhere", "92%", "99%", "Plain brightest-pixel is no correction"],
+        ["Brightest 1% of unclipped pixels on the device plastic", "59%", "46%",
+         "Take them above the lower lid"],
+        ["Angle to the plastic: no correction / gray-world", "4.7&deg; / 4.9&deg;", "2.8&deg; / 5.2&deg;",
+         "Gray-world points the wrong way"],
+        ["Angle to the plastic: brightest above lid / sclera", "1.5&deg; / 2.3&deg;", "0.8&deg; / 1.0&deg;",
+         "Both track the light"],
+        ["Sclera b* per decade, light removed", "+0.64", "+0.62", "The sclera yellows with age"],
+        ["Sclera a* against haemoglobin, &rho;", "+0.51", "+0.44", "Its redness follows haemoglobin"],
+        ["Haemoglobin slope removed: plastic / gray-world / sclera", "10% / 29% / 18%", "16% / 35% / 21%",
+         "Gray-world divides out the most"],
+        ["Older patients read lower after sclera correction", "0.41 g/dL per decade", "0.05",
+         "Age enters the reading in India"],
+    ], [62 * mm, 30 * mm, 30 * mm, 46 * mm]))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "<b>Both new candidates estimate the light well, and gray-world does not.</b> The frame is "
+        "dominated by pink tissue, so its average is not grey, and gray-world ends further from the "
+        "plastic than no correction does. <b>But the sclera is not white.</b> With the light removed, its "
+        "yellowness rises by about 0.6 b* units per decade at both sites. Its redness follows haemoglobin, "
+        "as expected of tissue covered by the vessels of the bulbar conjunctiva. Dividing by it would "
+        "therefore remove part of the signal and, in India, make older patients read about 0.4 g/dL per "
+        "decade lower. Jaundice cannot be tested without bilirubin."
+    ))
+    story.append(para(
+        "<b>The Italian photographs are two capture batches.</b> Patients 1&ndash;31 were photographed on "
+        "five days between May and July 2019, and patients 32&ndash;123 over nine days in June. The first "
+        "batch is older (mean age 66 against 44) and more anaemic (mean haemoglobin 11.5 against 14.6), "
+        "and the plastic shows that its light was less red. Pooled, part of Italy&rsquo;s "
+        "colour&ndash;haemoglobin link is therefore the light: a batch term lowers the slope by 11%, and "
+        "dividing by the plastic by 16%. Any correction that tracks the light removes that part, so "
+        "Section 7.7&rsquo;s within-Italy and cross-site comparisons favour no correction by an amount not "
+        "yet measured. Gray-world still removes about three times the plastic&rsquo;s share of the slope in "
+        "India, which is one batch, so the case against it stands for its own reason. The screen will take "
+        "the brightest pixels from unclipped pixels above the lower lid, keep the sclera with age in the "
+        "model, add the plastic as a reference arm, and model the Italian batch."
+    ))
+    story.append(para(
+        "<b>The pipeline&rsquo;s default correction is now the brightest unclipped pixels above the lower "
+        "lid.</b> It is computed on the full photograph after segmentation, because it needs the mask to "
+        "find the lid, and the crop is then cut from the corrected frame. The segmenter&rsquo;s own input "
+        "is unchanged, so masks are unaffected. Saved models, the deployed one included, record the "
+        "correction they were fitted with and are still served with it. On 20 photographs the "
+        "pipeline&rsquo;s estimate of the light matches the one measured here exactly. It was chosen "
+        "because it estimated the light most closely; its effect on haemoglobin error has not been "
+        "measured (Section 12, step 3)."
+    ))
+
     # --------------------------------------------------------- architectures
     story.append(para("8. Choosing the architecture, evaluated as segmentation", "h1"))
     story.append(para(
@@ -1382,8 +1500,10 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "nor model selection</b>: the epoch is chosen on validation Dice, which is therefore optimistic, so "
         "a third split is held back and scored once. <b>Compare per image, paired</b>: every architecture "
         "sees identical test images, so differences are tested per image (Wilcoxon signed-rank and a paired "
-        "bootstrap interval) rather than as two means. The 648 annotated images, from 648 subjects, were "
-        "split 390 / 129 / 129, with the same seed, rotation augmentation, ImageNet-pretrained "
+        "bootstrap interval) rather than as two means. The 648 annotated images were split 390 / 129 / 129 "
+        "as 648 subjects, since the Mendeley images carry no subject identifiers (Section 8.9 shows the "
+        "first rule was therefore not met for them, and Section 8.10 repeats the comparison on splits that "
+        "meet it), with the same seed, rotation augmentation, ImageNet-pretrained "
         "EfficientNet-B0 encoder, 320 px input and 40 epochs throughout, so the decoder is the only variable."
     ))
 
@@ -1398,26 +1518,47 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "high-resolution eyelash and lid-margin edges that sit beside the conjunctiva."
     ))
     story.append(para(
-        "The segmentation library used provides UNet++ but not Attention U-Net, so the attention gates were "
-        "implemented against the same encoder, with decoder widths matched to the library&rsquo;s U-Net. The "
-        "three have 6.3M, 6.6M and 6.3M parameters, so a difference between them is decoder design rather "
-        "than capacity. One construction function serves both training and inference, and every trained "
-        "file records its architecture, so a model cannot be served by a decoder it was not trained with."
+        "Three further networks were added after a published comparison reported LinkNet ahead of U-Net, "
+        "UNet++, FPN and PSPNet. <b>LinkNet</b> keeps full-resolution skips but adds them to the decoder "
+        "features instead of concatenating them, with a much lighter decoder. <b>FPN</b> builds a top-down "
+        "feature pyramid and predicts at 1/4 resolution. <b>PSPNet</b> pools the deepest feature map at "
+        "several grid sizes for context, has no skips from shallow layers, and predicts at 1/8 resolution."
+    ))
+    story.append(para(
+        "The segmentation library used provides all of these except Attention U-Net, whose gates were "
+        "implemented against the same encoder with decoder widths matched to the library&rsquo;s U-Net; the "
+        "other three are used at the library&rsquo;s default configuration. The U-Net family has 6.3&ndash;6.6M "
+        "parameters, LinkNet 4.2M, FPN 5.8M and PSPNet 4.1M. One construction function serves both training "
+        "and inference, and every trained file records its architecture, so a model cannot be served by a "
+        "decoder it was not trained with."
     ))
 
-    results = [para("8.3 Results", "h2"), table([
-        ["Architecture", "Dice", "IoU", "Precision", "Recall", "HD95 px", "Worst image"],
-        ["U-Net", "0.8372", "0.7288", "0.8239", "0.8637", "2.8", "0.363"],
-        ["UNet++", "0.8446", "0.7379", "0.8266", "<b>0.8746</b>", "<b>2.2</b>", "0.541"],
-        ["<b>Attention U-Net</b>", "<b>0.8476</b>", "<b>0.7427</b>", "<b>0.8320</b>", "0.8737", "2.5",
+    results = [para("8.3 Results on one split", "h2"), table([
+        ["Architecture", "Params", "Dice", "IoU", "Precision", "Recall", "HD95 px", "Worst image"],
+        ["<b>Attention U-Net</b>", "6.3M", "<b>0.8476</b>", "<b>0.7427</b>", "<b>0.8320</b>", "0.8737", "2.5",
          "<b>0.544</b>"],
-    ], [38 * mm, 20 * mm, 20 * mm, 22 * mm, 20 * mm, 22 * mm, 26 * mm]), Spacer(1, 4), table([
-        ["Paired comparison", "Mean Dice difference", "95% CI", "p", "Images won", "Resolved"],
-        ["U-Net &minus; UNet++", "&minus;0.0075", "[&minus;0.017, +0.000]", "0.088", "55 / 74", "no"],
+        ["UNet++", "6.6M", "0.8446", "0.7379", "0.8266", "0.8746", "<b>2.2</b>", "0.541"],
+        ["U-Net", "6.3M", "0.8372", "0.7288", "0.8239", "0.8637", "2.8", "0.363"],
+        ["FPN", "5.8M", "0.8263", "0.7119", "0.7849", "0.8846", "3.0", "0.470"],
+        ["LinkNet", "4.2M", "0.8011", "0.6794", "0.7232", "<b>0.9250</b>", "3.2", "0.374"],
+        ["PSPNet", "4.1M", "0.7593", "0.6245", "0.7042", "0.8492", "4.2", "0.377"],
+    ], [34 * mm, 16 * mm, 18 * mm, 18 * mm, 21 * mm, 19 * mm, 19 * mm, 23 * mm]), Spacer(1, 4), table([
+        ["Paired comparison (Holm-corrected within each family)", "Mean Dice difference", "95% CI",
+         "p (Holm)", "Images won"],
+        ["<i>The published claim</i>", "", "", "", ""],
+        ["LinkNet &minus; U-Net", "&minus;0.0360", "[&minus;0.046, &minus;0.025]", "&lt; 0.0001", "28 / 101"],
+        ["LinkNet &minus; UNet++", "&minus;0.0435", "[&minus;0.053, &minus;0.034]", "&lt; 0.0001", "29 / 100"],
+        ["LinkNet &minus; FPN", "&minus;0.0251", "[&minus;0.034, &minus;0.017]", "&lt; 0.0001", "40 / 89"],
+        ["LinkNet &minus; PSPNet", "+0.0418", "[+0.031, +0.053]", "&lt; 0.0001", "102 / 27"],
+        ["<i>Against the current choice</i>", "", "", "", ""],
         ["<b>U-Net &minus; Attention U-Net</b>", "<b>&minus;0.0105</b>", "<b>[&minus;0.020, &minus;0.003]</b>",
-         "<b>0.007</b>", "54 / 75", "<b>yes</b>"],
-        ["UNet++ &minus; Attention U-Net", "&minus;0.0030", "[&minus;0.008, +0.002]", "0.155", "61 / 68", "no"],
-    ], [48 * mm, 30 * mm, 32 * mm, 14 * mm, 22 * mm, 22 * mm])]
+         "<b>0.015</b>", "54 / 75"],
+        ["UNet++ &minus; Attention U-Net", "&minus;0.0030", "[&minus;0.008, +0.002]", "0.155", "61 / 68"],
+        ["FPN &minus; Attention U-Net", "&minus;0.0214", "[&minus;0.028, &minus;0.015]", "&lt; 0.0001", "33 / 96"],
+        ["LinkNet &minus; Attention U-Net", "&minus;0.0465", "[&minus;0.057, &minus;0.037]", "&lt; 0.0001",
+         "23 / 106"],
+        ["PSPNet &minus; Attention U-Net", "&minus;0.0883", "[&minus;0.102, &minus;0.075]", "&lt; 0.0001", "7 / 122"],
+    ], [62 * mm, 28 * mm, 34 * mm, 20 * mm, 24 * mm])]
     # Two wide tables read as one result; a page break between them separates
     # the scores from the test that says which differences are real.
     kept = KeepTogether(results)
@@ -1426,15 +1567,30 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     story.append(Spacer(1, 4))
     story.append(para(
         "No architecture produced an empty mask on any of the 129 held-out images, and Dice and IoU rank "
-        "them identically. <b>Only one comparison resolves</b>: Attention U-Net beats the U-Net with an "
-        "interval excluding zero; UNet++ beats it by a similar margin but its interval touches zero, and the "
-        "two newer architectures cannot be separated. Attention U-Net is selected on that basis and because "
-        "it leads on Dice, IoU and precision. Precision matters most here, since a mask that spills onto lid "
-        "skin contaminates the colour read inside it, and UNet++ gains almost entirely in recall instead. "
-        "The larger effect is on the floor: the worst image rises from 0.363 to about 0.54 under either "
-        "newer architecture. Two qualifications: UNet++ places its boundary most accurately (HD95 2.2 px "
-        "against 2.5) and has the best median, and with one training seed per architecture a margin of one "
-        "point of Dice is not yet separable from run-to-run variance."
+        "them identically. With six architectures there are fifteen possible pairs, so two families of "
+        "comparisons were fixed in advance and each Holm-corrected: the published claim, and whether "
+        "anything beats the current choice. <b>The published claim is not reproduced</b>: LinkNet is "
+        "significantly worse than U-Net, UNet++ and FPN and beats only PSPNet. <b>Nothing beats Attention "
+        "U-Net</b> on this split; UNet++ is statistically tied with it, and every other network is "
+        "significantly worse."
+    ))
+    story.append(para(
+        "The three added networks fail in the same direction: high recall and low precision, with worse "
+        "boundaries (LinkNet finds 92.5% of the conjunctiva, but only 72.3% of what it marks is conjunctiva). "
+        "Their masks overflow onto surrounding tissue, the error that matters most here because it "
+        "contaminates the colour read inside the mask. That matches their construction: FPN and PSPNet "
+        "recover the boundary from a coarse prediction by upsampling, and LinkNet adds rather than "
+        "concatenates its skips through a light decoder. Among the U-Net family, Attention U-Net leads on "
+        "Dice, IoU and precision, and UNet++ gains almost entirely in recall instead; both lift the worst "
+        "image from 0.363 to about 0.54."
+    ))
+    story.append(para(
+        "Three qualifications. UNet++ places its boundary most accurately (HD95 2.2 px against 2.5) and "
+        "has the best median. LinkNet, FPN and PSPNet reached their best validation scores at epochs 38&ndash;40, "
+        "the end of the 40-epoch budget, while the U-Net family peaked at 30&ndash;36, so the comparison is fair "
+        "at equal budget but not necessarily at each network&rsquo;s best. And this is one split with one "
+        "training run per architecture; Section 8.7 repeats it over five splits, which keeps the ordering of "
+        "the bottom three but not Attention U-Net&rsquo;s lead over the U-Net."
     ))
 
     story.append(para("8.4 Behaviour on the 26-subject captures", "h2"))
@@ -1480,7 +1636,7 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "at only IoU 0.57 to 0.67 across the three architectures on the 52 captures, and balancing shrinks "
         "the mask by about a third. To measure the cost, and to ask whether white balance helps at all, "
         "Attention U-Net was also trained with white balance applied, identical in every other respect, and "
-        "each model was scored under both serving conditions on the same 129 held-out subjects:"
+        "each model was scored under both serving conditions on the same 129 held-out images:"
     ))
     story.append(table([
         ["Trained on / served", "Dice", "IoU", "Precision", "Recall"],
@@ -1491,15 +1647,18 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     ], [66 * mm, 24 * mm, 24 * mm, 28 * mm, 26 * mm]))
     story.append(Spacer(1, 4))
     story.append(para(
-        "<b>White balance does not help the extractor</b>: matched raw beats matched gray-world by +0.0069 "
-        "Dice (95% CI +0.0012 to +0.0118, p = 0.0015). <b>The mismatch cost +0.0116</b> (95% CI +0.0066 to "
-        "+0.0167, p &lt; 10<super>&minus;4</super>), more than the change of architecture gained. The two "
+        "<b>White balance does not help the extractor</b> on this split: matched raw beats matched "
+        "gray-world by +0.0069 Dice (95% CI +0.0012 to +0.0118, p = 0.0015). <b>The mismatch cost "
+        "+0.0116</b> (95% CI +0.0066 to +0.0167, p &lt; 10<super>&minus;4</super>), more than the change of "
+        "architecture gained. The two "
         "mismatched conditions fail in opposite directions: a raw-trained model served balanced images draws "
         "a smaller, more conservative mask, and a balance-trained model served raw images spills. Taken with "
         "Section 7.7, which found gray-world costs accuracy when colour is read, no stage of the pipeline has "
         "been measured where it helps. Each extractor now records the condition it was trained under and "
         "the serving path matches it. This changed deployed masks, so figures measured through the serving "
-        "path before the correction, including Section 7.5, describe the pipeline as it then was."
+        "path before the correction, including Section 7.5, describe the pipeline as it then was. Both "
+        "figures come from the single split of Section 8.3; Section 8.7 explains why the matched comparison "
+        "is provisional."
     ))
 
     story.append(para("8.6 Selection, shipping and the regressor test", "h2"))
@@ -1524,11 +1683,372 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "not been replaced; doing so invalidates every cached crop and is left as a deliberate decision."
     ))
 
+    story.append(para("8.7 The comparison repeated over five splits", "h2"))
+    story.append(para(
+        "Section 8.3 rests on one split and one training run per architecture. Its per-image test treats the "
+        "trained models as fixed: it shows that one trained model segments those 129 images better than "
+        "another, not that its architecture is better, because a different draw of training subjects, "
+        "initial weights or augmentation order produces different models. The whole comparison was therefore "
+        "repeated under random states 0, 1, 2, 3 and 42. Each draws a fresh 390 / 129 / 129 split "
+        "and fresh training randomness, with every other setting unchanged; seed 0 is the split of Section "
+        "8.3. Thirty models were trained in all."
+    ))
+    story.append(para(
+        "Differences across splits are tested with the corrected resampled t-test of Nadeau and Bengio. Any "
+        "two splits share most of their training subjects, so the five scores are correlated and a plain "
+        "paired t-test is overconfident; the correction inflates the variance of the mean difference from "
+        "&sigma;<super>2</super>/J to &sigma;<super>2</super>(1/J + n<sub>test</sub>/n<sub>train</sub>), "
+        "which here raises the standard error by a factor of 1.6. The two comparison families of Section 8.3 "
+        "are kept, each Holm-corrected."
+    ))
+    if REPEAT_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(REPEAT_FIGURE)).getSize()
+        story.append(Spacer(1, 2))
+        story.append(Image(str(REPEAT_FIGURE), width=160 * mm, height=160 * mm * h_px / w_px))
+        story.append(para(
+            "Left: held-out Dice on each of the five splits; each grey line is one split, and a split that is "
+            "easy for one architecture is easy for all of them. Right: each architecture&rsquo;s Dice minus "
+            "Attention U-Net&rsquo;s on the same split, which removes that shared effect. Blue: mean and 95% "
+            "interval (corrected, on the right).", "caption"))
+        story.append(Spacer(1, 5))
+    repeat = [table([
+        ["Architecture", "Dice, mean &plusmn; SD", "Dice variance (&times;10<super>&minus;5</super>)",
+         "Dice 95% CI", "IoU, mean &plusmn; SD", "Pixel accuracy", "Mean rank", "Splits won"],
+        ["<b>Attention U-Net</b>", "<b>0.8464</b> &plusmn; 0.0069", "4.7", "[0.838, 0.855]",
+         "<b>0.7409</b> &plusmn; 0.0100", "0.9958", "2.0", "2 / 5"],
+        ["UNet++", "0.8462 &plusmn; 0.0072", "5.2", "[0.837, 0.855]", "0.7404 &plusmn; 0.0104",
+         "0.9958", "2.2", "0 / 5"],
+        ["U-Net", "0.8445 &plusmn; 0.0076", "5.7", "[0.835, 0.854]", "0.7387 &plusmn; 0.0109",
+         "0.9958", "<b>1.8</b>", "<b>3 / 5</b>"],
+        ["FPN", "0.8353 &plusmn; 0.0055", "3.1", "[0.828, 0.842]", "0.7238 &plusmn; 0.0074",
+         "0.9954", "4.0", "0 / 5"],
+        ["LinkNet", "0.8187 &plusmn; 0.0108", "11.6", "[0.805, 0.832]", "0.7016 &plusmn; 0.0139",
+         "0.9952", "5.0", "0 / 5"],
+        ["PSPNet", "0.7654 &plusmn; 0.0094", "8.8", "[0.754, 0.777]", "0.6318 &plusmn; 0.0102",
+         "0.9937", "6.0", "0 / 5"],
+        ["<i>Background everywhere</i>", "&mdash;", "&mdash;", "&mdash;", "&mdash;",
+         "<i>0.9864</i>", "&mdash;", "&mdash;"],
+    ], [32 * mm, 26 * mm, 20 * mm, 24 * mm, 26 * mm, 16 * mm, 12 * mm, 12 * mm]), Spacer(1, 4), table([
+        ["Comparison over five splits (corrected test, Holm within each family)", "Mean Dice difference",
+         "Corrected 95% CI", "p (Holm)", "Splits won"],
+        ["<i>The published claim</i>", "", "", "", ""],
+        ["LinkNet &minus; U-Net", "&minus;0.0258", "[&minus;0.042, &minus;0.010]", "<b>0.030</b>", "0 / 5"],
+        ["LinkNet &minus; UNet++", "&minus;0.0275", "[&minus;0.051, &minus;0.005]", "<b>0.047</b>", "0 / 5"],
+        ["LinkNet &minus; FPN", "&minus;0.0166", "[&minus;0.029, &minus;0.004]", "<b>0.047</b>", "0 / 5"],
+        ["LinkNet &minus; PSPNet", "+0.0533", "[+0.027, +0.079]", "<b>0.019</b>", "5 / 5"],
+        ["<i>Against the current choice</i>", "", "", "", ""],
+        ["<b>U-Net &minus; Attention U-Net</b>", "<b>&minus;0.0019</b>", "<b>[&minus;0.013, +0.009]</b>",
+         "<b>1.00</b>", "<b>3 / 5</b>"],
+        ["UNet++ &minus; Attention U-Net", "&minus;0.0002", "[&minus;0.004, +0.003]", "1.00", "2 / 5"],
+        ["FPN &minus; Attention U-Net", "&minus;0.0111", "[&minus;0.027, +0.005]", "0.36", "0 / 5"],
+        ["LinkNet &minus; Attention U-Net", "&minus;0.0277", "[&minus;0.053, &minus;0.002]", "0.16", "0 / 5"],
+        ["PSPNet &minus; Attention U-Net", "&minus;0.0810", "[&minus;0.105, &minus;0.057]", "<b>0.003</b>", "0 / 5"],
+    ], [62 * mm, 28 * mm, 34 * mm, 20 * mm, 24 * mm])]
+    # As in Section 8.3: the scores and the test that reads them stay on one page.
+    kept = KeepTogether(repeat)
+    kept._two_col_wide = True
+    story.append(kept)
+    story.append(Spacer(1, 3))
+    story.append(para(
+        "Mean &plusmn; SD across the five splits; the SD of pixel accuracy is 0.0004 for every architecture. "
+        "The interval of each mean is a plain t interval; since the splits overlap it is somewhat too narrow, "
+        "and the comparisons use the corrected test. Full variance, "
+        "range, precision, recall and boundary distance per architecture are recorded with the experiment.",
+        "caption"))
+    story.append(para(
+        "<b>The six architectures fall into two groups.</b> U-Net, UNet++ and Attention U-Net cannot be "
+        "separated: their mean Dice lies within 0.002 while the split-to-split standard deviation is about "
+        "0.007, they change places from split to split (U-Net is first in three of the five), and no "
+        "difference between any two of them approaches significance (all p &gt; 0.5). FPN, LinkNet and "
+        "PSPNet are fourth, fifth and sixth in every split. <b>The published claim is again not "
+        "reproduced</b>: LinkNet is worse than U-Net, UNet++ and FPN in all five splits, significantly so "
+        "even under the conservative test, although Section 8.10 shows that the significance does not "
+        "survive splits that keep each subject on one side. FPN and LinkNet were also below Attention U-Net in every split, "
+        "but five splits are too few for the corrected test to resolve differences of that size after Holm "
+        "correction; even a sign test cannot reach p &lt; 0.05 with five."
+    ))
+    story.append(para(
+        "<b>One conclusion of Section 8.3 does not survive.</b> The per-split differences between U-Net and "
+        "Attention U-Net were &minus;0.0104, &minus;0.0039, +0.0021, +0.0004 and +0.0024: the split of "
+        "Section 8.3 was the most favourable of the five, and on average the two are tied. The same is true "
+        "of precision, where the U-Net is highest of the six across splits (0.831 against 0.822). Attention "
+        "U-Net remains the selected architecture under the rule fixed in advance, because nothing beats it, "
+        "but the U-Net is an equally defensible choice on segmentation evidence. What separates the groups "
+        "is the decoder design: the three networks that concatenate full-resolution skips into a full "
+        "decoder are tied at the top, and the three that do not all spill, with recall at or above the U-Net "
+        "family&rsquo;s and precision well below it."
+    ))
+    story.append(para(
+        "Two further points. Pixel accuracy ranges only from 0.9937 to 0.9958 against 0.9864 for predicting "
+        "background everywhere, a spread no larger than the split-to-split movement of that trivial "
+        "baseline, so it cannot separate the models; Dice and IoU rank them identically. And the "
+        "training-length concern of Section 8.3 mostly dissolves: across the five splits FPN and PSPNet "
+        "reached their best validation scores at median epochs 34 and 33, like the U-Net family. Only "
+        "LinkNet peaks consistently late (epochs 33&ndash;39), and it would need about 0.026 Dice to draw "
+        "level with the U-Net."
+    ))
+    story.append(para(
+        "<b>The white-balance comparison of Section 8.5 is the same kind of evidence</b> &mdash; two "
+        "separately trained models on one split &mdash; and its +0.0069 should be treated as provisional. "
+        "The cost of the mismatch is less exposed, since it compares one trained model served two kinds of "
+        "input. A repeat over five splits is not planned: white balance exists for the colour the regressor "
+        "reads, not for the mask, so further corrections are compared with one extractor (Section 12)."
+    ))
+
+    story.append(para("8.8 What resizing costs", "h2"))
+    story.append(para(
+        "Every photograph is resized several times before anything reads it, and since almost all are 3:4 "
+        "portrait, every resize to a square also stretches them 1.33 times sideways. The service squashes "
+        "each photograph to 512 &times; 512 and reads colour there; the segmenter works on a 320 &times; 320 "
+        "grid; and the regressor&rsquo;s 224 &times; 224 input is the mask&rsquo;s bounding box cut from the "
+        "512 frame. Whether this destroys information was measured on the annotators&rsquo; own masks, so "
+        "that no model&rsquo;s errors are mixed in, against the 12-megapixel Mendeley photographs on which "
+        "those masks were drawn (547 images; the mask ceiling also on the 101 Eyes-Defy-Anemia images)."
+    ))
+    story.append(table([
+        ["Path", "Best possible mask Dice", "Colour shift (between-person SD)",
+         "Detail kept, 2&ndash;4 / 4&ndash;8 px", "SSIM"],
+        ["Training copy, 576 &times; 768", "0.997", "0.015&ndash;0.026", "0.46 / 0.78", "0.931"],
+        ["Service frame, 512 &times; 512", "0.996", "<b>0.020&ndash;0.038</b>", "0.33 / 0.66", "0.912"],
+        ["Segmenter grid, 320 &times; 320", "<b>0.992</b>", "0.032&ndash;0.070", "0.16 / 0.44", "0.885"],
+        ["Regressor input, cut from the 512 frame (current)", "&mdash;", "0.032&ndash;0.071",
+         "<b>0.24 / 0.56</b>", "0.904"],
+        ["Regressor input, cut from the original", "&mdash;", "0.012&ndash;0.022", "0.58 / 0.86", "0.946"],
+    ], [58 * mm, 26 * mm, 32 * mm, 30 * mm, 22 * mm]))
+    story.append(Spacer(1, 3))
+    story.append(para(
+        "Mask Dice: an ideal probability map on that grid, enlarged and thresholded, scored against the "
+        "annotation at full resolution (mean). Colour: mean absolute shift of nine colour features, as a "
+        "fraction of their spread between people. Detail: share of fine-detail energy kept in the green "
+        "channel inside the conjunctiva, by feature size in the original photograph (median); SSIM is "
+        "structural similarity, 1 meaning identical.", "caption"))
+    if RESOLUTION_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(RESOLUTION_FIGURE)).getSize()
+        story.append(Spacer(1, 2))
+        story.append(Image(str(RESOLUTION_FIGURE), width=150 * mm, height=150 * mm * h_px / w_px))
+        story.append(para(
+            "Top: the same 360 &times; 240-pixel window of one photograph after each resize is undone, so "
+            "each panel shows only what survived. Bottom: detail kept by feature size, all 547 images.",
+            "caption"))
+        story.append(Spacer(1, 5))
+    story.append(para(
+        "<b>The mask is not limited by resolution.</b> A perfect model on the 320 grid would still score "
+        "Dice 0.992 against the full-resolution annotation (0.998 on Eyes-Defy-Anemia, 0.989 on the "
+        "thinnest third of masks). The models of Section 8.7 score about 0.845, so the grid accounts for at "
+        "most a twentieth of their error. Thresholding at 512, as the service does, caps the mask at 0.976 "
+        "against full resolution, but colour is read on that same 512 grid."
+    ))
+    story.append(para(
+        "<b>Colour survives.</b> At the service&rsquo;s 512 frame every colour feature moves by 2&ndash;4% "
+        "of the spread between people, and their order is unchanged (correlation with full resolution "
+        "&ge; 0.999). Smaller images read slightly less red, because the thin crescent&rsquo;s edge pixels "
+        "blend with paler tissue; the shift is consistent, so a model fitted and served on the same "
+        "preprocessing absorbs it."
+    ))
+    story.append(para(
+        "<b>Fine structure does not.</b> In the 512 frame, features 2&ndash;4 pixels across keep a third of "
+        "their detail and features 4&ndash;8 pixels about two-thirds. The regressor&rsquo;s input is built "
+        "from that frame: its crop box is a median 156 &times; 58 pixels, so the 224 &times; 224 input is an "
+        "enlargement, already stretched 1.33 times by the squash. Cut from the original photograph, the same "
+        "input keeps 1.5&ndash;2.4 times the detail at those sizes, at no cost. Whether that detail predicts "
+        "haemoglobin is a question for the regressor; this shows only what reaches it. Two further "
+        "observations: training pads images to a square and keeps their shape, while validation, testing "
+        "and the service squash them, a mismatch not yet measured; and the Mendeley training masks are "
+        "1.6% larger than the annotation in every image, a side effect of how they were reduced."
+    ))
+
+    story.append(para("8.9 Repeat photographs in the Mendeley set", "h2"))
+    story.append(para(
+        "The Mendeley images carry no subject identifier and no metadata, so every split above treated each "
+        "of the 547 as a separate subject. Every pair was therefore checked: pixel hashes for exact copies, "
+        "perceptual hashes under all flips and rotations for near copies, and keypoint matching with a "
+        "RANSAC homography for different shots of the same eye, on all 149,331 Mendeley pairs and the "
+        "55,247 pairs between the two datasets. The cut-off was set from evidence independent of the match "
+        "count: among pairs with at least 50 consistent matches, 98&ndash;100% have file numbers within 10 "
+        "of each other, against 4% by chance, and inspection confirmed the pattern."
+    ))
+    story.append(table([
+        ["Finding", "Value"],
+        ["Mendeley images in groups of repeat shots of one subject", "<b>463 of 547</b>, in 115 groups (most often 4)"],
+        ["Distinct subjects", "<b>at most 199</b>; fewer, since some repeats are missed"],
+        ["Exact copies; photographs shared with Eyes-Defy-Anemia", "none; none"],
+        ["Test images with a same-subject photograph in training, per split (Section 8.7)", "<b>83&ndash;93 of 129</b>"],
+        ["Mendeley test Dice, partner in training minus none (five of six architectures)",
+         "+0.003 to +0.010, per-split differences of both signs"],
+    ], [106 * mm, 62 * mm], wide=True))
+    story.append(Spacer(1, 4))
+    story.append(para(
+        "<b>The splits leaked, but there is little sign the leak inflated the scores.</b> Two-thirds of every "
+        "test set had a relative in training, yet within the Mendeley set those images scored at most about "
+        "0.01 Dice higher, inconsistently across splits; LinkNet scored lower. The comparison is "
+        "observational and biased toward zero by repeats the matcher missed, so it bounds the effect rather "
+        "than excluding it. The ranking of Section 8.7 is unlikely to move, since every architecture saw the "
+        "same splits and the larger ones show no sign of exploiting the leak more. What does change is "
+        "confidence: tests that treated the 129 test images as independent, above all the per-image tests of "
+        "Section 8.3, overstated their precision. Section 8.10 repeats the comparison on splits that keep "
+        "each subject, and the photographs next to it, on one side."
+    ))
+
+    story.append(para("8.10 The comparison on person-safe splits", "h2"))
+    story.append(para(
+        "Section 8.7 was repeated with splits that keep every subject on one side. Each group of repeat "
+        "shots is one unit. Because neighbouring groups are often the same person&rsquo;s other eye, the "
+        "Mendeley images are also dealt out in runs of at least 24 consecutive files, never cut through a "
+        "group, and any image within four file numbers of a test image is left out of training and "
+        "validation with its whole group. Each dataset contributes its own 20% of the test set, so every "
+        "test set holds 20 Eyes-Defy-Anemia subjects. Training keeps 339&ndash;366 images, against 390, "
+        "and no test image has a group partner, or a file within four numbers, in training. Everything "
+        "else is as in Section 8.7: the same five random states, recipe and tests, with thirty newly "
+        "trained models."
+    ))
+    if GROUPED_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(GROUPED_FIGURE)).getSize()
+        story.append(Spacer(1, 2))
+        story.append(Image(str(GROUPED_FIGURE), width=160 * mm, height=160 * mm * h_px / w_px))
+        story.append(para(
+            "Left: held-out Dice under the image-level splits of Section 8.7 (grey) and the person-safe "
+            "splits (blue); small dots are single splits, large dots and bars the mean and 95% interval. "
+            "Right: the leak estimate, the Mendeley minus Eyes-Defy-Anemia gap of Section 8.7 minus the same "
+            "gap here, with its 95% interval.", "caption"))
+        story.append(Spacer(1, 5))
+    grouped = table([
+        ["Architecture", "Dice, image-level (8.7)", "Dice, person-safe", "Mean rank", "Leak estimate [95% CI]"],
+        ["UNet++", "0.8462 &plusmn; 0.0072", "<b>0.8333</b> &plusmn; 0.0169", "<b>1.4</b>",
+         "+0.014 [&minus;0.018, +0.046]"],
+        ["Attention U-Net", "0.8464 &plusmn; 0.0069", "0.8311 &plusmn; 0.0123", "2.2",
+         "+0.022 [&minus;0.020, +0.064]"],
+        ["U-Net", "0.8445 &plusmn; 0.0076", "0.8265 &plusmn; 0.0179", "2.8", "+0.021 [&minus;0.023, +0.065]"],
+        ["FPN", "0.8353 &plusmn; 0.0055", "0.8206 &plusmn; 0.0181", "4.0", "+0.024 [&minus;0.025, +0.073]"],
+        ["LinkNet", "0.8187 &plusmn; 0.0108", "0.8099 &plusmn; 0.0206", "4.6", "+0.013 [&minus;0.040, +0.066]"],
+        ["PSPNet", "0.7654 &plusmn; 0.0094", "0.7640 &plusmn; 0.0287", "6.0", "+0.025 [&minus;0.035, +0.086]"],
+    ], [34 * mm, 34 * mm, 34 * mm, 18 * mm, 48 * mm])
+    story.append(grouped)
+    story.append(Spacer(1, 4))
+    claim = table([
+        ["The published claim", "Image-level: difference, p (Holm)", "Person-safe: difference, p (Holm)",
+         "Splits LinkNet ahead"],
+        ["LinkNet &minus; U-Net", "&minus;0.0258, <b>0.030</b>", "&minus;0.0166, 0.43", "1 / 5"],
+        ["LinkNet &minus; UNet++", "&minus;0.0275, <b>0.047</b>", "&minus;0.0234, 0.18", "0 / 5"],
+        ["LinkNet &minus; FPN", "&minus;0.0166, <b>0.047</b>", "&minus;0.0107, 0.43", "1 / 5"],
+        ["LinkNet &minus; PSPNet", "+0.0533, <b>0.019</b>", "+0.0458, 0.072", "5 / 5"],
+    ], [40 * mm, 46 * mm, 46 * mm, 36 * mm])
+    story.append(claim)
+    story.append(Spacer(1, 3))
+    story.append(para(
+        "Dice is the mean &plusmn; SD across five splits; mean rank and splits ahead are on the person-safe "
+        "splits. Differences use the corrected resampled t-test, Holm-corrected within the family.",
+        "caption"))
+    story.append(para(
+        "<b>The order holds; the margins soften.</b> The U-Net family is still on top and tied within "
+        "itself, nothing beats Attention U-Net (UNet++ is ahead by 0.002, Holm p 0.90), and PSPNet is last "
+        "in every split. LinkNet is never first, here or in any split of Section 8.7, so the published claim "
+        "remains unreproduced. But its deficits shrink, to &minus;0.017 against the U-Net, and none survives "
+        "the corrected test. LinkNet ranks fourth in two splits, and in one the U-Net falls to fifth. The "
+        "statement that LinkNet is significantly worse than the U-Net family rested on the image-level "
+        "splits."
+    ))
+    story.append(para(
+        "Two things changed. The gaps narrowed, although the change itself is not significant (p "
+        "0.27&ndash;0.59). And the split-to-split spread doubled (Dice SD 0.012&ndash;0.029, against "
+        "0.006&ndash;0.011), because a test set made of a few capture sessions is a harder and more "
+        "variable draw than a random fifth of all photographs. More splits would barely help. The term "
+        "n<sub>test</sub>/n<sub>train</sub> in the corrected variance (0.36 here) does not shrink with their "
+        "number, so at the observed gap ten splits would give p &asymp; 0.14 and twenty p &asymp; 0.10. "
+        "Resolving differences of 0.01&ndash;0.02 needs a lower-variance design, such as blocked k-fold "
+        "cross-validation, or more data."
+    ))
+    story.append(para(
+        "<b>The leak probably raised scores slightly; its size is not established.</b> Eyes-Defy-Anemia is "
+        "the control: its subjects are named, so it had nothing to leak under either design. Every "
+        "architecture lost 0.006&ndash;0.021 Dice on the Mendeley images while the control did not fall, "
+        "giving a leak estimate of +0.013 to +0.025 Dice. But every interval spans zero. The control is "
+        "only 20 images per split, the six architectures share the same splits, and the smaller training "
+        "set biases the estimate upward. Together with the observational estimate of Section 8.9 "
+        "(+0.003 to +0.010), this points to an inflation of order 0.01&ndash;0.02 Dice that left the order "
+        "in place. Consistent with that, models reached their best validation score earlier (mean epoch 27, "
+        "against 32), although a smaller training set should, if anything, delay it. For the deployed "
+        "architecture, person-safe Dice is 0.831 &plusmn; 0.012, the figure that applies to people the "
+        "model has not seen."
+    ))
+
+    story.append(para("8.11 A precision-weighted score and the mask threshold", "h2"))
+    story.append(para(
+        "Dice counts a wrongly included pixel and a wrongly missed one equally. For this task they are not "
+        "equal: a pixel of eyelid skin, sclera, lash or glare inside the mask pulls the measured colour "
+        "toward the wrong tissue, while a missed pixel only removes some conjunctiva and the rest still "
+        "reads about the same colour. The standard way to weight the two is the F-beta score, of which Dice "
+        "is the case beta = 1. With beta = 0.5, F0.5 = 1.25&thinsp;TP / (1.25&thinsp;TP + 0.25&thinsp;FN + "
+        "FP), and precision counts twice as much as recall. The weight was fixed at this conventional value "
+        "before any model was scored. The thirty person-safe models of Section 8.10 were rescored without "
+        "retraining, at mask thresholds from 0.05 to 0.999. Each model&rsquo;s threshold was chosen as the "
+        "one with the highest F0.5 on its own validation images, and the test images were then scored at "
+        "it. As a control, the same choice was made for Dice."
+    ))
+    if PRECISION_FIGURE.exists():
+        from reportlab.lib.utils import ImageReader
+        w_px, h_px = ImageReader(str(PRECISION_FIGURE)).getSize()
+        story.append(Spacer(1, 2))
+        story.append(Image(str(PRECISION_FIGURE), width=160 * mm, height=160 * mm * h_px / w_px))
+        story.append(para(
+            "Left: test scores against the mask threshold, averaged over the 29 models whose probabilities "
+            "reach 1; the axis is stretched near 0 and 1. Precision rises and recall falls; Dice is flat "
+            "around 0.5, while F0.5 peaks near 0.97. Right: each architecture&rsquo;s test F0.5 at 0.5 "
+            "(grey) and at its validation-chosen threshold (blue); small dots are single splits, large dots "
+            "and bars the mean and 95% interval.", "caption"))
+        story.append(Spacer(1, 5))
+    story.append(table([
+        ["Architecture", "F0.5 at 0.5", "Threshold (median)", "F0.5 at chosen", "Dice at chosen",
+         "Precision / recall at chosen"],
+        ["UNet++", "0.823", "0.97", "<b>0.853</b>", "0.810", "0.894 / 0.758"],
+        ["Attention U-Net", "<b>0.825</b>", "0.98", "0.846", "0.809", "0.883 / 0.767"],
+        ["U-Net", "0.824", "0.96", "0.846", "0.802", "0.884 / 0.751"],
+        ["FPN", "0.809", "0.96", "0.841", "0.788", "0.893 / 0.725"],
+        ["LinkNet", "0.782", "0.97", "0.832", "0.778", "0.883 / 0.714"],
+        ["PSPNet", "0.740", "0.95", "0.781", "0.746", "0.821 / 0.712"],
+    ], [32 * mm, 22 * mm, 26 * mm, 26 * mm, 24 * mm, 38 * mm]))
+    story.append(Spacer(1, 3))
+    story.append(para(
+        "Test scores, mean over the five person-safe splits. At the default threshold of 0.5, precision "
+        "is 0.73&ndash;0.83 and recall 0.83&ndash;0.88 for every architecture.", "caption"))
+    story.append(para(
+        "<b>At the default threshold the order is unchanged.</b> F0.5 ranks the architectures as Dice "
+        "does. LinkNet&rsquo;s gap to Attention U-Net doubles, to &minus;0.043, because it over-segments "
+        "most, but it does not survive the corrected test (Holm p 0.30). Only PSPNet resolves as worse "
+        "than Attention U-Net (Holm p 0.025)."
+    ))
+    story.append(para(
+        "<b>For F0.5 the best threshold is near 0.97, not 0.5.</b> The validation-chosen threshold was "
+        "0.85&ndash;0.995 in 29 of the 30 models, and it raised test F0.5 in every one of them, by "
+        "+0.021 to +0.050 on average per architecture. No single architecture&rsquo;s gain survives the "
+        "corrected test over five splits, the same power limit as in Section 8.10, but the direction is "
+        "unanimous. The price is recall: it falls to 0.71&ndash;0.77, Dice falls by 0.018&ndash;0.033, "
+        "masks cover about five-sixths of the true region, and 6 of 3,750 test masks become empty. The "
+        "control shows the trade is specific to the weighting. Chosen for Dice, the threshold wanders "
+        "between 0.15 and 0.9 and gains nothing (&minus;0.001 to +0.002), so 0.5 is already right for "
+        "Dice. The optimum sits so close to 1 because the training loss includes soft Dice, which pushes "
+        "probabilities toward 0 and 1."
+    ))
+    story.append(para(
+        "<b>With each model at its own threshold, the middle of the table closes up.</b> LinkNet&rsquo;s "
+        "deficit to Attention U-Net shrinks from &minus;0.043 to &minus;0.014 F0.5 and FPN&rsquo;s from "
+        "&minus;0.016 to &minus;0.006, so much of their shortfall at 0.5 was over-segmentation rather than "
+        "an inability to find the conjunctiva. Nothing beats Attention U-Net (UNet++ is ahead by 0.006, "
+        "Holm p 1.0), LinkNet is still never first, and PSPNet is last in every split. One trained model, "
+        "the seed-0 Attention U-Net, never outputs a probability above 0.53, so its threshold could not "
+        "move, while the other 29 reach 1.0. A threshold therefore has to be chosen for each trained model "
+        "on its own held-out images. The deployed threshold remains 0.5, since a stricter mask also changes "
+        "the crop the regressor reads."
+    ))
+
     # ------------------------------------------------------------- status
+    story.append(section_break(22 * mm))
     story.append(para("9. Verification status", "h1"))
     story.append(para("9.1 Verified", "h2"))
     story.extend(bullets([
-        "All pipeline stages execute end to end; 50 of 50 automated tests pass, including the HTTP "
+        "All pipeline stages execute end to end; 65 of 65 automated tests pass, including the HTTP "
         "contract the mobile application depends on.",
         "The service answers on the path the mobile application calls, returns every field the "
         "application reads, and returns a retake prompt for captures that fail quality control.",
@@ -1538,8 +2058,15 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "sexes parsed, including 19 haemoglobin values stored as text with a decimal comma.",
         "The colour probe beats its baseline on unseen patients: held-out MAE 1.505 against 1.965 on "
         "190 patients (Section 7.5), measured before the correction in Section 8.5.",
-        "Attention U-Net segments better than the U-Net on 129 held-out subjects: Dice 0.8476 against "
-        "0.8372, paired difference +0.0105 (95% CI +0.003 to +0.020, p = 0.007) (Section 8.3).",
+        "Over five random splits, U-Net, UNet++ and Attention U-Net segment equally well (mean Dice "
+        "0.8445&ndash;0.8464, all p &gt; 0.5), and FPN, LinkNet and PSPNet rank below all three in every "
+        "split (Section 8.7). On splits that keep each subject on one side the order holds on average and "
+        "nothing beats Attention U-Net (Dice 0.831) (Section 8.10).",
+        "Scored with F0.5, which weights precision twice as much as recall, the order is unchanged and "
+        "nothing beats Attention U-Net; a threshold chosen on validation images raised test F0.5 in every "
+        "model whose threshold moved (Section 8.11).",
+        "Resizing limits neither the mask (ideal Dice 0.992 on the 320 grid against full resolution) nor "
+        "the colour (2&ndash;4% of the between-person spread at the service&rsquo;s 512 frame) (Section 8.8).",
         "Each extractor is served the kind of image it was trained on, with automated tests covering "
         "every combination (Section 8.5).",
         "Quality control enforces every statistic it measures, including illuminant neutrality and "
@@ -1565,8 +2092,29 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "Tissue texture and vessel-like features add nothing once site is controlled for: an apparent "
         "R² gain of 0.024 pooled falls to −0.021 correlation (p 0.76) after controls, and is not "
         "adopted (Section 7.9).",
+        "The sclera is not a neutral reference: with the light removed its yellowness rises by about 0.6 "
+        "b* units per decade at both sites, and its redness follows haemoglobin (&rho; +0.44 to +0.51). "
+        "Dividing by it would make older Indian patients read about 0.4 g/dL per decade lower "
+        "(Section 7.10).",
+        "Plain brightest-pixel white balance applies no correction to 96% of the external photographs, "
+        "because every channel clips somewhere (Section 7.10).",
+        "The Italian photographs are two capture batches that differ in haemoglobin, age and light, so "
+        "pooled Italian comparisons partly measure the light (Section 7.10).",
         "Widening the extractor&rsquo;s mask lowers accuracy monotonically across eight variants, so the "
         "signal is not being clipped by too tight a mask (Section 7.9).",
+        "LinkNet, FPN and PSPNet over-segment (high recall, low precision) and rank below the U-Net "
+        "family on average; LinkNet is never best in ten splits, so a published claim that it beats the "
+        "others is not reproduced (Sections 8.3, 8.7, 8.10). Much of the over-segmentation is where the "
+        "0.5 threshold falls: at a threshold chosen for F0.5, LinkNet&rsquo;s gap to Attention U-Net "
+        "shrinks from &minus;0.043 to &minus;0.014 (Section 8.11).",
+        "Attention U-Net&rsquo;s advantage over the U-Net on one split (+0.0105, p = 0.007) does not hold "
+        "across five (+0.0019, p = 0.66) (Section 8.7).",
+        "The regressor&rsquo;s input is cut from the 512 frame and enlarged, so it loses fine detail and is "
+        "stretched 1.33 times; cut from the original photograph it would keep 1.5&ndash;2.4 times the detail "
+        "(Section 8.8).",
+        "The Mendeley images are repeat shots of at most 199 subjects, treated as 547; in every split "
+        "83&ndash;93 of 129 test images had a relative in training (Section 8.9). On splits that keep each "
+        "subject on one side, Dice is 0.001&ndash;0.018 lower and spreads twice as widely (Section 8.10).",
         "Gray-world white balance lowers segmentation accuracy: matched raw beats matched gray-world by "
         "0.0069 Dice, and serving a raw-trained segmenter balanced images cost 0.0116 (Section 8.5).",
         "On the 26-subject captures the three architectures agree at only IoU 0.648, far below what their "
@@ -1587,10 +2135,25 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         "example for testing, not an agreed target.",
         "Whether a model trained end to end reads the conjunctiva or the photograph around it; the "
         "site-held-out and masked-input evaluations in Section 7.9 are not yet run on a network.",
+        "How much of the advantage of no correction within Italy, and across sites, comes from the two "
+        "Italian capture batches; India alone shows a small, non-significant difference (Section 7.10).",
         "Whether white balance changes haemoglobin error from the regressor. The comparison is specified "
         "and the two extractors it needs are trained (Section 8.6).",
-        "Whether the one-point Dice margin between architectures exceeds run-to-run variance; each was "
-        "trained with a single seed.",
+        "Whether the default correction, the brightest unclipped pixels above the lower lid, lowers "
+        "haemoglobin error. It was chosen because it estimated the light most closely (Section 7.10) "
+        "and has not been tested on a regressor.",
+        "Whether the segmentation cost of white balance (+0.0069 Dice) holds across splits "
+        "(Sections 8.5, 8.7). Not planned, since correction matters for the crop&rsquo;s colour rather than "
+        "the mask.",
+        "What the difference in image geometry between training (shape kept) and serving (squashed) costs "
+        "the segmenter (Section 8.8).",
+        "How much the repeat shots inflated the image-level scores: estimated at +0.013 to +0.025 Dice, "
+        "with every interval spanning zero (Section 8.10).",
+        "Whether LinkNet is worse than the U-Net family, rather than merely never better: its deficit is "
+        "significant only on the image-level splits (Section 8.10).",
+        "Whether the regressor is better served by stricter masks (a threshold near 0.97, about five-sixths "
+        "of the true area) than by those at 0.5. The precision weight of F0.5 is a convention, not derived "
+        "from what a wrong pixel costs in colour (Section 8.11).",
         "How wrong the extractors are on captures unlike their training data; the 26-subject captures have "
         "no annotations (Section 8.4).",
         "No clinical validation of any kind has been performed.",
@@ -1607,9 +2170,11 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     story.append(table([
         ["Source", "Images", "Hb", "Masks", "Role"],
         ["Eyes-Defy-Anemia", "217", "Yes", "101 usable",
-         "Trains and tests the extractor (101 masks); 217 patients with haemoglobin for the colour probe"],
+         "Trains and tests the extractor (101 masks); 217 patients with haemoglobin for the colour probe; "
+         "its Italian photographs are two capture batches (Section 7.10)"],
         ["Eye Conjunctiva Segmentation Dataset", "547", "No", "Yes, &times;2",
-         "Smartphone captures with two annotators; trains and tests the extractor"],
+         "Smartphone captures with two annotators, repeat shots of at most 199 subjects (Section 8.9); "
+         "trains and tests the extractor"],
         ["CP-AnemiC", "710", "Yes", "No", "Not yet downloaded; regression only"],
         ["26-subject set", "52", "Yes", "No",
          "26 children, both eyes, full blood count; source to be cited. Hand-cropped exports; no colour "
@@ -1648,6 +2213,8 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
     ], [62 * mm, 106 * mm]))
 
     # ------------------------------------------------------------- next
+    # The table and the closing assessment read as one block; never split them.
+    story.append(section_break(110 * mm))
     story.append(para("12. Next steps", "h1"))
     story.append(table([
         ["#", "Step", "Outcome"],
@@ -1657,34 +2224,46 @@ def build(out_path: Path, figure: Path | None, real_figure: Path | None,
         ["2", "Annotate at least 15 of the 26-subject captures",
          "Turns disagreement between architectures into measured error on captures unlike the training "
          "data (Section 8.4)"],
-        ["3", "Train each architecture with a second seed",
-         "Whether the one-point Dice margin, and the U-Net&rsquo;s robustness loss, exceed run-to-run "
-         "variance"],
+        ["3", "Extend Section 7.7 to two further colour corrections, the brightest unclipped pixels "
+         "above the lower lid as white (the pipeline&rsquo;s default, not yet tested on haemoglobin) and "
+         "the sclera as white, each computed on the full photograph before "
+         "the crop is cut, using one extractor so that the mask stays fixed; add the device plastic as a "
+         "reference arm, and model the Italian batch",
+         "Which corrections to take to step 1. The extractor gains nothing from correction (Section 8.5); "
+         "the sclera yellows with age and its redness follows haemoglobin (Section 7.10)"],
         ["4", "Decide whether to replace the deployed U-Net with Attention U-Net trained on raw pixels",
-         "Better masks; invalidates cached crops and downstream features"],
-        ["5", "Standardise capture: fixed gentle eversion, consistent framing, original camera files, and "
+         "A practical choice, since the two tie (Section 8.7); invalidates cached crops"],
+        ["5", "Cut the regressor&rsquo;s input from the original photograph, and prepare images the same "
+         "way in training and serving", "1.5&ndash;2.4 times the fine detail and no stretch, at no cost "
+         "(Section 8.8)"],
+        ["6", "Use person-safe splits for every later comparison, and blocked k-fold cross-validation where "
+         "a gap of 0.01&ndash;0.02 must be resolved (Section 8.10)",
+         "Scores that apply to new subjects, with more power than repeated random splits"],
+        ["7", "Choose the shipped extractor&rsquo;s threshold for F0.5 on its own held-out images, and train "
+         "the regressor on crops made at that threshold",
+         "Masks that favour precision, as the colour reading needs; thresholds do not carry over between "
+         "trained models (Section 8.11)"],
+        ["8", "Standardise capture: fixed gentle eversion, consistent framing, original camera files, and "
          "time since blood draw recorded", "Removes the confound found in Section 7.4"],
-        ["6", "Discuss a printed colour reference in the capture protocol",
+        ["9", "Discuss a printed colour reference in the capture protocol",
          "Camera-independent colour, if adopted"],
-        ["7", "Record the source and licence of the 26-subject dataset",
+        ["10", "Record the source and licence of the 26-subject dataset",
          "Required before any figure derived from it is published"],
-        ["8", "Download CP-AnemiC and verify its loader", "Up to 710 further labelled images"],
-    ], [8 * mm, 96 * mm, 64 * mm]))
+        ["11", "Download CP-AnemiC and verify its loader", "Up to 710 further labelled images"],
+    ], [8 * mm, 88 * mm, 72 * mm]))
 
-    story.append(Spacer(1, 8))
     story.append(callout(
-        "<b>Method record.</b> Every approach tried, including those rejected, is recorded with its "
-        "reason in <font face='Courier'>RESEARCH_LOG.md</font> and <font face='Courier'>WORKLOG.md</font>, "
-        "with each experiment reproducible from <font face='Courier'>experiments/</font>."
-        "<br/><br/><b>Assessment.</b> Extraction is in good shape, and its choice now rests on the right "
-        "evidence: evaluated as segmentation on held-out subjects, Attention U-Net improves on the U-Net, "
-        "and correcting a train&ndash;serve white-balance mismatch improved it by more again. The colour "
-        "probe established that conjunctival colour tracks laboratory haemoglobin at scale. The open "
-        "problems are portability and capture: colour measured by one camera does not transfer to another, "
-        "the extractors disagree on captures unlike their training data, and a third public dataset shows "
-        "no colour signal, in part because eyelid eversion changes conjunctival colour. None is solved by "
-        "more data from the same cameras; all need captures taken under a fixed protocol on the camera that "
-        "will be used, which is what the hospital data provides.", wide=True))
+        "<b>Method record.</b> Every approach tried, rejected ones included, is in "
+        "<font face='Courier'>RESEARCH_LOG.md</font> and <font face='Courier'>WORKLOG.md</font>; each "
+        "experiment is reproducible from <font face='Courier'>experiments/</font>."
+        "<br/><b>Assessment.</b> Extraction is in good shape, and its choice now rests on the right "
+        "evidence: over five splits, and again on splits that keep each subject on one side, the U-Net "
+        "family leads the alternatives and is tied within itself, and fixing a train&ndash;serve white-balance mismatch mattered more than any choice among its "
+        "members. The colour probe showed that conjunctival colour tracks laboratory haemoglobin at scale. "
+        "The open problems are portability and capture: colour does not transfer between cameras, the "
+        "extractors disagree on captures unlike their training data, and a third public dataset shows no "
+        "colour signal, partly because eyelid eversion changes conjunctival colour. All three need captures "
+        "taken under a fixed protocol on the camera that will be used, which the hospital data provides.", wide=True))
 
     doc.build(columnize(story), onFirstPage=decorate, onLaterPages=decorate)
 

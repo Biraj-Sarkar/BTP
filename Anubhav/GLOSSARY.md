@@ -91,5 +91,6 @@ a definition at first use, but this is the reference.
 | **Palpebral conjunctiva** | The moist inner surface of the lower eyelid — the tissue being photographed. |
 | **Sclera** | The white of the eye. A confounder: pale and colourless, so brightness-based methods find it instead. |
 | **Gray-world** | The white-balance assumption that a scene averages to grey. |
+| **White-patch** | The white-balance assumption that the brightest surface is white. The pipeline's default since 17 Nov 2026, using the brightest 1% of unclipped pixels above the lower lid. |
 | **Baseline** | Predicting the training mean (regression) or the majority class (classification). Every result is reported against it. |
 | **Out-of-fold** | A prediction made on data the model did not train on. |

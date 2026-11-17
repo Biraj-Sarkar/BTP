@@ -30,9 +30,11 @@ would alter it.
 crop's pixels are white-balanced exactly when the extractor was trained on
 white-balanced images. Each extractor then defines one complete, consistent
 pipeline, and "with versus without white balance" is a single switch rather
-than two settings that can be combined by mistake. `--crop-colour raw` or `gw`
-fixes the crop colour for every extractor instead, which separates the effect
-of white balance on the mask from its effect on the colour the regressor reads.
+than two settings that can be combined by mistake. `--crop-colour raw`, `gw` or
+`wp` fixes the crop colour for every extractor instead, which separates the
+effect of white balance on the mask from its effect on the colour the regressor
+reads. `wp` is white-patch, the pipeline's default colour correction since
+17 Nov 2026 (the brightest unclipped pixels above the lower lid taken as white).
 
 Comparing fairly
 ----------------
@@ -45,6 +47,7 @@ training and evaluation to those rows.
 Abbreviations
 -------------
 gw     gray-world white balance
+wp     white-patch white balance
 QC     quality control
 """
 
@@ -69,6 +72,7 @@ from anemia.preprocess import prepare  # noqa: E402
 from anemia.segment_learned import LearnedSegmenter  # noqa: E402
 
 ALIASES = {"raw": "attention_raw_full.pt", "gw": "attention_gw_full.pt"}
+CROP_COLOUR_NAMES = {"none": "raw pixels", "gray_world": "gray-world", "white_patch": "white-patch"}
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 
 
@@ -104,10 +108,10 @@ def main() -> int:
                         help="'raw', 'gw', or paths to bundles (default: raw gw)")
     parser.add_argument("--bundle-dir", type=Path, default=ROOT / "runs/segmenter",
                         help="where the 'raw' and 'gw' aliases are looked up")
-    parser.add_argument("--crop-colour", choices=["match", "raw", "gw"], default="match",
+    parser.add_argument("--crop-colour", choices=["match", "raw", "gw", "wp"], default="match",
                         help="match: crop colour follows each extractor's training condition. "
-                             "raw/gw: fixed for every extractor, to separate the mask effect "
-                             "from the colour effect")
+                             "raw/gw/wp: fixed for every extractor, to separate the mask effect "
+                             "from the colour effect (wp = white-patch)")
     parser.add_argument("--limit", type=int, default=None, help="first N photographs only")
     args = parser.parse_args()
 
@@ -127,12 +131,12 @@ def main() -> int:
             return 1
         segmenter = LearnedSegmenter(path)
         if args.crop_colour == "match":
-            crop_gw = segmenter.wants_gray_world
+            colour = "gray_world" if segmenter.wants_gray_world else "none"
         else:
-            crop_gw = args.crop_colour == "gw"
+            colour = {"raw": "none", "gw": "gray_world", "wp": "white_patch"}[args.crop_colour]
         extractors.append({
             "name": name, "path": path, "segmenter": segmenter,
-            "preprocess": replace(PreprocessConfig(), gray_world=crop_gw),
+            "preprocess": replace(PreprocessConfig(), white_balance=colour),
         })
     names = [e["name"] for e in extractors]
     if len(set(names)) != len(names):
@@ -149,7 +153,7 @@ def main() -> int:
             "cache_key": seg.cache_key,
             "arch": seg.config.arch,
             "segmenter_trained_on": "gray-world" if seg.wants_gray_world else "raw pixels",
-            "crop_colour": "gray-world" if e["preprocess"].gray_world else "raw pixels",
+            "crop_colour": CROP_COLOUR_NAMES[e["preprocess"].white_balance],
             "trained_at": seg.provenance.get("trained_at"),
             "train_images": seg.provenance.get("train_images"),
         }

@@ -1,0 +1,449 @@
+{
+  "images": {
+    "mendeley": 547,
+    "eyes_defy": 101
+  },
+  "pairs_matched": 204578,
+  "exact_duplicate_groups": [],
+  "phash_distance_hist": {
+    "<= 0": 15,
+    "<= 4": 174,
+    "<= 8": 304,
+    "<= 12": 452,
+    "<= 16": 1227
+  },
+  "ransac_inlier_hist": {
+    "0-1": 167763,
+    "1-10": 33822,
+    "10-15": 1758,
+    "15-20": 395,
+    "20-30": 179,
+    "30-50": 92,
+    "50-100": 108,
+    "100-200": 114,
+    "200-1000000": 347
+  },
+  "top_pairs": [
+    {
+      "a": "mendeley/171",
+      "b": "mendeley/172",
+      "ratio_matches": 1010,
+      "inliers": 1007,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/357",
+      "b": "mendeley/358",
+      "ratio_matches": 983,
+      "inliers": 977,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/151",
+      "b": "mendeley/152",
+      "ratio_matches": 983,
+      "inliers": 974,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/323",
+      "b": "mendeley/324",
+      "ratio_matches": 929,
+      "inliers": 921,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/152",
+      "b": "mendeley/153",
+      "ratio_matches": 901,
+      "inliers": 896,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/356",
+      "b": "mendeley/357",
+      "ratio_matches": 904,
+      "inliers": 895,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/143",
+      "b": "mendeley/144",
+      "ratio_matches": 894,
+      "inliers": 888,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/324",
+      "b": "mendeley/325",
+      "ratio_matches": 892,
+      "inliers": 884,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/210",
+      "b": "mendeley/211",
+      "ratio_matches": 868,
+      "inliers": 861,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/151",
+      "b": "mendeley/153",
+      "ratio_matches": 865,
+      "inliers": 857,
+      "phash_distance": 8
+    },
+    {
+      "a": "mendeley/356",
+      "b": "mendeley/358",
+      "ratio_matches": 872,
+      "inliers": 856,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/164",
+      "b": "mendeley/165",
+      "ratio_matches": 865,
+      "inliers": 855,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/327",
+      "b": "mendeley/328",
+      "ratio_matches": 846,
+      "inliers": 841,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/172",
+      "b": "mendeley/173",
+      "ratio_matches": 840,
+      "inliers": 822,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/305",
+      "b": "mendeley/306",
+      "ratio_matches": 829,
+      "inliers": 818,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/171",
+      "b": "mendeley/173",
+      "ratio_matches": 825,
+      "inliers": 816,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/396",
+      "b": "mendeley/397",
+      "ratio_matches": 819,
+      "inliers": 813,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/306",
+      "b": "mendeley/307",
+      "ratio_matches": 806,
+      "inliers": 798,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/328",
+      "b": "mendeley/329",
+      "ratio_matches": 798,
+      "inliers": 794,
+      "phash_distance": 0
+    },
+    {
+      "a": "mendeley/322",
+      "b": "mendeley/323",
+      "ratio_matches": 800,
+      "inliers": 793,
+      "phash_distance": 8
+    },
+    {
+      "a": "mendeley/310",
+      "b": "mendeley/400",
+      "ratio_matches": 794,
+      "inliers": 790,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/317",
+      "b": "mendeley/319",
+      "ratio_matches": 793,
+      "inliers": 781,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/319",
+      "b": "mendeley/320",
+      "ratio_matches": 782,
+      "inliers": 773,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/165",
+      "b": "mendeley/166",
+      "ratio_matches": 800,
+      "inliers": 772,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/304",
+      "b": "mendeley/305",
+      "ratio_matches": 783,
+      "inliers": 768,
+      "phash_distance": 10
+    },
+    {
+      "a": "mendeley/359",
+      "b": "mendeley/360",
+      "ratio_matches": 774,
+      "inliers": 767,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/320",
+      "b": "mendeley/321",
+      "ratio_matches": 768,
+      "inliers": 760,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/163",
+      "b": "mendeley/164",
+      "ratio_matches": 771,
+      "inliers": 757,
+      "phash_distance": 8
+    },
+    {
+      "a": "mendeley/313",
+      "b": "mendeley/314",
+      "ratio_matches": 762,
+      "inliers": 756,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/302",
+      "b": "mendeley/303",
+      "ratio_matches": 763,
+      "inliers": 747,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/317",
+      "b": "mendeley/318",
+      "ratio_matches": 741,
+      "inliers": 736,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/312",
+      "b": "mendeley/313",
+      "ratio_matches": 740,
+      "inliers": 733,
+      "phash_distance": 0
+    },
+    {
+      "a": "mendeley/308",
+      "b": "mendeley/309",
+      "ratio_matches": 737,
+      "inliers": 732,
+      "phash_distance": 0
+    },
+    {
+      "a": "mendeley/107",
+      "b": "mendeley/108",
+      "ratio_matches": 735,
+      "inliers": 730,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/309",
+      "b": "mendeley/310",
+      "ratio_matches": 733,
+      "inliers": 730,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/379",
+      "b": "mendeley/380",
+      "ratio_matches": 732,
+      "inliers": 727,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/317",
+      "b": "mendeley/320",
+      "ratio_matches": 736,
+      "inliers": 711,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/211",
+      "b": "mendeley/212",
+      "ratio_matches": 724,
+      "inliers": 709,
+      "phash_distance": 8
+    },
+    {
+      "a": "mendeley/212",
+      "b": "mendeley/213",
+      "ratio_matches": 727,
+      "inliers": 707,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/172",
+      "b": "mendeley/174",
+      "ratio_matches": 722,
+      "inliers": 706,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/318",
+      "b": "mendeley/319",
+      "ratio_matches": 719,
+      "inliers": 705,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/322",
+      "b": "mendeley/324",
+      "ratio_matches": 716,
+      "inliers": 705,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/336",
+      "b": "mendeley/337",
+      "ratio_matches": 747,
+      "inliers": 704,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/211",
+      "b": "mendeley/213",
+      "ratio_matches": 729,
+      "inliers": 702,
+      "phash_distance": 10
+    },
+    {
+      "a": "mendeley/305",
+      "b": "mendeley/307",
+      "ratio_matches": 709,
+      "inliers": 696,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/323",
+      "b": "mendeley/325",
+      "ratio_matches": 716,
+      "inliers": 696,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/388",
+      "b": "mendeley/389",
+      "ratio_matches": 704,
+      "inliers": 694,
+      "phash_distance": 0
+    },
+    {
+      "a": "mendeley/150",
+      "b": "mendeley/151",
+      "ratio_matches": 704,
+      "inliers": 689,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/163",
+      "b": "mendeley/165",
+      "ratio_matches": 716,
+      "inliers": 687,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/398",
+      "b": "mendeley/399",
+      "ratio_matches": 696,
+      "inliers": 686,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/301",
+      "b": "mendeley/302",
+      "ratio_matches": 685,
+      "inliers": 682,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/177",
+      "b": "mendeley/178",
+      "ratio_matches": 703,
+      "inliers": 681,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/141",
+      "b": "mendeley/142",
+      "ratio_matches": 697,
+      "inliers": 680,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/175",
+      "b": "mendeley/176",
+      "ratio_matches": 688,
+      "inliers": 677,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/147",
+      "b": "mendeley/148",
+      "ratio_matches": 678,
+      "inliers": 675,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/378",
+      "b": "mendeley/379",
+      "ratio_matches": 684,
+      "inliers": 674,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/319",
+      "b": "mendeley/321",
+      "ratio_matches": 693,
+      "inliers": 671,
+      "phash_distance": 2
+    },
+    {
+      "a": "mendeley/176",
+      "b": "mendeley/177",
+      "ratio_matches": 689,
+      "inliers": 668,
+      "phash_distance": 6
+    },
+    {
+      "a": "mendeley/358",
+      "b": "mendeley/360",
+      "ratio_matches": 676,
+      "inliers": 667,
+      "phash_distance": 4
+    },
+    {
+      "a": "mendeley/146",
+      "b": "mendeley/148",
+      "ratio_matches": 681,
+      "inliers": 666,
+      "phash_distance": 4
+    }
+  ],
+  "keypoints_median": 1354.5
+}

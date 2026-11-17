@@ -86,3 +86,13 @@ deployed pipeline has not been changed.** Before changing it:
   direction throughout.
 - The earlier gray-world recommendation (experiment 03) stands as an accurate
   record of the 26-patient evidence, and is superseded by this measurement.
+
+> **Later finding (experiment 26):** the Italian set is two capture batches.
+> Patients 1–31 (older, mean Hb 11.5) were photographed on other days, under a
+> less red light, than patients 32–123 (mean Hb 14.6). Pooled over both, part of
+> the colour–haemoglobin link is the light, and any correction that tracks the
+> light removes it, so the within-Italy and cross-site tests here are tilted
+> toward "no correction" by an amount not yet measured. India is one batch, and
+> its difference was small and not significant. Gray-world still removes about
+> three times as much of the haemoglobin slope as a fixed white reference does
+> in India, so the direction against it stands for its own reason.

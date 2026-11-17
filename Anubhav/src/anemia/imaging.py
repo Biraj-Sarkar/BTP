@@ -49,6 +49,93 @@ def gray_world_white_balance(image_rgb: np.ndarray) -> np.ndarray:
     return np.clip(image * scale.reshape(1, 1, 3), 0, 255).astype(np.uint8)
 
 
+def below_lower_lid(mask: np.ndarray, margin: int = 10) -> np.ndarray:
+    """Pixels more than `margin` rows below the conjunctiva's lower edge.
+
+    The edge is the lowest mask row in each column, interpolated across columns
+    the mask does not reach. Below it lie the cheek and, on the clinical capture
+    device, its white plastic.
+    """
+
+    conj = mask > 0
+    height, width = conj.shape[:2]
+    cols = np.flatnonzero(conj.any(axis=0))
+    if cols.size == 0:
+        return np.zeros((height, width), dtype=bool)
+    lowest = height - 1 - np.argmax(conj[::-1][:, cols], axis=0)
+    edge = np.interp(np.arange(width), cols, lowest)
+    return np.arange(height)[:, None] > edge[None, :] + margin
+
+
+def white_patch_estimate(
+    image_rgb: np.ndarray,
+    mask: np.ndarray | None = None,
+    top: float = 0.01,
+    near_clip: int = 250,
+    min_pixels: int = 50,
+) -> np.ndarray | None:
+    """Colour of the light, read from the brightest unclipped pixels.
+
+    The brightest pixels are taken to be white. Three rules keep that true in
+    practice (measured on the clinical photographs, `experiments/26_correction_prechecks/`):
+
+    - Pixels with any channel at or above `near_clip`, and their 5x5
+      neighbourhood, are left out. In 96% of the photographs all three channels
+      clip somewhere, so the plain maximum per channel reads (255, 255, 255)
+      and corrects nothing.
+    - With a conjunctiva mask, everything well below its lower edge is left
+      out. Otherwise the brightest pixels fall on the capture device's white
+      plastic in about half the photographs.
+    - The colour is the mean of the brightest `top` share (by R+G+B) of what
+      remains, not one pixel, so a single bright speck cannot set it.
+
+    Returns None when too few pixels qualify; the caller then leaves the image
+    as it is.
+    """
+
+    chosen = white_patch_pixels(image_rgb, mask, top, near_clip, min_pixels)
+    if chosen is None:
+        return None
+    return image_rgb[chosen].reshape(-1, 3).astype(np.float64).mean(axis=0)
+
+
+def white_patch_pixels(
+    image_rgb: np.ndarray,
+    mask: np.ndarray | None = None,
+    top: float = 0.01,
+    near_clip: int = 250,
+    min_pixels: int = 50,
+) -> np.ndarray | None:
+    """Which pixels `white_patch_estimate` averages, as a boolean image (or None)."""
+
+    near = (image_rgb >= near_clip).any(axis=-1).astype(np.uint8)
+    usable = cv2.dilate(near, np.ones((5, 5), np.uint8)) == 0
+    if mask is not None and np.any(mask > 0):
+        above = usable & ~below_lower_lid(mask)
+        if np.count_nonzero(above) >= min_pixels:
+            usable = above
+    if np.count_nonzero(usable) < min_pixels:
+        return None
+    total = image_rgb.astype(np.int32).sum(axis=-1)
+    threshold = np.quantile(total[usable], 1.0 - top)
+    return usable & (total >= threshold)
+
+
+def white_patch_white_balance(image_rgb: np.ndarray, mask: np.ndarray | None = None) -> np.ndarray:
+    """Make the brightest unclipped pixels neutral (see `white_patch_estimate`).
+
+    The gains keep the estimate's mean brightness, as gray-world keeps the
+    frame's, so only colour changes and tissue is not pushed into clipping.
+    """
+
+    white = white_patch_estimate(image_rgb, mask)
+    if white is None:
+        return image_rgb.copy()
+    scale = float(white.mean()) / np.maximum(white, 1e-6)
+    image = image_rgb.astype(np.float32)
+    return np.clip(image * scale.reshape(1, 1, 3).astype(np.float32), 0, 255).astype(np.uint8)
+
+
 def focus_score(image_rgb: np.ndarray) -> float:
     """Variance of the Laplacian; low values indicate motion blur or misfocus."""
 

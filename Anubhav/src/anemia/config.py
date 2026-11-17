@@ -7,11 +7,28 @@ serialised blob: `Config.to_dict()` is written next to every trained checkpoint.
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import InitVar, asdict, dataclass, field
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+WHITE_BALANCE_METHODS = ("white_patch", "gray_world", "none")
+
+
+def white_balance_from_record(record: Optional[dict], default: str = "gray_world") -> str:
+    """Read the colour correction a saved model or config was made with.
+
+    Newer files say `white_balance`. Older ones carry only the `gray_world`
+    switch (absent meant on), which maps to "gray_world" or "none".
+    """
+
+    record = record or {}
+    if record.get("white_balance"):
+        return str(record["white_balance"])
+    if "gray_world" in record:
+        return "gray_world" if record["gray_world"] else "none"
+    return default
 
 
 @dataclass(frozen=True)
@@ -19,7 +36,9 @@ class PreprocessConfig:
     """Image conditioning applied identically at train time and serve time.
 
     Any change here invalidates cached crops and existing checkpoints, so the
-    values are hashed into the cache key (see `anemia.cache`).
+    values are hashed into the cache key (see `anemia.preprocess.CropCache`).
+    Saved models record their own `white_balance`, and the predictors serve
+    each model with that, not with this default.
     """
 
     work_size: Tuple[int, int] = (512, 512)
@@ -30,7 +49,33 @@ class PreprocessConfig:
     """Final square crop fed to the regressor."""
 
     bbox_pad_ratio: float = 0.08
-    gray_world: bool = True
+
+    white_balance: str = "white_patch"
+    """Colour correction applied to the full frame before the crop is cut.
+
+    - "white_patch": the brightest unclipped pixels above the lower lid are
+      taken as white (`imaging.white_patch_white_balance`). The default since
+      17 Nov 2026: of the estimates compared, it lay closest to the capture
+      device's white plastic (median 0.8-1.5 degrees, gray-world about 5;
+      `experiments/26_correction_prechecks/`). Its effect on haemoglobin
+      error has not been tested yet.
+    - "gray_world": the frame's mean colour is taken as gray. The default
+      before 17 Nov 2026; every model saved before then uses it.
+    - "none": the camera's own colour.
+
+    White-patch needs the mask, so it is computed after segmentation. The
+    segmenter's own input is set separately (see `preprocess.segmenter_input`)."""
+
+    gray_world: InitVar[Optional[bool]] = None
+    """The older switch, still accepted when constructing: True means
+    "gray_world", False means "none". Not stored; read `white_balance`."""
+
+    def __post_init__(self, gray_world: Optional[bool]) -> None:
+        if gray_world is not None:
+            object.__setattr__(self, "white_balance", "gray_world" if gray_world else "none")
+        if self.white_balance not in WHITE_BALANCE_METHODS:
+            raise ValueError(f"white_balance must be one of {WHITE_BALANCE_METHODS}, "
+                             f"got {self.white_balance!r}")
 
 
 @dataclass(frozen=True)

@@ -25,6 +25,8 @@ from typing import Dict, List, Sequence
 import cv2
 import numpy as np
 
+from .config import white_balance_from_record
+
 # Representation names must stay stable: they are written into saved models.
 REPRESENTATIONS = ("means", "chroma", "erythema", "lab", "a_only")
 
@@ -105,7 +107,11 @@ class LinearModel:
     feature_scale: np.ndarray
     alpha: float = 1.0
     work_size: Sequence[int] = (512, 512)
-    gray_world: bool = True
+    white_balance: str = "white_patch"
+    """Colour correction the features were measured under
+    (`PreprocessConfig.white_balance`). Files saved before 17 Nov 2026 carry
+    the older `gray_world` switch instead and load as "gray_world"."""
+
     extractor: str = "refined"
     """Which conjunctiva extractor produced the features this model was fitted
     on. Features measured inside a different mask are not comparable, so serving
@@ -170,7 +176,11 @@ class LinearModel:
             "feature_scale": self.feature_scale.tolist(),
             "alpha": self.alpha,
             "work_size": list(self.work_size),
-            "gray_world": self.gray_world,
+            "white_balance": self.white_balance,
+            # The older switch, for readers that predate `white_balance`. It
+            # cannot express white-patch, so it is written only when it can.
+            **({} if self.white_balance == "white_patch"
+               else {"gray_world": self.white_balance == "gray_world"}),
             "extractor": self.extractor,
             "metrics": self.metrics,
             "equation": self.equation_string(),
@@ -194,7 +204,7 @@ class LinearModel:
             feature_scale=np.asarray(blob["feature_scale"], dtype=np.float64),
             alpha=float(blob.get("alpha", 1.0)),
             work_size=tuple(blob.get("work_size", (512, 512))),
-            gray_world=bool(blob.get("gray_world", True)),
+            white_balance=white_balance_from_record(blob),
             extractor=blob.get("extractor", "refined"),
             metrics=blob.get("metrics", {}),
         )
@@ -202,7 +212,7 @@ class LinearModel:
 
 def fit_linear_model(features: np.ndarray, targets: np.ndarray, representation: str,
                      alpha: float = 1.0, work_size=(512, 512),
-                     gray_world: bool = True, extractor: str = "refined",
+                     white_balance: str = "white_patch", extractor: str = "refined",
                      metrics: dict | None = None) -> LinearModel:
     intercept, coefficients, mean, scale = fit_ridge(features, targets, alpha)
     return LinearModel(
@@ -213,7 +223,7 @@ def fit_linear_model(features: np.ndarray, targets: np.ndarray, representation: 
         feature_scale=scale,
         alpha=alpha,
         work_size=tuple(work_size),
-        gray_world=gray_world,
+        white_balance=white_balance,
         extractor=extractor,
         metrics=metrics or {},
     )

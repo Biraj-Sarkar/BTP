@@ -131,6 +131,9 @@ def adopt(path: Path, current: dict) -> bool:
             and provenance.get("seed") == current["seed"]
             and provenance.get("augment") == current["augment"]
             and provenance.get("epochs_requested") == current["epochs"]
+            # Selection always trains on raw pixels; a white-balanced bundle is a
+            # different experiment even if every other setting matches.
+            and not bundle.get("config", {}).get("gray_world", False)
             and metrics.get("test_dice") is not None)
 
 

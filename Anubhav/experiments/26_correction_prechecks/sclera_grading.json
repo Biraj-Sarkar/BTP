@@ -1,0 +1,11 @@
+{
+ "what": "Visual check of the sclera detector in run.py on all 217 photographs, before any sclera colour was compared with age or haemoglobin.",
+ "how": "The detector was fixed first, from overlays only. Overlays were then shown 20 per sheet in shuffled order (seed 123), labelled with an index alone, so site, age, haemoglobin and colour were hidden. One rater, by eye. Sheets: grading/ (written by run.py --sheets).",
+ "criterion": "Pass if the marked region lies on the white of the eye (sclera, vessels included) with no substantial skin, iris, conjunctiva or device plastic in it.",
+ "rule_fixed_before_grading": {"band_above_conjunctiva_px": [20, 220], "brightest_share_of_band": 0.30, "a_star_max": 20.0, "near_clip": 250, "largest_component": true},
+ "checked_at_full_size": ["eyesdefy-italy:20", "eyesdefy-italy:43", "eyesdefy-italy:74", "eyesdefy-italy:38", "eyesdefy-italy:5", "eyesdefy-italy:94"],
+ "checked_at_full_size_note": "Unclear at thumbnail size; all six are sclera seen between eyelashes, and pass.",
+ "fail": ["eyesdefy-italy:45"],
+ "fail_note": "Close-up with almost no white of the eye in view; the detector marks a small patch of vascular tissue.",
+ "pass": 216
+}

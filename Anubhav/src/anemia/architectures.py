@@ -5,9 +5,10 @@ constructed. Both the trainer and the read-only loader call it, so a bundle can
 never be served by a different architecture than the one that produced it: the
 bundle records `arch`, and the loader rebuilds from that string.
 
-Three architectures, all encoder-decoder with skip connections and all sharing
-the same ImageNet-pretrained encoder, so a comparison between them is a
-comparison of decoders rather than of backbones:
+Every architecture shares the same ImageNet-pretrained encoder, so a comparison
+between them is a comparison of decoders rather than of backbones. The three
+`smp` models added later (`linknet`, `fpn`, `pspnet`) use the library's default
+configuration, which is how published comparisons normally run them:
 
 `unet`
     The original. The decoder upsamples and concatenates the encoder feature
@@ -35,6 +36,27 @@ comparison of decoders rather than of backbones:
     concatenation rather than gating the skip before it) and is available as
     `unet-scse` for completeness.
 
+`linknet`
+    LinkNet (Chaurasia and Culurciello, 2017). Like U-Net, but each skip is
+    *added* to the decoder feature map rather than concatenated with it, and the
+    decoder blocks are light. Far fewer decoder parameters and much faster; the
+    question is whether the cheaper skip loses boundary detail.
+
+`fpn`
+    Feature Pyramid Network (Lin et al., 2017). Builds a top-down pyramid: each
+    scale's encoder features are added to the upsampled coarser level, every
+    pyramid level is turned into a segmentation feature map, and those are summed
+    and upsampled together. The mask is predicted at 1/4 resolution, then
+    upsampled to the input.
+
+`pspnet`
+    Pyramid Scene Parsing Network (Zhao et al., 2017). Pools the deepest
+    feature map at several grid sizes to capture context at several scales.
+    It has no skip connections from shallow layers. In `smp`'s default it uses
+    only the first three encoder stages and predicts at 1/8 resolution, so fine
+    boundaries must be recovered by upsampling alone, which is a plausible
+    weakness for a thin crescent.
+
 Abbreviations
 -------------
 smp      `segmentation_models_pytorch`
@@ -46,7 +68,7 @@ from __future__ import annotations
 
 from typing import List
 
-ARCHITECTURES = ("unet", "unetplusplus", "attention", "unet-scse")
+ARCHITECTURES = ("unet", "unetplusplus", "attention", "unet-scse", "linknet", "fpn", "pspnet")
 
 
 def build(arch: str = "unet", encoder: str = "efficientnet-b0", pretrained: bool = True):
@@ -68,7 +90,45 @@ def build(arch: str = "unet", encoder: str = "efficientnet-b0", pretrained: bool
                         decoder_attention_type="scse")
     if arch == "attention":
         return AttentionUnet(encoder_name=encoder, encoder_weights=weights)
+    if arch == "linknet":
+        return smp.Linknet(encoder_name=encoder, encoder_weights=weights, in_channels=3, classes=1)
+    if arch == "fpn":
+        return smp.FPN(encoder_name=encoder, encoder_weights=weights, in_channels=3, classes=1)
+    if arch == "pspnet":
+        model = smp.PSPNet(encoder_name=encoder, encoder_weights=weights, in_channels=3, classes=1)
+        return _portable_pooling(model)
     raise ValueError(f"Unknown architecture {arch!r}; choose from {ARCHITECTURES}")
+
+
+def _portable_pooling(model):
+    """Make adaptive average pooling run on Apple GPUs at any input size.
+
+    PSPNet pools its deepest feature map into 1x1, 2x2, 3x3 and 6x6 grids. At a
+    320 px input that map is 40x40, and PyTorch's MPS backend refuses adaptive
+    pooling when the input is not divisible by the output (40 by 3 or 6), so
+    training crashed on a Mac. Pooling has no parameters, so the fix changes
+    nothing about the model: on MPS with non-divisible sizes that one operation
+    is computed on the CPU and moved back. Results are identical, and saved
+    weights load into a stock `smp.PSPNet` unchanged.
+    """
+
+    import torch.nn as nn
+    import torch.nn.functional as F
+
+    class PortableAdaptiveAvgPool2d(nn.AdaptiveAvgPool2d):
+        def forward(self, x):
+            size = self.output_size if isinstance(self.output_size, tuple) \
+                else (self.output_size, self.output_size)
+            uneven = any(o is not None and i % o for i, o in zip(x.shape[-2:], size))
+            if x.device.type == "mps" and uneven:
+                return F.adaptive_avg_pool2d(x.cpu(), self.output_size).to(x.device)
+            return super().forward(x)
+
+    for name, module in list(model.named_modules()):
+        for child_name, child in list(module.named_children()):
+            if type(child) is nn.AdaptiveAvgPool2d:
+                setattr(module, child_name, PortableAdaptiveAvgPool2d(child.output_size))
+    return model
 
 
 # ---------------------------------------------------------------------------

@@ -169,6 +169,141 @@ class TestLinearModelProvenance:
         with pytest.raises(ValueError, match="cannot"):
             LinearModel.load(path)
 
+    @pytest.mark.parametrize("method", ["white_patch", "gray_world", "none"])
+    def test_colour_correction_travels_with_the_model(self, tmp_path, method):
+        from anemia.linear_model import LinearModel, fit_linear_model
+
+        X = np.array([[0.1, -0.02], [0.2, 0.01], [0.15, 0.0], [0.05, -0.03], [0.25, 0.02]])
+        y = np.array([9.0, 12.0, 11.0, 8.5, 13.0])
+        path = tmp_path / "m.json"
+        fit_linear_model(X, y, "erythema", white_balance=method).save(path)
+        assert LinearModel.load(path).white_balance == method
+
+    @pytest.mark.parametrize("stored, expected", [
+        ({"gray_world": True}, "gray_world"),
+        ({"gray_world": False}, "none"),
+        ({}, "gray_world"),
+    ])
+    def test_files_saved_before_white_patch_load_as_they_were_fitted(self, tmp_path, stored,
+                                                                      expected):
+        """Models saved with the older True/False switch keep their correction,
+        so changing the default does not change what a saved model is served."""
+
+        import json
+
+        from anemia.linear_model import LinearModel
+
+        blob = {"representation": "erythema", "intercept": 11.0, "coefficients": [1.0, 0.5],
+                "feature_mean": [0.1, 0.0], "feature_scale": [0.05, 0.02], **stored}
+        path = tmp_path / "old.json"
+        path.write_text(json.dumps(blob), encoding="utf-8")
+        assert LinearModel.load(path).white_balance == expected
+
+
+class TestWhitePatch:
+    """The default colour correction: the brightest unclipped pixels above the
+    lower lid are taken as white (experiment 26)."""
+
+    @staticmethod
+    def _scene():
+        """A warm-lit frame: sclera above a red crescent, white plastic below.
+
+        Under the warm light a white surface reads (200, 170, 130). The plastic
+        is bluish and brighter in R+G+B than the sclera, so a search over the
+        whole frame would pick it. A blown highlight sits on the sclera.
+        """
+
+        frame = np.full((200, 200, 3), (90, 60, 50), np.uint8)       # skin
+        frame[20:70, 20:180] = (200, 170, 130)                         # sclera
+        frame[30:34, 90:94] = (255, 255, 255)                          # specular glint
+        frame[80:110, 30:170] = (170, 70, 60)                          # conjunctiva
+        frame[150:190, 10:190] = (215, 220, 240)                       # device plastic
+        mask = np.zeros((200, 200), np.uint8)
+        mask[80:110, 30:170] = 255
+        return frame, mask
+
+    def test_default_is_white_patch_and_the_old_switch_still_constructs(self):
+        assert PreprocessConfig().white_balance == "white_patch"
+        assert PreprocessConfig(gray_world=True).white_balance == "gray_world"
+        assert PreprocessConfig(gray_world=False).white_balance == "none"
+        with pytest.raises(ValueError):
+            PreprocessConfig(white_balance="max_rgb")
+
+    def test_clipped_pixels_do_not_set_the_white(self):
+        """Plain max-RGB reads (255, 255, 255) off the glint and corrects nothing."""
+
+        from anemia.imaging import white_patch_estimate
+
+        frame, mask = self._scene()
+        white = white_patch_estimate(frame, mask)
+        assert np.allclose(white, (200, 170, 130), atol=1)
+
+    def test_pixels_below_the_lower_lid_are_left_out(self):
+        from anemia.imaging import below_lower_lid, white_patch_estimate
+
+        frame, mask = self._scene()
+        below = below_lower_lid(mask)
+        assert below[150:, :].all() and not below[:115, :].any()
+        assert np.allclose(white_patch_estimate(frame, None), (215, 220, 240), atol=1)
+        assert np.allclose(white_patch_estimate(frame, mask), (200, 170, 130), atol=1)
+
+    def test_correction_makes_the_white_neutral_and_keeps_its_brightness(self):
+        from anemia.imaging import white_patch_white_balance
+
+        frame, mask = self._scene()
+        corrected = white_patch_white_balance(frame, mask)
+        sclera = corrected[40:60, 30:80].reshape(-1, 3).astype(float).mean(axis=0)
+        assert np.ptp(sclera) <= 1
+        assert abs(sclera.mean() - np.mean((200, 170, 130))) <= 1
+
+    def test_too_few_usable_pixels_leaves_the_frame_alone(self):
+        from anemia.imaging import white_patch_white_balance
+
+        blown = np.full((64, 64, 3), 255, np.uint8)
+        assert np.array_equal(white_patch_white_balance(blown), blown)
+
+    def test_prepare_corrects_the_full_frame_using_the_mask(self):
+        """The crop is cut from the corrected full frame, never corrected itself."""
+
+        from anemia.imaging import resize, white_patch_white_balance
+
+        frame, mask = self._scene()
+        cfg = PreprocessConfig(work_size=(200, 200))
+
+        def segmenter(rgb):
+            return mask, "fake"
+
+        prepared = prepare(frame, segmenter, cfg, QualityConfig(enforce=False))
+        expected = white_patch_white_balance(resize(frame, cfg.work_size), mask)
+        assert np.array_equal(prepared.balanced, expected)
+
+    def test_gray_world_and_none_keep_their_crop_cache(self, tmp_path):
+        """Crops cached before white-patch existed stay valid under their settings."""
+
+        import hashlib
+        import json
+
+        from anemia.preprocess import CropCache
+
+        for method, switch in (("gray_world", True), ("none", False)):
+            cfg = PreprocessConfig(white_balance=method)
+            old = json.dumps({"work_size": list(cfg.work_size),
+                              "model_size": list(cfg.model_size),
+                              "bbox_pad_ratio": cfg.bbox_pad_ratio, "gray_world": switch,
+                              "backend": "b", "quality": None}, sort_keys=True)
+            assert CropCache(tmp_path, cfg, "b").namespace == \
+                hashlib.sha256(old.encode()).hexdigest()[:16]
+        assert CropCache(tmp_path, PreprocessConfig(), "b").namespace not in {
+            CropCache(tmp_path, PreprocessConfig(white_balance=m), "b").namespace
+            for m in ("gray_world", "none")}
+
+    def test_saved_records_name_their_correction(self):
+        from anemia.config import white_balance_from_record
+
+        assert white_balance_from_record({"white_balance": "white_patch"}) == "white_patch"
+        assert white_balance_from_record({"gray_world": False}) == "none"
+        assert white_balance_from_record(None, "none") == "none"
+
 
 class TestLearnedSegmenter:
     """The trained backend is written by one file and read by another.
@@ -254,21 +389,21 @@ class TestLearnedSegmenter:
         assert not any("too small" in r for r in accepted.quality.reasons)
 
     @pytest.mark.parametrize("wants_gw", [False, True])
-    @pytest.mark.parametrize("colour_gw", [False, True])
-    def test_segmenter_is_served_the_image_it_trained_on(self, wants_gw, colour_gw):
+    @pytest.mark.parametrize("colour", ["white_patch", "gray_world", "none"])
+    def test_segmenter_is_served_the_image_it_trained_on(self, wants_gw, colour):
         """A learned segmenter must see raw or balanced pixels as it was trained.
 
         Training once read raw pairs while `prepare()` balanced the frame first,
         so every bundle was trained on raw pixels and served balanced ones — a
         mismatch that cost 0.0116 Dice. The segmenter's input must follow the
-        bundle, whatever `PreprocessConfig.gray_world` says about crop colour.
+        bundle, whatever `PreprocessConfig.white_balance` says about crop colour.
         """
 
         from anemia.imaging import resize
 
         image, _ = make_eye(seed=14)
         cast = np.clip(image.astype(np.float32) * [1.0, 0.8, 0.6], 0, 255).astype(np.uint8)
-        cfg = PreprocessConfig(gray_world=colour_gw)
+        cfg = PreprocessConfig(white_balance=colour)
         working = resize(cast, cfg.work_size)
         balanced = gray_world_white_balance(working)
         assert not np.array_equal(working, balanced), "test image needs a colour cast"
@@ -284,14 +419,17 @@ class TestLearnedSegmenter:
         expected = balanced if wants_gw else working
         assert np.array_equal(received["image"], expected)
 
-    def test_extractor_without_a_declaration_keeps_the_old_behaviour(self):
-        """Classical extractors declare nothing and still follow the config."""
+    @pytest.mark.parametrize("colour", ["white_patch", "gray_world", "none"])
+    def test_extractor_without_a_declaration_keeps_the_old_behaviour(self, colour):
+        """Classical extractors declare nothing and see the frame they were tuned
+        on: gray-world, unless correction is off. White-patch changes the crop's
+        colour, not their input, so their masks are unchanged by the new default."""
 
         from anemia.imaging import resize
 
         image, _ = make_eye(seed=15)
         cast = np.clip(image.astype(np.float32) * [1.0, 0.8, 0.6], 0, 255).astype(np.uint8)
-        cfg = PreprocessConfig(gray_world=True)
+        cfg = PreprocessConfig(white_balance=colour)
         received = {}
 
         def segmenter(rgb):
@@ -299,8 +437,47 @@ class TestLearnedSegmenter:
             return np.zeros(rgb.shape[:2], np.uint8), "fake"
 
         prepare(cast, segmenter, cfg, QualityConfig())
-        assert np.array_equal(received["image"],
-                              gray_world_white_balance(resize(cast, cfg.work_size)))
+        working = resize(cast, cfg.work_size)
+        expected = working if colour == "none" else gray_world_white_balance(working)
+        assert np.array_equal(received["image"], expected)
+
+    @pytest.mark.parametrize("arch", ["unet", "unetplusplus", "attention", "unet-scse",
+                                      "linknet", "fpn", "pspnet"])
+    def test_every_architecture_returns_a_full_resolution_single_channel_mask(self, arch):
+        """A decoder that predicts at reduced resolution must still upsample back.
+
+        FPN predicts at 1/4 and PSPNet at 1/8 of the input before upsampling; a
+        mask at the wrong size would be misaligned with the photograph it masks.
+        """
+
+        torch = pytest.importorskip("torch")
+        pytest.importorskip("segmentation_models_pytorch")
+        from anemia.architectures import ARCHITECTURES, build
+
+        assert arch in ARCHITECTURES
+        model = build(arch, "resnet18", pretrained=False).eval()
+        with torch.no_grad():
+            out = model(torch.zeros(1, 3, 64, 64))
+        assert tuple(out.shape) == (1, 1, 64, 64)
+
+    def test_pspnet_trains_on_apple_gpu_at_the_training_resolution(self):
+        """PSPNet's 3x3 and 6x6 pooling of a 40x40 map once crashed on MPS.
+
+        At 320 px the deepest PSPNet feature map is 40x40, which MPS cannot pool
+        into 3x3 or 6x6 grids. `architectures` routes that one step through the
+        CPU; this checks a full forward and backward pass at 320 px on the GPU.
+        """
+
+        torch = pytest.importorskip("torch")
+        pytest.importorskip("segmentation_models_pytorch")
+        if not torch.backends.mps.is_available():
+            pytest.skip("Apple GPU not available")
+        from anemia.architectures import build
+
+        model = build("pspnet", "resnet18", pretrained=False).to("mps").train()
+        out = model(torch.zeros(1, 3, 320, 320, device="mps"))
+        out.mean().backward()
+        assert tuple(out.shape) == (1, 1, 320, 320)
 
     def test_attention_bundle_round_trips_with_its_white_balance_flag(self, tmp_path):
         """The hand-written Attention U-Net must load through the serving path."""
@@ -454,6 +631,122 @@ class TestSplits:
         for split in kfold(samples, folds=5, bins=3, seed=0):
             seen.extend(s.patient_id for s in split.test)
         assert sorted(seen) == sorted(s.patient_id for s in samples)
+
+
+class TestSegmenterSplit:
+    """The segmenter's train / val / test split, with and without repeat-shot groups.
+
+    A numbered set like Mendeley stands in: files 1-60 from one root, where
+    runs of shots are one person, plus a few named subjects from a second root.
+    """
+
+    @staticmethod
+    def _trainer():
+        pytest.importorskip("torch")
+        pytest.importorskip("segmentation_models_pytorch")
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+        import train_segmenter
+
+        return train_segmenter
+
+    @staticmethod
+    def _subjects():
+        roots = {str(n): "numbered" for n in range(1, 61)}
+        roots.update({f"India-{n}": "named" for n in range(20)})
+        # Runs of four shots are one person, as in the Mendeley set.
+        groups = {str(n): f"group:{(n - 1) // 4}" for n in range(1, 41)}
+        return roots, groups
+
+    def test_without_groups_the_split_is_unchanged(self):
+        """Earlier bundles stay valid: no groups, no buffer = the old arithmetic."""
+
+        import random
+
+        trainer = self._trainer()
+        roots, _ = self._subjects()
+        for seed in (0, 1, 42):
+            subjects = sorted(roots)
+            random.Random(seed).shuffle(subjects)
+            n_test, n_val = int(len(subjects) * 0.2), max(1, int(len(subjects) * 0.2))
+            split = trainer.split_subjects(roots, seed, 0.2, 0.2)
+            assert split["test"] == set(subjects[:n_test])
+            assert split["val"] == set(subjects[n_test:n_test + n_val])
+            assert split["train"] == set(subjects[n_test + n_val:])
+            assert not split["excluded"]
+
+    def test_a_group_never_straddles_the_split(self):
+        trainer = self._trainer()
+        roots, groups = self._subjects()
+        for seed in range(10):
+            split = trainer.split_subjects(roots, seed, 0.2, 0.2, groups=groups)
+            side = {s: name for name in ("train", "val", "test") for s in split[name]}
+            for g in set(groups.values()):
+                assert len({side[s] for s, h in groups.items() if h == g}) == 1
+
+    def test_buffer_keeps_neighbours_of_test_files_out_of_training(self):
+        trainer = self._trainer()
+        roots, groups = self._subjects()
+        for seed in range(10):
+            split = trainer.split_subjects(roots, seed, 0.2, 0.2, groups=groups, buffer=2)
+            parts = [split[k] for k in ("train", "val", "test", "excluded")]
+            assert sum(map(len, parts)) == len(roots) == len(set().union(*parts))
+            test_numbers = {int(s) for s in split["test"] if s.isdigit()}
+            for s in split["train"] | split["val"]:
+                if s.isdigit():
+                    assert all(abs(int(s) - n) > 2 for n in test_numbers), (seed, s)
+            # A buffered file takes its whole group with it.
+            for s in split["excluded"]:
+                assert {t for t, h in groups.items() if h == groups.get(s)} <= split["excluded"]
+
+    def test_buffer_ignores_named_subjects_and_other_roots(self):
+        trainer = self._trainer()
+        roots = {"1": "a", "2": "b", "India-1": "a"}
+        # With one test subject, only same-root numbered neighbours can be buffered.
+        for seed in range(20):
+            split = trainer.split_subjects(roots, seed, 0.0, 0.4, buffer=5)
+            if split["test"] == {"1"}:
+                assert split["excluded"] == set()
+                break
+        else:
+            pytest.fail("no seed put subject 1 alone in test")
+
+    def test_blocked_split_deals_out_consecutive_runs(self):
+        """With blocks, test files come in a few consecutive runs, never scattered."""
+
+        trainer = self._trainer()
+        roots = {str(n): "numbered" for n in range(1, 101)}
+        for seed in range(10):
+            split = trainer.split_subjects(roots, seed, 0.2, 0.2, block=10)
+            numbers = sorted(int(s) for s in split["test"])
+            runs = 1 + sum(1 for a, b in zip(numbers, numbers[1:]) if b - a > 1)
+            assert runs <= 3, (seed, numbers)          # about 20 files = 2-3 blocks
+            assert 15 <= len(numbers) <= 25
+
+    def test_blocked_split_keeps_groups_buffers_edges_and_shares_roots(self):
+        trainer = self._trainer()
+        roots, groups = self._subjects()
+        for seed in range(10):
+            split = trainer.split_subjects(roots, seed, 0.2, 0.2, groups=groups, buffer=4, block=12)
+            parts = [split[k] for k in ("train", "val", "test", "excluded")]
+            assert sum(map(len, parts)) == len(roots) == len(set().union(*parts))
+            side = {s: k for k in ("train", "val", "test", "excluded") for s in split[k]}
+            for g in set(groups.values()):
+                assert len({side[s] for s, h in groups.items() if h == g}) == 1
+            test_numbers = {int(s) for s in split["test"] if s.isdigit()}
+            for s in split["train"] | split["val"]:
+                if s.isdigit():
+                    assert all(abs(int(s) - n) > 4 for n in test_numbers), (seed, s)
+            # Each root is dealt out on its own: 20 named subjects -> 4 in test.
+            assert sum(1 for s in split["test"] if not s.isdigit()) == 4
+
+    def test_groups_file_needs_a_subject_column(self, tmp_path):
+        trainer = self._trainer()
+        path = tmp_path / "groups.csv"
+        path.write_text("group,image\n0,mendeley/1\n")
+        with pytest.raises(ValueError):
+            trainer.read_groups(path)
+        path.write_text("group,image,subject\n0,mendeley/1,1\n0,mendeley/2,2\n")
+        assert trainer.read_groups(path) == {"1": "group:0", "2": "group:0"}
 
 
 class TestMetrics:

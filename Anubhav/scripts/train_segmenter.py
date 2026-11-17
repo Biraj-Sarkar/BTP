@@ -141,10 +141,149 @@ def subject_of(path: Path) -> str:
 
     # Most layouts put a subject id in the parent directory; fall back to the
     # filename stem stripped of a trailing capture index (`sub12_3` -> `sub12`).
+    #
+    # This can only group what the names encode. A set that numbers its files
+    # without saying whose eye each one is (the Mendeley set) makes every file
+    # its own subject here, repeat shots included. Those repeats are found
+    # separately (experiments/23_duplicates) and passed in with `--groups`.
     parent = path.parent.name.lower()
     if parent not in {"images", "image", "masks", "mask", "segmented"}:
         return parent
     return path.stem.rsplit("_", 1)[0]
+
+
+def read_groups(path: Path) -> dict:
+    """subject id -> group label, from a CSV with `group` and `subject` columns.
+
+    Subject ids are the ones `subject_of` returns. They are pooled across every
+    `--data` root, so they must already be unique across roots; the trainer has
+    always assumed this.
+    """
+
+    import csv
+
+    with Path(path).open() as handle:
+        rows = list(csv.DictReader(handle))
+    if not rows or not {"group", "subject"} <= set(rows[0]):
+        raise ValueError(f"{path}: needs 'group' and 'subject' columns")
+    return {r["subject"]: f"group:{r['group']}" for r in rows}
+
+
+def split_subjects(subject_roots: dict, seed: int, val_fraction: float, test_fraction: float,
+                   groups: dict | None = None, buffer: int = 0, block: int = 0) -> dict:
+    """Decide which subjects train, validate, test, or sit out.
+
+    `subject_roots` maps each subject id to the dataset root it came from.
+
+    The unit that is shuffled and dealt out is a **group**: a subject named in
+    `groups` travels with every other subject of its group, and anyone not named
+    is a group of one. With no `groups`, `buffer` or `block` this is exactly the
+    split the trainer always made, so earlier bundles keep their test sets.
+
+    `block` is for datasets numbered in capture order, where one person's
+    photographs sit together but nothing says where one person ends and the
+    next begins (the Mendeley set: a person is often two runs of shots, one per
+    eye, that no matcher can link). Instead of dealing out groups one by one, it
+    cuts the numbered list into consecutive blocks of about `block` files, never
+    cutting through a group, and deals out whole blocks. A person can then be
+    split between training and test only at the edge of a block. This is
+    "blocked" cross-validation, the usual answer for data ordered in time. The
+    first block's length is drawn from the seed, so the edges move between
+    seeds. Each dataset root is dealt out separately, so every root gives about
+    the same share of test and validation images.
+
+    `buffer` closes the edges. Any group with a numbered member within `buffer`
+    files of a test file (same root) is left out of training and validation
+    altogether, and it takes its whole group with it: if file 52 is the other
+    eye of test file 50, the rest of file 52's run is that person too.
+    """
+
+    groups = groups or {}
+    unit_of = lambda s: groups.get(s, s)
+    members: dict = {}
+    for subject in subject_roots:
+        members.setdefault(unit_of(subject), []).append(subject)
+    rng = random.Random(seed)
+
+    if block <= 0:
+        units = sorted(members)
+        rng.shuffle(units)
+        n_test = int(len(units) * test_fraction)
+        n_val = max(1, int(len(units) * val_fraction))
+        test_units, rest = units[:n_test], units[n_test:]
+        excluded = _buffered(rest, set(test_units), members, subject_roots, buffer)
+        rest = [u for u in rest if u not in excluded]
+        val_units, train_units = rest[:n_val], rest[n_val:]
+    else:
+        size = lambda piece: sum(len(members[u]) for u in piece)
+        by_root: dict = {}
+        for u in sorted(members):
+            by_root.setdefault(subject_roots[members[u][0]], []).append(u)
+
+        # Cut each root into pieces: consecutive blocks for numbered files,
+        # single units for everything else. Then shuffle the pieces.
+        roots = []
+        for root in sorted(by_root):
+            units = by_root[root]
+            numbered = sorted((u for u in units if any(s.isdigit() for s in members[u])),
+                              key=lambda u: min(int(s) for s in members[u] if s.isdigit()))
+            pieces, current, limit = [], [], rng.randint(1, block)   # first block: random length
+            for u in numbered:
+                current.append(u)
+                if size(current) >= limit:
+                    pieces.append(current)
+                    current, limit = [], block
+            if current:
+                pieces.append(current)
+            pieces += [[u] for u in units if u not in set(numbered)]
+            rng.shuffle(pieces)
+            roots.append((pieces, size(units)))
+
+        # Test: whole pieces, in shuffled order, while each brings the root
+        # closer to its share (so a block may stop it just short of the share).
+        test_units, leftovers = [], []
+        for pieces, n_images in roots:
+            i = taken = 0
+            while i < len(pieces) and taken + size(pieces[i]) / 2 <= test_fraction * n_images:
+                test_units += pieces[i]
+                taken += size(pieces[i])
+                i += 1
+            leftovers.append((pieces[i:], n_images))
+
+        excluded = _buffered([u for pieces, _ in leftovers for p in pieces for u in p],
+                             set(test_units), members, subject_roots, buffer)
+
+        # Validation the same way, from what the buffer left; the rest trains.
+        val_units, train_units = [], []
+        for pieces, n_images in leftovers:
+            taken = 0
+            for piece in pieces:
+                piece = [u for u in piece if u not in excluded]
+                if taken + size(piece) / 2 <= val_fraction * n_images:
+                    val_units += piece
+                    taken += size(piece)
+                else:
+                    train_units += piece
+
+    gather = lambda us: {s for u in us for s in members[u]}
+    return {"train": gather(train_units), "val": gather(val_units), "test": gather(test_units),
+            "excluded": gather(excluded), "n_units": len(members)}
+
+
+def _buffered(candidates, test_units, members, subject_roots, buffer: int) -> set:
+    """Units among `candidates` with a numbered member within `buffer` of a test file."""
+
+    if buffer <= 0:
+        return set()
+    near: dict = {}
+    for u in test_units:
+        for s in members[u]:
+            if s.isdigit():
+                near.setdefault(subject_roots[s], set()).add(int(s))
+    return {u for u in candidates
+            if any(s.isdigit() and any(abs(int(s) - n) <= buffer
+                                       for n in near.get(subject_roots[s], ()))
+                   for s in members[u])}
 
 
 class ConjunctivaDataset(Dataset):
@@ -365,10 +504,10 @@ def main() -> int:
     parser.add_argument("--init", type=Path, default=None,
                         help="Warm-start from an existing bundle (use when new data arrives).")
     parser.add_argument("--gray-world", action="store_true",
-                        help="white-balance images during training. Set this to match "
-                             "PreprocessConfig.gray_world at serving time; the two "
-                             "disagreeing means the model is served images unlike "
-                             "anything it trained on.")
+                        help="gray-world white-balance images during training. The "
+                             "bundle records this, and prepare() shows the segmenter the "
+                             "same kind of image at serving time, whatever "
+                             "PreprocessConfig.white_balance sets for the crop's colour.")
     parser.add_argument("--arch", default="unet", choices=list(ARCHITECTURES),
                         help="decoder architecture; see anemia.architectures")
     parser.add_argument("--encoder", default="efficientnet-b0")
@@ -386,6 +525,18 @@ def main() -> int:
                         help="subjects held out from both training and model selection. "
                              "Non-zero makes the reported Dice an honest held-out figure: "
                              "val Dice is optimistic because the epoch is chosen on it.")
+    parser.add_argument("--groups", type=Path, default=None,
+                        help="CSV with 'group' and 'subject' columns: subjects that are one "
+                             "person (repeat shots) and must fall on one side of the split. "
+                             "See experiments/23_duplicates/groups.csv.")
+    parser.add_argument("--buffer", type=int, default=0,
+                        help="for datasets numbered in capture order: leave out of training "
+                             "and validation every group with a file within this many numbers "
+                             "of a test file, to cover repeats the grouping missed")
+    parser.add_argument("--block", type=int, default=0,
+                        help="for datasets numbered in capture order: deal out consecutive "
+                             "blocks of about this many files instead of single groups, so a "
+                             "person can be split only at a block edge (use with --buffer)")
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=0)
@@ -400,35 +551,46 @@ def main() -> int:
     torch.manual_seed(args.seed)
 
     pairs: List[Pair] = []
+    subject_roots: dict = {}
     for root in args.data:
         found = find_pairs(root)
         print(f"{root}: {len(found)} image/mask pairs")
         pairs.extend(found)
+        subject_roots.update({subject_of(image): str(root) for image, _ in found})
     if not pairs:
         print("No pairs found. Check that the dataset has masks registered to the "
               "full frame, not pre-cropped conjunctiva patches.", file=sys.stderr)
         return 1
 
-    # Split by subject, never by image.
-    subjects = sorted({subject_of(image) for image, _ in pairs})
-    random.Random(args.seed).shuffle(subjects)
+    # Split by subject (or by group of subjects), never by image.
+    groups = read_groups(args.groups) if args.groups else None
     if args.no_select:
         # Everything trains. Nothing is held back, so nothing can be measured
         # here — the estimate for this model is the selection run's test score.
-        n_test = n_val = 0
-        test_subjects = val_subjects = set()
+        split = {"train": set(subject_roots), "val": set(), "test": set(), "excluded": set(),
+                 "n_units": len(set(groups.get(s, s) for s in subject_roots)) if groups
+                 else len(subject_roots)}
     else:
-        n_test = int(len(subjects) * args.test_fraction)
-        n_val = max(1, int(len(subjects) * args.val_fraction))
-        test_subjects = set(subjects[:n_test])
-        val_subjects = set(subjects[n_test:n_test + n_val])
-    group = lambda p: ("test" if subject_of(p[0]) in test_subjects
-                       else "val" if subject_of(p[0]) in val_subjects else "train")
-    train_pairs = [p for p in pairs if group(p) == "train"]
-    val_pairs = [p for p in pairs if group(p) == "val"]
-    test_pairs = [p for p in pairs if group(p) == "test"]
-    print(f"{len(subjects)} subjects -> {len(train_pairs)} train / {len(val_pairs)} val"
-          + (f" / {len(test_pairs)} test images" if test_pairs else " images"))
+        split = split_subjects(subject_roots, args.seed, args.val_fraction, args.test_fraction,
+                               groups=groups, buffer=args.buffer, block=args.block)
+    test_subjects, val_subjects = split["test"], split["val"]
+    train_subjects, excluded_subjects = split["train"], split["excluded"]
+    train_pairs = [p for p in pairs if subject_of(p[0]) in train_subjects]
+    val_pairs = [p for p in pairs if subject_of(p[0]) in val_subjects]
+    test_pairs = [p for p in pairs if subject_of(p[0]) in test_subjects]
+    unit = "groups" if groups else "subjects"
+    print(f"{split['n_units']} {unit} -> {len(train_pairs)} train / {len(val_pairs)} val"
+          + (f" / {len(test_pairs)} test images" if test_pairs else " images")
+          + (f" ({len(excluded_subjects)} left out by the {args.buffer}-number buffer)"
+             if excluded_subjects else ""))
+    grouping = {}
+    if groups or args.buffer or args.block:
+        import hashlib
+        grouping = {"groups_file": str(args.groups) if groups else None,
+                    "groups_sha256": hashlib.sha256(Path(args.groups).read_bytes()).hexdigest()
+                    if groups else None,
+                    "buffer": args.buffer, "block": args.block, "n_units": split["n_units"],
+                    "excluded_subjects": sorted(excluded_subjects)}
 
     config = SegmenterConfig(
         arch=args.arch, encoder=args.encoder,
@@ -498,6 +660,7 @@ def main() -> int:
                     "epochs_requested": args.epochs,
                     "augment": args.augment,
                     "seed": args.seed,
+                    **grouping,
                 },
                 metrics={"val_dice": best_dice, "best_epoch": best_epoch},
             )
@@ -517,6 +680,7 @@ def main() -> int:
                 "epochs_requested": args.epochs,
                 "augment": args.augment, "seed": args.seed,
                 "selection": "none — trained on all subjects for a fixed epoch count",
+                **grouping,
             },
             metrics={"val_dice": float("nan"), "best_epoch": args.epochs},
         )

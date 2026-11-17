@@ -7,11 +7,14 @@ fixed, and the two are compared on the same patients.
 
 ## Why this test
 
-On the segmentation side the question is already answered: an Attention U-Net
-trained and served on raw pixels matches the annotators' masks better than one
-trained and served on white-balanced images (Dice 0.8476 against 0.8407, paired
-difference +0.0069, 95% CI [+0.0012, +0.0118], p 0.0015 —
-`experiments/20_architectures/RESULTS.md`). Earlier work also found white balance
+On the segmentation side the evidence so far favours raw pixels: an Attention
+U-Net trained and served on raw pixels matches the annotators' masks better than
+one trained and served on white-balanced images (Dice 0.8476 against 0.8407,
+paired difference +0.0069, 95% CI [+0.0012, +0.0118], p 0.0015 —
+`experiments/20_architectures/RESULTS.md`). That comes from a single split, and a
+difference of similar size between architectures did not hold up when repeated
+over five splits (`experiments/21_repeated_splits/RESULTS.md`), so treat it as
+provisional. Earlier work also found white balance
 costs accuracy when colour is read with a simple model.
 
 Neither of those is the question that matters, which is whether white balance
@@ -112,6 +115,10 @@ python scripts/extract_crops.py --images ... --out crops_gwcolour/  --crop-colou
 
 These fix the crop colour for both extractors, so the only difference between
 the two folders inside each output is the mask.
+
+`--crop-colour wp` writes white-patch crops instead: the brightest unclipped
+pixels above the lower lid taken as white, which has been the pipeline's default
+colour correction since 17 Nov 2026. It is not part of the test above.
 
 ---
 

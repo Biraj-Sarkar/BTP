@@ -69,6 +69,12 @@ held constant*. Sclera-referencing throws some of that away — unsurprisingly,
 since dividing by a noisy reference adds the reference's noise to every
 measurement, and the sclera mask is itself an imperfect detector.
 
+> **Later finding (experiment 26):** the sclera is not only a noisy reference.
+> Its redness follows haemoglobin (ρ +0.44 to +0.51 within site), because the
+> white of the eye is covered by the vessels of the bulbar conjunctiva. Dividing
+> by it removes part of the signal, which is a second reason for the accuracy
+> lost here. Its yellowness also rises with age.
+
 **So this is a trade, not a free improvement.** The two properties are in
 tension, and which one matters depends entirely on the deployment question:
 

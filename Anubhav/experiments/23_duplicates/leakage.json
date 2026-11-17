@@ -1,0 +1,972 @@
+{
+  "threshold": 50,
+  "near": [
+    20,
+    10
+  ],
+  "groups": [
+    [
+      "mendeley/131",
+      "mendeley/132",
+      "mendeley/133",
+      "mendeley/134",
+      "mendeley/135",
+      "mendeley/136",
+      "mendeley/137",
+      "mendeley/138",
+      "mendeley/139",
+      "mendeley/140"
+    ],
+    [
+      "mendeley/175",
+      "mendeley/176",
+      "mendeley/177",
+      "mendeley/178",
+      "mendeley/183",
+      "mendeley/184",
+      "mendeley/185",
+      "mendeley/186",
+      "mendeley/187"
+    ],
+    [
+      "mendeley/163",
+      "mendeley/164",
+      "mendeley/165",
+      "mendeley/166",
+      "mendeley/167",
+      "mendeley/168",
+      "mendeley/169",
+      "mendeley/170"
+    ],
+    [
+      "mendeley/272",
+      "mendeley/273",
+      "mendeley/274",
+      "mendeley/275",
+      "mendeley/276",
+      "mendeley/277",
+      "mendeley/278",
+      "mendeley/279"
+    ],
+    [
+      "mendeley/369",
+      "mendeley/370",
+      "mendeley/371",
+      "mendeley/372",
+      "mendeley/377",
+      "mendeley/378",
+      "mendeley/379",
+      "mendeley/380"
+    ],
+    [
+      "mendeley/344",
+      "mendeley/345",
+      "mendeley/346",
+      "mendeley/347",
+      "mendeley/348",
+      "mendeley/349",
+      "mendeley/350"
+    ],
+    [
+      "mendeley/204",
+      "mendeley/205",
+      "mendeley/206",
+      "mendeley/207",
+      "mendeley/208",
+      "mendeley/209"
+    ],
+    [
+      "mendeley/311",
+      "mendeley/312",
+      "mendeley/313",
+      "mendeley/314",
+      "mendeley/315",
+      "mendeley/316"
+    ],
+    [
+      "mendeley/106",
+      "mendeley/107",
+      "mendeley/108",
+      "mendeley/109",
+      "mendeley/110"
+    ],
+    [
+      "mendeley/111",
+      "mendeley/112",
+      "mendeley/113",
+      "mendeley/114",
+      "mendeley/115"
+    ],
+    [
+      "mendeley/116",
+      "mendeley/117",
+      "mendeley/118",
+      "mendeley/119",
+      "mendeley/120"
+    ],
+    [
+      "mendeley/145",
+      "mendeley/146",
+      "mendeley/147",
+      "mendeley/148",
+      "mendeley/149"
+    ],
+    [
+      "mendeley/158",
+      "mendeley/159",
+      "mendeley/160",
+      "mendeley/161",
+      "mendeley/162"
+    ],
+    [
+      "mendeley/214",
+      "mendeley/215",
+      "mendeley/216",
+      "mendeley/217",
+      "mendeley/218"
+    ],
+    [
+      "mendeley/263",
+      "mendeley/264",
+      "mendeley/265",
+      "mendeley/266",
+      "mendeley/267"
+    ],
+    [
+      "mendeley/317",
+      "mendeley/318",
+      "mendeley/319",
+      "mendeley/320",
+      "mendeley/321"
+    ],
+    [
+      "mendeley/334",
+      "mendeley/335",
+      "mendeley/336",
+      "mendeley/337",
+      "mendeley/338"
+    ],
+    [
+      "mendeley/339",
+      "mendeley/340",
+      "mendeley/341",
+      "mendeley/342",
+      "mendeley/343"
+    ],
+    [
+      "mendeley/351",
+      "mendeley/352",
+      "mendeley/353",
+      "mendeley/354",
+      "mendeley/355"
+    ],
+    [
+      "mendeley/356",
+      "mendeley/357",
+      "mendeley/358",
+      "mendeley/359",
+      "mendeley/360"
+    ],
+    [
+      "mendeley/385",
+      "mendeley/386",
+      "mendeley/387",
+      "mendeley/388",
+      "mendeley/389"
+    ],
+    [
+      "mendeley/390",
+      "mendeley/391",
+      "mendeley/392",
+      "mendeley/393",
+      "mendeley/394"
+    ],
+    [
+      "mendeley/89",
+      "mendeley/90",
+      "mendeley/91",
+      "mendeley/92",
+      "mendeley/93"
+    ],
+    [
+      "mendeley/100",
+      "mendeley/97",
+      "mendeley/98",
+      "mendeley/99"
+    ],
+    [
+      "mendeley/101",
+      "mendeley/102",
+      "mendeley/251",
+      "mendeley/547"
+    ],
+    [
+      "mendeley/103",
+      "mendeley/104",
+      "mendeley/105",
+      "mendeley/395"
+    ],
+    [
+      "mendeley/127",
+      "mendeley/128",
+      "mendeley/129",
+      "mendeley/130"
+    ],
+    [
+      "mendeley/141",
+      "mendeley/142",
+      "mendeley/143",
+      "mendeley/144"
+    ],
+    [
+      "mendeley/150",
+      "mendeley/151",
+      "mendeley/152",
+      "mendeley/153"
+    ],
+    [
+      "mendeley/154",
+      "mendeley/155",
+      "mendeley/156",
+      "mendeley/157"
+    ],
+    [
+      "mendeley/171",
+      "mendeley/172",
+      "mendeley/173",
+      "mendeley/174"
+    ],
+    [
+      "mendeley/179",
+      "mendeley/180",
+      "mendeley/181",
+      "mendeley/182"
+    ],
+    [
+      "mendeley/188",
+      "mendeley/189",
+      "mendeley/190",
+      "mendeley/191"
+    ],
+    [
+      "mendeley/192",
+      "mendeley/193",
+      "mendeley/194",
+      "mendeley/195"
+    ],
+    [
+      "mendeley/196",
+      "mendeley/197",
+      "mendeley/198",
+      "mendeley/199"
+    ],
+    [
+      "mendeley/200",
+      "mendeley/201",
+      "mendeley/202",
+      "mendeley/203"
+    ],
+    [
+      "mendeley/210",
+      "mendeley/211",
+      "mendeley/212",
+      "mendeley/213"
+    ],
+    [
+      "mendeley/219",
+      "mendeley/220",
+      "mendeley/221",
+      "mendeley/222"
+    ],
+    [
+      "mendeley/223",
+      "mendeley/224",
+      "mendeley/225",
+      "mendeley/226"
+    ],
+    [
+      "mendeley/239",
+      "mendeley/240",
+      "mendeley/241",
+      "mendeley/242"
+    ],
+    [
+      "mendeley/243",
+      "mendeley/248",
+      "mendeley/249",
+      "mendeley/250"
+    ],
+    [
+      "mendeley/244",
+      "mendeley/245",
+      "mendeley/246",
+      "mendeley/247"
+    ],
+    [
+      "mendeley/255",
+      "mendeley/256",
+      "mendeley/257",
+      "mendeley/258"
+    ],
+    [
+      "mendeley/259",
+      "mendeley/260",
+      "mendeley/261",
+      "mendeley/262"
+    ],
+    [
+      "mendeley/268",
+      "mendeley/269",
+      "mendeley/270",
+      "mendeley/271"
+    ],
+    [
+      "mendeley/280",
+      "mendeley/281",
+      "mendeley/282",
+      "mendeley/283"
+    ],
+    [
+      "mendeley/288",
+      "mendeley/289",
+      "mendeley/290",
+      "mendeley/291"
+    ],
+    [
+      "mendeley/292",
+      "mendeley/293",
+      "mendeley/294",
+      "mendeley/295"
+    ],
+    [
+      "mendeley/300",
+      "mendeley/301",
+      "mendeley/302",
+      "mendeley/303"
+    ],
+    [
+      "mendeley/304",
+      "mendeley/305",
+      "mendeley/306",
+      "mendeley/307"
+    ],
+    [
+      "mendeley/308",
+      "mendeley/309",
+      "mendeley/310",
+      "mendeley/400"
+    ],
+    [
+      "mendeley/322",
+      "mendeley/323",
+      "mendeley/324",
+      "mendeley/325"
+    ],
+    [
+      "mendeley/326",
+      "mendeley/327",
+      "mendeley/328",
+      "mendeley/329"
+    ],
+    [
+      "mendeley/330",
+      "mendeley/331",
+      "mendeley/332",
+      "mendeley/333"
+    ],
+    [
+      "mendeley/361",
+      "mendeley/362",
+      "mendeley/363",
+      "mendeley/364"
+    ],
+    [
+      "mendeley/365",
+      "mendeley/366",
+      "mendeley/367",
+      "mendeley/368"
+    ],
+    [
+      "mendeley/373",
+      "mendeley/374",
+      "mendeley/375",
+      "mendeley/376"
+    ],
+    [
+      "mendeley/381",
+      "mendeley/382",
+      "mendeley/383",
+      "mendeley/384"
+    ],
+    [
+      "mendeley/396",
+      "mendeley/397",
+      "mendeley/398",
+      "mendeley/399"
+    ],
+    [
+      "mendeley/401",
+      "mendeley/402",
+      "mendeley/403",
+      "mendeley/404"
+    ],
+    [
+      "mendeley/405",
+      "mendeley/406",
+      "mendeley/407",
+      "mendeley/408"
+    ],
+    [
+      "mendeley/409",
+      "mendeley/410",
+      "mendeley/411",
+      "mendeley/412"
+    ],
+    [
+      "mendeley/413",
+      "mendeley/414",
+      "mendeley/415",
+      "mendeley/416"
+    ],
+    [
+      "mendeley/417",
+      "mendeley/418",
+      "mendeley/419",
+      "mendeley/420"
+    ],
+    [
+      "mendeley/425",
+      "mendeley/426",
+      "mendeley/427",
+      "mendeley/428"
+    ],
+    [
+      "mendeley/429",
+      "mendeley/430",
+      "mendeley/431",
+      "mendeley/432"
+    ],
+    [
+      "mendeley/449",
+      "mendeley/450",
+      "mendeley/451",
+      "mendeley/452"
+    ],
+    [
+      "mendeley/457",
+      "mendeley/458",
+      "mendeley/459",
+      "mendeley/460"
+    ],
+    [
+      "mendeley/461",
+      "mendeley/462",
+      "mendeley/463",
+      "mendeley/464"
+    ],
+    [
+      "mendeley/465",
+      "mendeley/466",
+      "mendeley/467",
+      "mendeley/468"
+    ],
+    [
+      "mendeley/469",
+      "mendeley/470",
+      "mendeley/471",
+      "mendeley/472"
+    ],
+    [
+      "mendeley/477",
+      "mendeley/478",
+      "mendeley/479",
+      "mendeley/480"
+    ],
+    [
+      "mendeley/489",
+      "mendeley/490",
+      "mendeley/491",
+      "mendeley/492"
+    ],
+    [
+      "mendeley/49",
+      "mendeley/50",
+      "mendeley/51",
+      "mendeley/52"
+    ],
+    [
+      "mendeley/493",
+      "mendeley/494",
+      "mendeley/495",
+      "mendeley/496"
+    ],
+    [
+      "mendeley/501",
+      "mendeley/502",
+      "mendeley/503",
+      "mendeley/504"
+    ],
+    [
+      "mendeley/505",
+      "mendeley/506",
+      "mendeley/507",
+      "mendeley/508"
+    ],
+    [
+      "mendeley/509",
+      "mendeley/510",
+      "mendeley/511",
+      "mendeley/512"
+    ],
+    [
+      "mendeley/513",
+      "mendeley/514",
+      "mendeley/515",
+      "mendeley/516"
+    ],
+    [
+      "mendeley/529",
+      "mendeley/530",
+      "mendeley/531",
+      "mendeley/532"
+    ],
+    [
+      "mendeley/533",
+      "mendeley/534",
+      "mendeley/535",
+      "mendeley/536"
+    ],
+    [
+      "mendeley/537",
+      "mendeley/538",
+      "mendeley/539",
+      "mendeley/540"
+    ],
+    [
+      "mendeley/541",
+      "mendeley/542",
+      "mendeley/543",
+      "mendeley/544"
+    ],
+    [
+      "mendeley/65",
+      "mendeley/66",
+      "mendeley/67",
+      "mendeley/68"
+    ],
+    [
+      "mendeley/73",
+      "mendeley/74",
+      "mendeley/75",
+      "mendeley/76"
+    ],
+    [
+      "mendeley/81",
+      "mendeley/82",
+      "mendeley/83",
+      "mendeley/84"
+    ],
+    [
+      "mendeley/85",
+      "mendeley/86",
+      "mendeley/87",
+      "mendeley/88"
+    ],
+    [
+      "mendeley/121",
+      "mendeley/122",
+      "mendeley/123"
+    ],
+    [
+      "mendeley/124",
+      "mendeley/125",
+      "mendeley/126"
+    ],
+    [
+      "mendeley/231",
+      "mendeley/236",
+      "mendeley/237"
+    ],
+    [
+      "mendeley/438",
+      "mendeley/439",
+      "mendeley/440"
+    ],
+    [
+      "mendeley/453",
+      "mendeley/455",
+      "mendeley/456"
+    ],
+    [
+      "mendeley/473",
+      "mendeley/474",
+      "mendeley/476"
+    ],
+    [
+      "mendeley/481",
+      "mendeley/482",
+      "mendeley/483"
+    ],
+    [
+      "mendeley/485",
+      "mendeley/486",
+      "mendeley/487"
+    ],
+    [
+      "mendeley/497",
+      "mendeley/498",
+      "mendeley/499"
+    ],
+    [
+      "mendeley/518",
+      "mendeley/519",
+      "mendeley/520"
+    ],
+    [
+      "mendeley/61",
+      "mendeley/63",
+      "mendeley/64"
+    ],
+    [
+      "mendeley/69",
+      "mendeley/70",
+      "mendeley/72"
+    ],
+    [
+      "mendeley/77",
+      "mendeley/79",
+      "mendeley/80"
+    ],
+    [
+      "mendeley/94",
+      "mendeley/95",
+      "mendeley/96"
+    ],
+    [
+      "mendeley/21",
+      "mendeley/31"
+    ],
+    [
+      "mendeley/227",
+      "mendeley/229"
+    ],
+    [
+      "mendeley/232",
+      "mendeley/233"
+    ],
+    [
+      "mendeley/284",
+      "mendeley/285"
+    ],
+    [
+      "mendeley/297",
+      "mendeley/299"
+    ],
+    [
+      "mendeley/32",
+      "mendeley/35"
+    ],
+    [
+      "mendeley/36",
+      "mendeley/37"
+    ],
+    [
+      "mendeley/422",
+      "mendeley/423"
+    ],
+    [
+      "mendeley/43",
+      "mendeley/44"
+    ],
+    [
+      "mendeley/434",
+      "mendeley/435"
+    ],
+    [
+      "mendeley/522",
+      "mendeley/524"
+    ],
+    [
+      "mendeley/527",
+      "mendeley/528"
+    ],
+    [
+      "mendeley/54",
+      "mendeley/56"
+    ],
+    [
+      "mendeley/57",
+      "mendeley/59"
+    ]
+  ],
+  "group_sizes": {
+    "10": 1,
+    "9": 1,
+    "8": 3,
+    "7": 1,
+    "6": 2,
+    "5": 15,
+    "4": 64,
+    "3": 14,
+    "2": 14
+  },
+  "images_in_groups": 463,
+  "cross_dataset_groups": [],
+  "leakage": [
+    {
+      "seed": 0,
+      "test_images": 129,
+      "test_with_partner_in_train": 87,
+      "test_with_partner_in_val": 55,
+      "test_with_partner_in_test": 40,
+      "mendeley_test_images": 112,
+      "mendeley_test_without_partner": 25,
+      "unet": {
+        "dice_all": 0.8371558947375186,
+        "dice_without_leaked": 0.8163198410743152,
+        "mendeley_partner_in_train": 0.8472146792645823,
+        "mendeley_no_partner": 0.8036479779749945,
+        "eyes_defy": 0.834954933867434
+      },
+      "unetplusplus": {
+        "dice_all": 0.8446176436203943,
+        "dice_without_leaked": 0.8335091223237832,
+        "mendeley_partner_in_train": 0.8499803780394477,
+        "mendeley_no_partner": 0.825320679953141,
+        "eyes_defy": 0.8455509493394334
+      },
+      "attention": {
+        "dice_all": 0.847630306010939,
+        "dice_without_leaked": 0.8344758342284309,
+        "mendeley_partner_in_train": 0.8539807406645636,
+        "mendeley_no_partner": 0.8288354308251737,
+        "eyes_defy": 0.8427705451155735
+      },
+      "linknet": {
+        "dice_all": 0.8011394852237076,
+        "dice_without_leaked": 0.8060758672760014,
+        "mendeley_partner_in_train": 0.7987564042329452,
+        "mendeley_no_partner": 0.7876559803093436,
+        "eyes_defy": 0.8331639363446155
+      },
+      "fpn": {
+        "dice_all": 0.8262510758586493,
+        "dice_without_leaked": 0.8142930317929546,
+        "mendeley_partner_in_train": 0.8320239247179501,
+        "mendeley_no_partner": 0.8035606671251249,
+        "eyes_defy": 0.8300759210103517
+      },
+      "pspnet": {
+        "dice_all": 0.7593319816789016,
+        "dice_without_leaked": 0.7521350055862424,
+        "mendeley_partner_in_train": 0.76280638393053,
+        "mendeley_no_partner": 0.7428011347518378,
+        "eyes_defy": 0.7658612862250728
+      }
+    },
+    {
+      "seed": 1,
+      "test_images": 129,
+      "test_with_partner_in_train": 88,
+      "test_with_partner_in_val": 46,
+      "test_with_partner_in_test": 44,
+      "mendeley_test_images": 106,
+      "mendeley_test_without_partner": 18,
+      "unet": {
+        "dice_all": 0.8474481946959995,
+        "dice_without_leaked": 0.8509858856027772,
+        "mendeley_partner_in_train": 0.8457999523417055,
+        "mendeley_no_partner": 0.8725803333470272,
+        "eyes_defy": 0.8340858830203206
+      },
+      "unetplusplus": {
+        "dice_all": 0.8511771282148439,
+        "dice_without_leaked": 0.8486395556782246,
+        "mendeley_partner_in_train": 0.8523594063284962,
+        "mendeley_no_partner": 0.8731755153223797,
+        "eyes_defy": 0.8294375003045377
+      },
+      "attention": {
+        "dice_all": 0.8512587529844934,
+        "dice_without_leaked": 0.8500107605138216,
+        "mendeley_partner_in_train": 0.8518402040219656,
+        "mendeley_no_partner": 0.8697041315658132,
+        "eyes_defy": 0.8345985570818281
+      },
+      "linknet": {
+        "dice_all": 0.8172879576287106,
+        "dice_without_leaked": 0.837988002307598,
+        "mendeley_partner_in_train": 0.8076436186305926,
+        "mendeley_no_partner": 0.8562164338286131,
+        "eyes_defy": 0.8237222732911512
+      },
+      "fpn": {
+        "dice_all": 0.8376413293649324,
+        "dice_without_leaked": 0.8376532737273075,
+        "mendeley_partner_in_train": 0.8376357643779169,
+        "mendeley_no_partner": 0.8579493071818258,
+        "eyes_defy": 0.821769421458554
+      },
+      "pspnet": {
+        "dice_all": 0.7687596462316563,
+        "dice_without_leaked": 0.7700095014267481,
+        "mendeley_partner_in_train": 0.7681773273339428,
+        "mendeley_no_partner": 0.7815057262796308,
+        "eyes_defy": 0.7610124558897096
+      }
+    },
+    {
+      "seed": 2,
+      "test_images": 129,
+      "test_with_partner_in_train": 83,
+      "test_with_partner_in_val": 40,
+      "test_with_partner_in_test": 53,
+      "mendeley_test_images": 114,
+      "mendeley_test_without_partner": 31,
+      "unet": {
+        "dice_all": 0.8378652827236988,
+        "dice_without_leaked": 0.8412829540751028,
+        "mendeley_partner_in_train": 0.8359711516132822,
+        "mendeley_no_partner": 0.8456542568063665,
+        "eyes_defy": 0.8322489284304913
+      },
+      "unetplusplus": {
+        "dice_all": 0.8362441373653212,
+        "dice_without_leaked": 0.8367198717456488,
+        "mendeley_partner_in_train": 0.8359804773473084,
+        "mendeley_no_partner": 0.8412014496643274,
+        "eyes_defy": 0.8274579440470468
+      },
+      "attention": {
+        "dice_all": 0.8357567031043749,
+        "dice_without_leaked": 0.8402225739276272,
+        "mendeley_partner_in_train": 0.8332816421661865,
+        "mendeley_no_partner": 0.8495110381195538,
+        "eyes_defy": 0.821026414597646
+      },
+      "linknet": {
+        "dice_all": 0.8218094523842475,
+        "dice_without_leaked": 0.8343738504170516,
+        "mendeley_partner_in_train": 0.8148460510648621,
+        "mendeley_no_partner": 0.8382545410416314,
+        "eyes_defy": 0.8263537564595862
+      },
+      "fpn": {
+        "dice_all": 0.8337070129287155,
+        "dice_without_leaked": 0.8340559600034271,
+        "mendeley_partner_in_train": 0.833513620574056,
+        "mendeley_no_partner": 0.8436788311912469,
+        "eyes_defy": 0.8141686928819326
+      },
+      "pspnet": {
+        "dice_all": 0.7593268423516023,
+        "dice_without_leaked": 0.7783685616498697,
+        "mendeley_partner_in_train": 0.7487736003308758,
+        "mendeley_no_partner": 0.781753358934064,
+        "eyes_defy": 0.7713733139292012
+      }
+    },
+    {
+      "seed": 3,
+      "test_images": 129,
+      "test_with_partner_in_train": 89,
+      "test_with_partner_in_val": 49,
+      "test_with_partner_in_test": 49,
+      "mendeley_test_images": 113,
+      "mendeley_test_without_partner": 24,
+      "unet": {
+        "dice_all": 0.8445692428364456,
+        "dice_without_leaked": 0.8295358730860108,
+        "mendeley_partner_in_train": 0.851325813510798,
+        "mendeley_no_partner": 0.8333150713675925,
+        "eyes_defy": 0.8238670756636386
+      },
+      "unetplusplus": {
+        "dice_all": 0.8441455774431211,
+        "dice_without_leaked": 0.8287816349212029,
+        "mendeley_partner_in_train": 0.8510507201496011,
+        "mendeley_no_partner": 0.832285678743503,
+        "eyes_defy": 0.8235255691877523
+      },
+      "attention": {
+        "dice_all": 0.8442344958337515,
+        "dice_without_leaked": 0.8319227006460501,
+        "mendeley_partner_in_train": 0.8497678869293478,
+        "mendeley_no_partner": 0.8413399953849318,
+        "eyes_defy": 0.8177967585377275
+      },
+      "linknet": {
+        "dice_all": 0.8232963707855839,
+        "dice_without_leaked": 0.823491345554294,
+        "mendeley_partner_in_train": 0.8232087416760513,
+        "mendeley_no_partner": 0.8323207025167214,
+        "eyes_defy": 0.8102473101106533
+      },
+      "fpn": {
+        "dice_all": 0.8395124333812164,
+        "dice_without_leaked": 0.8295405777188897,
+        "mendeley_partner_in_train": 0.8439941662631608,
+        "mendeley_no_partner": 0.8373142158374508,
+        "eyes_defy": 0.8178801205410475
+      },
+      "pspnet": {
+        "dice_all": 0.7804288401969404,
+        "dice_without_leaked": 0.765158125167342,
+        "mendeley_partner_in_train": 0.7872920829068725,
+        "mendeley_no_partner": 0.7638356009726482,
+        "eyes_defy": 0.7671419114593829
+      }
+    },
+    {
+      "seed": 42,
+      "test_images": 129,
+      "test_with_partner_in_train": 93,
+      "test_with_partner_in_val": 46,
+      "test_with_partner_in_test": 51,
+      "mendeley_test_images": 114,
+      "mendeley_test_without_partner": 21,
+      "unet": {
+        "dice_all": 0.8555385288303312,
+        "dice_without_leaked": 0.8379306915750856,
+        "mendeley_partner_in_train": 0.8623544658323619,
+        "mendeley_no_partner": 0.8399129715738092,
+        "eyes_defy": 0.8351554995768725
+      },
+      "unetplusplus": {
+        "dice_all": 0.85487849571643,
+        "dice_without_leaked": 0.8455651587854799,
+        "mendeley_partner_in_train": 0.8584836583993787,
+        "mendeley_no_partner": 0.8448855906346986,
+        "eyes_defy": 0.8465165541965738
+      },
+      "attention": {
+        "dice_all": 0.8530894074018714,
+        "dice_without_leaked": 0.8383612166526503,
+        "mendeley_partner_in_train": 0.858790642530602,
+        "mendeley_no_partner": 0.8446457968289018,
+        "eyes_defy": 0.8295628044058986
+      },
+      "linknet": {
+        "dice_all": 0.8298606285620821,
+        "dice_without_leaked": 0.831488329334455,
+        "mendeley_partner_in_train": 0.829230550843744,
+        "mendeley_no_partner": 0.8363021655393963,
+        "eyes_defy": 0.8247489586475372
+      },
+      "fpn": {
+        "dice_all": 0.8391421835881122,
+        "dice_without_leaked": 0.826600951353549,
+        "mendeley_partner_in_train": 0.8439968541305237,
+        "mendeley_no_partner": 0.8308283704736189,
+        "eyes_defy": 0.8206825645854512
+      },
+      "pspnet": {
+        "dice_all": 0.7589685393411092,
+        "dice_without_leaked": 0.754346542976307,
+        "mendeley_partner_in_train": 0.7607576992242584,
+        "mendeley_no_partner": 0.7427932031367305,
+        "eyes_defy": 0.7705212187517141
+      }
+    }
+  ]
+}

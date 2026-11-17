@@ -8,6 +8,7 @@
 > add an extractor, a feature representation, a metric or a dataset.
 > `UI_INTEGRATION.md` is the step-by-step guide for building the client
 > against the API, and is the only document the app developer needs.
+> `REPORT_POINTS.md` collects sourced points for the IEEE report.
 
 Estimate haemoglobin from a photograph of the palpebral conjunctiva, and screen
 for anemia against the patient's WHO threshold.
@@ -140,9 +141,9 @@ stage side by side, so each can be compared against the one before it without
 opening separate files. Panels read left to right, top to bottom:
 
 ```
-00 original capture        05 mask over photo
+00 original capture        05 mask over the colour-corrected frame
 01 resized to 512x512      06 outside mask removed
-02 gray-world white balance 07 tight crop
+02 extractor input         07 tight crop
 03 redness map (a*-0.5b*)  08 letterboxed to square
 04 segmentation mask       09 model input 224x224
 ```
@@ -243,7 +244,7 @@ src/anemia/
   imaging.py          colour ops, QC scores, letterbox crop (no torch)
   segment.py          segmentation backends behind one callable contract
   segment_learned.py  trained extractor, read-only: loads a bundle, never writes one
-  architectures.py    U-Net / UNet++ / Attention U-Net, built in one place
+  architectures.py    U-Net, UNet++, Attention U-Net, LinkNet, FPN, PSPNet — built in one place
   preprocess.py       capture -> model-ready crop, with the QC gate
   data.py             dataset loaders + WHO thresholds
   splits.py           patient-grouped, Hb-stratified CV

@@ -1,9 +1,18 @@
-"""Compare three encoder-decoder architectures for conjunctiva segmentation.
+"""Compare encoder-decoder architectures for conjunctiva segmentation.
 
-`run.sh` trains U-Net, UNet++ and Attention U-Net under identical conditions —
-same seed, same subject-grouped split, same augmentation, same ImageNet
-EfficientNet-B0 encoder, same 40 epochs — so what differs is the decoder. This
-script scores the three bundles it produced, using only segmentation metrics.
+`scripts/select_architecture.py` trains each architecture under identical
+conditions — same seed, same subject-grouped split, same augmentation, same
+ImageNet EfficientNet-B0 encoder, same 40 epochs — so what differs is the
+decoder. This script scores every bundle it produced, using only segmentation
+metrics: U-Net, UNet++ and Attention U-Net first, then LinkNet, FPN and PSPNet,
+added after a published comparison reported LinkNet ahead of the other four.
+
+With six architectures there are fifteen possible pairs. Testing all of them at
+0.05, or testing everything against whichever wins on this test set, would find
+"significant" differences by chance. So two families of comparisons are fixed in
+advance — the published claim, and whether anything beats the current choice —
+and each is Holm-corrected. All fifteen pairs are still written to
+`results.json`, unadjusted, for the record.
 
 How an encoder-decoder segmentation model is evaluated
 ======================================================
@@ -88,8 +97,18 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from anemia.architectures import build  # noqa: E402
 
-ARCHS = ("unet", "unetplusplus", "attention")
-LABEL = {"unet": "U-Net", "unetplusplus": "UNet++", "attention": "Attention U-Net"}
+ARCHS = ("unet", "unetplusplus", "attention", "linknet", "fpn", "pspnet")
+LABEL = {"unet": "U-Net", "unetplusplus": "UNet++", "attention": "Attention U-Net",
+         "linknet": "LinkNet", "fpn": "FPN", "pspnet": "PSPNet"}
+
+# Comparisons fixed before seeing results, so the test set is not used both to
+# pick a winner and to test it. Each family gets a Holm correction.
+FAMILIES = {
+    "The paper's claim: LinkNet against the four it reportedly beat":
+        [("linknet", "unet"), ("linknet", "unetplusplus"), ("linknet", "fpn"), ("linknet", "pspnet")],
+    "Does anything beat the current choice, Attention U-Net?":
+        [(a, "attention") for a in ("unet", "unetplusplus", "linknet", "fpn", "pspnet")],
+}
 DATA_ROOTS = [Path.home() / "btp-local/datasets/eyes_defy_prepared",
               Path.home() / "btp-local/datasets/conjunctiva_seg_prepared"]
 
@@ -138,6 +157,12 @@ def score_pair(predicted: np.ndarray, truth: np.ndarray) -> dict:
         "recall": (inter + 1e-6) / (t_sum + 1e-6),
         "hd95": hd95(predicted, truth),
         "empty": p_sum == 0,
+        # Pixel accuracy, and what predicting "background everywhere" would
+        # score on the same image. Conjunctiva is a few percent of the frame,
+        # so the second is already ~0.97: accuracy is reported because it is
+        # commonly asked for, not because it separates models.
+        "accuracy": float((predicted == truth).mean()),
+        "trivial_accuracy": float((~truth).mean()),
     }
 
 
@@ -187,22 +212,42 @@ def summarise(rows: list) -> dict:
     }
 
 
-def paired_tests(summaries: dict) -> list:
-    rows = []
-    for i, a in enumerate(ARCHS):
-        for b in ARCHS[i + 1:]:
-            if a not in summaries or b not in summaries:
-                continue
-            x = np.array(summaries[a]["per_image_dice"])
-            y = np.array(summaries[b]["per_image_dice"])
-            diff = x - y
-            p = float(stats.wilcoxon(x, y).pvalue) if np.any(diff) else 1.0
-            rng = np.random.default_rng(0)
-            boot = [float(diff[rng.integers(0, len(diff), len(diff))].mean()) for _ in range(2000)]
-            rows.append({"a": a, "b": b, "mean_diff": float(diff.mean()),
-                         "ci": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
-                         "p": p, "a_wins": int((diff > 0).sum()), "b_wins": int((diff < 0).sum())})
+def paired(summaries: dict, a: str, b: str) -> dict:
+    """Per-image Dice of a minus b: mean, paired bootstrap 95% CI, Wilcoxon p."""
+
+    x = np.array(summaries[a]["per_image_dice"])
+    y = np.array(summaries[b]["per_image_dice"])
+    diff = x - y
+    p = float(stats.wilcoxon(x, y).pvalue) if np.any(diff) else 1.0
+    rng = np.random.default_rng(0)
+    boot = [float(diff[rng.integers(0, len(diff), len(diff))].mean()) for _ in range(2000)]
+    return {"a": a, "b": b, "mean_diff": float(diff.mean()),
+            "ci": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
+            "p": p, "a_wins": int((diff > 0).sum()), "b_wins": int((diff < 0).sum())}
+
+
+def holm(rows: list) -> list:
+    """Holm step-down adjustment within one family of comparisons.
+
+    Testing several comparisons at 0.05 each makes at least one false positive
+    likely. Holm controls that family-wide while costing less power than
+    Bonferroni: sort by p, multiply the k-th smallest by (m - k + 1), and keep
+    the adjusted values non-decreasing.
+    """
+
+    order = sorted(range(len(rows)), key=lambda i: rows[i]["p"])
+    m, running = len(rows), 0.0
+    for rank, i in enumerate(order):
+        running = max(running, min(1.0, (m - rank) * rows[i]["p"]))
+        rows[i]["p_holm"] = running
     return rows
+
+
+def paired_tests(summaries: dict) -> list:
+    """Every pair, unadjusted — stored for the record, not used to declare winners."""
+
+    present = [a for a in ARCHS if a in summaries]
+    return [paired(summaries, a, b) for i, a in enumerate(present) for b in present[i + 1:]]
 
 
 def main() -> None:
@@ -212,9 +257,11 @@ def main() -> None:
     bundles = {a: HERE / "bundles" / f"{a}.pt" for a in ARCHS}
     missing = [a for a, p in bundles.items() if not p.exists()]
     if missing:
-        print(f"Missing bundles: {missing}. Run experiments/20_architectures/run.sh first.",
-              file=sys.stderr)
-        raise SystemExit(1)
+        print(f"Missing bundles, skipped: {missing}. Train them with "
+              f"scripts/select_architecture.py --archs {' '.join(missing)}", file=sys.stderr)
+    bundles = {a: p for a, p in bundles.items() if p.exists()}
+    if "unet" not in bundles:
+        raise SystemExit("The U-Net bundle is required: it defines the shared test split.")
 
     first = torch.load(bundles["unet"], map_location="cpu", weights_only=False)
     test_subjects = set(first["metrics"]["test_subjects"])
@@ -229,13 +276,13 @@ def main() -> None:
           f"at {size}px, threshold {threshold}\n")
 
     # Every architecture must be scored on exactly the same images.
-    for arch in ARCHS:
+    for arch in bundles:
         b = torch.load(bundles[arch], map_location="cpu", weights_only=False)
         assert set(b["metrics"]["test_subjects"]) == test_subjects, \
             f"{arch} was tested on different subjects — the comparison would be invalid"
 
     summaries = {}
-    for arch in ARCHS:
+    for arch in bundles:
         rows = evaluate_bundle(bundles[arch], test_pairs, size, threshold, device)
         summaries[arch] = summarise(rows)
         summaries[arch]["params_m"] = sum(
@@ -243,38 +290,50 @@ def main() -> None:
                                           weights_only=False)["state_dict"].values()) / 1e6
         print(f"  scored {LABEL[arch]}")
 
+    ranked = sorted(summaries, key=lambda a: summaries[a]["dice"], reverse=True)
     print("\n1. OVERLAP — held-out subjects, used for neither training nor selection\n")
     print(f"   {'architecture':<20}{'params':>9}{'Dice':>9}{'IoU':>9}"
           f"{'precision':>11}{'recall':>9}{'HD95 px':>10}{'empty':>7}")
-    for arch in ARCHS:
+    for arch in ranked:
         s = summaries[arch]
         print(f"   {LABEL[arch]:<20}{s['params_m']:>8.2f}M{s['dice']:>9.4f}{s['iou']:>9.4f}"
               f"{s['precision']:>11.4f}{s['recall']:>9.4f}{s['hd95']:>10.1f}{s['empty']:>7d}")
 
     print("\n2. DISTRIBUTION — the mean hides the failures\n")
     print(f"   {'architecture':<20}{'mean':>9}{'sd':>8}{'median':>9}{'10th pct':>11}{'worst':>9}")
-    for arch in ARCHS:
+    for arch in ranked:
         s = summaries[arch]
         print(f"   {LABEL[arch]:<20}{s['dice']:>9.4f}{s['dice_sd']:>8.4f}"
               f"{s['dice_median']:>9.4f}{s['dice_p10']:>11.4f}{s['dice_worst']:>9.4f}")
 
-    print("\n3. PAIRED — per image, same images, Wilcoxon signed-rank\n")
+    print("\n3. PAIRED — per image, same images, Wilcoxon signed-rank, Holm-adjusted per family\n")
+    families = {}
+    for title, pairs_ in FAMILIES.items():
+        rows = holm([paired(summaries, a, b) for a, b in pairs_
+                     if a in summaries and b in summaries])
+        families[title] = rows
+        if not rows:
+            continue
+        print(f"   {title}")
+        print(f"   {'pair':<34}{'mean diff':>11}{'95% CI':>20}{'p':>8}{'p Holm':>9}{'wins':>10}")
+        for t in rows:
+            ci = f"[{t['ci'][0]:+.3f}, {t['ci'][1]:+.3f}]"
+            name = f"{LABEL[t['a']]} \u2212 {LABEL[t['b']]}"
+            verdict = "  resolved" if t["p_holm"] < 0.05 else ""
+            print(f"   {name:<34}{t['mean_diff']:>+11.4f}{ci:>20}{t['p']:>8.4f}{t['p_holm']:>9.4f}"
+                  f"{str(t['a_wins']) + '/' + str(t['b_wins']):>10}{verdict}")
+        print()
+    print("   'wins' = images where the first scores higher / the second does.")
+    print("   Positive mean diff = the first is better. 'resolved' = Holm-adjusted p < 0.05.")
     tests = paired_tests(summaries)
-    print(f"   {'pair':<36}{'mean diff':>11}{'95% CI':>20}{'p':>9}{'wins':>10}")
-    for t in tests:
-        ci = f"[{t['ci'][0]:+.3f}, {t['ci'][1]:+.3f}]"
-        name = f"{LABEL[t['a']]} − {LABEL[t['b']]}"
-        print(f"   {name:<36}{t['mean_diff']:>+11.4f}{ci:>20}{t['p']:>9.4f}"
-              f"{str(t['a_wins']) + '/' + str(t['b_wins']):>10}")
-    print("\n   'wins' = images where the first scores higher / the second does.")
-    print("   A difference matters only if the interval excludes zero.")
 
     out = {a: {k: v for k, v in s.items() if k != "per_image_dice"} for a, s in summaries.items()}
     (HERE / "results.json").write_text(json.dumps(
         {"test_images": len(test_pairs), "test_subjects": len(test_subjects),
-         "overlap": out, "paired": tests}, indent=2, default=float))
+         "overlap": out, "families": families, "paired_all_unadjusted": tests},
+        indent=2, default=float))
     np.save(HERE / "per_image_dice.npy",
-            np.array([summaries[a]["per_image_dice"] for a in ARCHS]))
+            np.array([summaries[a]["per_image_dice"] for a in summaries]))
     print(f"\nWrote {HERE / 'results.json'}")
 
 

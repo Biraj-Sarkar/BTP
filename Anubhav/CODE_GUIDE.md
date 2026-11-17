@@ -106,7 +106,8 @@ Every tunable, as frozen dataclasses grouped by stage (`PreprocessConfig`,
 Serialised next to every checkpoint so any run can be reproduced from one blob.
 
 ### `imaging.py`
-Colour and geometry primitives: white balance, redness index, lightness,
+Colour and geometry primitives: white balance (white-patch, the default, and
+gray-world), redness index, lightness,
 letterbox padding, tight bounding box, mask smoothing, overlay rendering, and
 the QC scores (focus, exposure, clipping).
 
@@ -146,12 +147,29 @@ be served by a different decoder than the one that trained it: the bundle record
   gates rather than capacity.
 - `unet-scse` — the library's own decoder attention, a different mechanism
   (it recalibrates after concatenation rather than gating the skip before it).
+- `linknet`, `fpn`, `pspnet` — from the library, at its default configuration,
+  added after a published comparison reported LinkNet ahead of U-Net, UNet++, FPN
+  and PSPNet. LinkNet adds skips instead of concatenating them; FPN predicts from a
+  top-down feature pyramid at 1/4 resolution; PSPNet pools the deepest features at
+  several grid sizes, has no shallow skips, and by default predicts at 1/8
+  resolution from the first three encoder stages.
 
-Compared in `experiments/20_architectures/`.
+Every architecture is tested to return a single-channel mask at input resolution.
+
+Compared on one split in `experiments/20_architectures/`, and over five random
+splits in `experiments/21_repeated_splits/` (U-Net, UNet++ and Attention U-Net
+tie; the other three rank below them in every split). `run.py` there is resumable
+and reuses any bundle whose recorded settings match; `--evaluate-only` rescores.
 
 ### `preprocess.py`
 The `prepare()` function every image passes through, at train time and at serve
-time: white balance → segment → tight crop → letterbox → resize.
+time: squash to 512×512 → segment → white balance of the full frame → tight
+crop → letterbox → resize to 224×224. White balance comes after segmentation
+because white-patch, the default since 17 Nov 2026, needs the mask to find the
+lower lid; `PreprocessConfig.white_balance` selects it (`"white_patch"`,
+`"gray_world"` or `"none"`), and saved models are served with the correction
+they recorded. Colour is read from the 512 frame; experiment 22 measured what
+each resize costs (mask and colour: negligible; fine structure: lost).
 
 Also holds `assess_quality()` (the enforced QC gate) and `CropCache` (the disk
 cache described in §1.3).
@@ -161,9 +179,10 @@ cache described in §1.3).
 A learned segmenter is as sensitive to a global colour shift as to anything else
 in its input, so it must be served the kind of image it trained on. The bundle
 records that as `gray_world`, `LearnedSegmenter.wants_gray_world` exposes it, and
-`prepare()` conditions the segmenter's input to match — independently of
-`PreprocessConfig.gray_world`, which governs only the pixels colour is finally
-read from. An extractor that declares nothing keeps the previous behaviour.
+`prepare()` conditions the segmenter's input to match (`segmenter_input()`) —
+independently of `PreprocessConfig.white_balance`, which governs only the pixels
+colour is finally read from. An extractor that declares nothing (the classical
+ones) is shown gray-world frames, as it was tuned on, unless correction is off.
 
 This was a real defect: training read raw pairs while `prepare()` white-balanced
 the frame first, so every bundle was trained on raw pixels and served balanced
@@ -189,7 +208,7 @@ from anemia.preprocess import prepare_path
 from anemia.segment import get_extractor
 
 segmenter = get_extractor(model_dir=REPO / "runs/segmenter/unet.pt")
-pre = PreprocessConfig(gray_world=False)
+pre = PreprocessConfig()           # white-patch; see point 2
 qc = QualityConfig()
 
 out = prepare_path(image_path, segmenter, pre, qc)
@@ -204,10 +223,14 @@ Four things that are easy to get wrong:
    `DEFAULT_BUNDLE` as the *relative* path `runs/segmenter/unet.pt`, so it only
    works with the repository root as the working directory. From anywhere else
    it raises `FileNotFoundError`. An explicit path always wins.
-2. **Set `gray_world=False`.** The dataclass still defaults to `True` from the
-   earlier chain, but no correction beats gray-world on every test run so far,
-   within and across sites — see `experiments/18_white_balance/`. The default is
-   left alone until the hospital camera decides it.
+2. **Choose the colour correction deliberately.** The default is white-patch
+   (`white_balance="white_patch"`): of the estimates of the light compared, it
+   came closest to the capture device's white plastic
+   (`experiments/26_correction_prechecks/`). Its effect on haemoglobin error has
+   **not** been tested yet. No correction (`"none"`) beat gray-world on every
+   test so far (`experiments/18_white_balance/`), so `"none"` is the reference
+   arm to compare against. Whichever you pick, use the same one for training and
+   serving.
 3. **Honour `out.quality.passed`.** Training on captures the gate would reject
    teaches the model to read blurred and clipped images. `out.quality.reasons`
    says which check failed.
@@ -335,6 +358,16 @@ them; `--no-select` trains on every subject for a fixed epoch count, which is th
 shipping run; `--gray-world` white-balances during training and records that in
 the bundle, so serving can match it.
 
+The split is made by `split_subjects`. By default every subject (from
+`subject_of`) is dealt out on its own, the same split as always. `--groups` reads
+a CSV of subjects that are one person (`experiments/23_duplicates/groups.csv`)
+and keeps each group on one side. `--block N` deals out a capture-ordered
+dataset in consecutive blocks of about N files, so a person can straddle the
+split only at a block edge, and each dataset root gets its own share of test
+and validation images. `--buffer N` then leaves out of training and validation
+every group within N file numbers of a test file. The bundle records the groups
+file and its hash, the block, the buffer and which subjects sat out.
+
 ### `scripts/select_architecture.py`
 Two stages. Stage 1 trains each candidate architecture on one shared split and
 records held-out scores in a leaderboard, with a fingerprint of the split so a
@@ -348,7 +381,20 @@ Runs one or more extractors over a folder of photographs and writes one folder o
 extractor accepted. Built for the white-balance comparison in
 `WHITE_BALANCE_TEST.md`: `raw` and `gw` resolve to the two Attention U-Net
 bundles, and each extractor's crop colour follows the condition it was trained
-under, so one switch selects a complete, consistent pipeline.
+under, so one switch selects a complete, consistent pipeline. `--crop-colour
+raw|gw|wp` instead fixes the crop colour for every extractor (`wp` is
+white-patch, the pipeline's default).
+
+### `scripts/make_white_balance_figure.py`
+One photograph under four colour corrections, for slides: no correction,
+gray-world and white-patch, produced by `prepare()` with only `white_balance`
+changed, and the proposed sclera-as-white correction, using experiment 26's
+sclera detector. The mask is the same in all four. The figure shows the
+corrected frame, where white-patch and sclera read the light, the regressor's
+crop, and the device plastic's colour after each correction.
+`--example india|italy` writes `figures/white_balance_comparison_<example>.png`;
+each example is the photograph closest to its site's median angles (all four)
+in experiment 26.
 
 ### `scripts/benchmark_segmenters.py`
 Scores every backend against real ground-truth masks and prints a Dice/IoU

@@ -139,7 +139,13 @@ Two rules that are easy to get wrong:
 
 - **Split by subject, never by image.** The same eye photographed twice is not
   two independent samples; an image-level split measures recall, not
-  generalisation. `train_segmenter.py` groups automatically via `subject_of`.
+  generalisation. `train_segmenter.py` groups automatically via `subject_of`,
+  but only by what folder and file names encode. A dataset without subject ids
+  (the Mendeley set) is not grouped at all: check new data for repeat shots
+  (`experiments/23_duplicates/`) and pass the groups found with `--groups`. If
+  the files are numbered in capture order, also pass `--block` and `--buffer`
+  (experiment 24 uses `--block 24 --buffer 4`), because one person's other eye
+  usually sits in the neighbouring run of files where no matcher links it.
 - **Photometric augmentation is aggressive, and that is correct here.** This
   model outputs a *mask*, not a colour, so colour-invariance is exactly what we
   want. The colour statistics feeding haemoglobin regression are measured later

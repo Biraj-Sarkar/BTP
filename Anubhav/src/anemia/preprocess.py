@@ -27,6 +27,7 @@ from .imaging import (
     read_rgb,
     resize,
     tight_bbox,
+    white_patch_white_balance,
 )
 from .segment import SegmentResult
 
@@ -123,13 +124,57 @@ def assess_quality(
     )
 
 
+def segmenter_input(
+    working: np.ndarray,
+    segmenter: Callable[[np.ndarray], SegmentResult],
+    preprocess: PreprocessConfig,
+) -> np.ndarray:
+    """The frame the extractor is shown: the kind of image it was built on.
+
+    A learned segmenter is as sensitive to a global colour shift as to anything
+    else in its input, so handing a model trained on raw pixels a white-balanced
+    frame (or the reverse) is a train/serve mismatch — measured at IoU 0.57-0.67
+    between the two masks on the 52-capture cohort, with coverage falling by
+    about a third. A learned segmenter declares its condition in
+    `wants_gray_world`.
+
+    An extractor that declares nothing (the classical ones) was tuned on
+    gray-world frames and keeps receiving them, unless correction is switched
+    off altogether. White-patch is never the segmenter's input, because it is
+    computed from the mask.
+    """
+
+    wants = getattr(segmenter, "wants_gray_world", None)
+    if wants is None:
+        wants = preprocess.white_balance != "none"
+    return gray_world_white_balance(working) if wants else working
+
+
+def colour_correct(working: np.ndarray, mask: np.ndarray, method: str) -> np.ndarray:
+    """Apply `PreprocessConfig.white_balance` to the full working frame."""
+
+    if method == "white_patch":
+        return white_patch_white_balance(working, mask)
+    if method == "gray_world":
+        return gray_world_white_balance(working)
+    if method == "none":
+        return working
+    raise ValueError(f"Unknown white balance {method!r}")
+
+
 def prepare(
     image_rgb: np.ndarray,
     segmenter: Callable[[np.ndarray], SegmentResult],
     preprocess: PreprocessConfig,
     quality: QualityConfig,
 ) -> Prepared:
-    """White balance -> segment -> tight crop -> letterbox -> resize.
+    """Segment -> colour-correct the full frame -> tight crop -> letterbox -> resize.
+
+    The colour correction is computed on the whole working frame, never on the
+    crop: inside the crop nothing is white, and the crop's mean is the tissue
+    itself. White-patch needs the mask to know where the lower lid is, so the
+    frame is segmented first (on its own input, `segmenter_input`) and corrected
+    afterwards.
 
     Padding to square happens *before* the resize so the crescent shape is never
     stretched, and no local contrast equalisation is applied: CLAHE next to the
@@ -138,21 +183,8 @@ def prepare(
     """
 
     working = resize(image_rgb, preprocess.work_size)
-    balanced = gray_world_white_balance(working) if preprocess.gray_world else working
-
-    # Segment the kind of image the extractor was trained on. A learned segmenter
-    # is as sensitive to a global colour shift as to anything else in its input,
-    # so handing a model trained on raw pixels a white-balanced frame (or the
-    # reverse) is a train/serve mismatch — measured at IoU 0.57-0.67 between the
-    # two masks on the 52-capture cohort, with coverage falling by about a third.
-    # An extractor that declares nothing keeps the previous behaviour.
-    wants = getattr(segmenter, "wants_gray_world", None)
-    if wants is None or wants == preprocess.gray_world:
-        segment_input = balanced
-    else:
-        segment_input = gray_world_white_balance(working) if wants else working
-
-    mask, backend = segmenter(segment_input)
+    mask, backend = segmenter(segmenter_input(working, segmenter, preprocess))
+    balanced = colour_correct(working, mask, preprocess.white_balance)
 
     # The mask-size floor belongs to the extractor, not to the capture. 1.5% of
     # the frame was calibrated for the classical chain, whose masks cover ~10%
@@ -211,12 +243,20 @@ class CropCache:
         # thresholds, so those thresholds belong in the key. Without them,
         # tightening a gate would silently reuse verdicts computed under the
         # old one — the same trap as reusing crops cut by an old extractor.
+        # Gray-world and no correction keep the key they had as a True/False
+        # switch, so crops cached under those settings stay valid; white-patch
+        # gets its own.
+        colour = (
+            {"white_balance": preprocess.white_balance}
+            if preprocess.white_balance == "white_patch"
+            else {"gray_world": preprocess.white_balance == "gray_world"}
+        )
         signature = json.dumps(
             {
                 "work_size": list(preprocess.work_size),
                 "model_size": list(preprocess.model_size),
                 "bbox_pad_ratio": preprocess.bbox_pad_ratio,
-                "gray_world": preprocess.gray_world,
+                **colour,
                 "backend": backend,
                 "quality": asdict(quality) if quality is not None else None,
             },

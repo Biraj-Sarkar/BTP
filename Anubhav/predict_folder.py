@@ -166,8 +166,10 @@ def main() -> None:
     # wrong extractor would be silently wrong rather than obviously broken.
     extractor_name = args.extractor or model.extractor
     segmenter = get_extractor(extractor_name, args.segmenter)
+    # The colour correction also comes from the model file: features measured
+    # under a different correction are not comparable either.
     preprocess = PreprocessConfig(work_size=tuple(model.work_size),
-                                  gray_world=model.gray_world)
+                                  white_balance=model.white_balance)
     quality = QualityConfig()
 
     print(f"Model:     {args.model}")

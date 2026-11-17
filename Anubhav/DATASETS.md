@@ -28,7 +28,7 @@ symlink:
 | Authors | Rahman, Faruk, Ullah, Alam, Sadman — Ahsanullah University of Science and Technology |
 | Licence | **CC BY 4.0** — redistribution permitted with attribution |
 | Size | 4.26 GB |
-| Contents | 547 smartphone eye images (~3000×4000), plus masks from **two independent annotators** |
+| Contents | 547 smartphone eye images (~3000×4000) of **at most 199 subjects** (see below), plus masks from **two independent annotators** |
 | Labels | none — no haemoglobin, no anaemia status |
 
 ```bash
@@ -37,7 +37,7 @@ curl -L -o datasets/conjunctiva_seg/yxwjgcndg2-1.zip \
 unzip datasets/conjunctiva_seg/yxwjgcndg2-1.zip -d datasets/conjunctiva_seg/
 ```
 
-### Two measured facts that its description does not tell you
+### Measured facts that its description does not tell you
 
 **The masks are RGB with values {0, 128}, not {0, 255}.** A conventional
 `> 127` threshold reads every mask as empty — and fails silently, because an
@@ -83,6 +83,24 @@ conservative convention — rather than a principled middle between the two.
 The annotations are otherwise excellent: median extent 0.282 and **zero
 rectangles in 547**, i.e. genuinely traced contours throughout.
 
+**The 547 images are repeat shots of far fewer subjects.** Files carry no subject
+id and no metadata, but keypoint matching between every pair finds **463 images
+in 115 groups** of 2–10 shots of one subject, most often four, taken in quick
+succession with neighbouring file numbers. That makes **at most 199 distinct
+subjects**, and fewer in fact, because the matcher misses shots taken at a
+different angle or of the other eye. Neighbouring groups are themselves often one
+person: at a sample of 24 places where one group ends and the next begins, at
+least 14 showed the same person (the other eye, or the same eye re-framed) and 4
+plainly different people. So a "group" is closer to one eye than to one person,
+and the number of people may be nearer half of 199. Treated as 547 independent
+subjects (as `subject_of` does), about two-thirds of every test split had a
+same-subject photograph in training. `experiments/23_duplicates/groups.csv`
+lists the groups. To split safely, pass it to the trainer with `--groups`, plus
+`--block 24 --buffer 4` for the neighbouring runs (experiment 24). Details and
+the leakage measurement are in `experiments/23_duplicates/RESULTS.md`. On those
+splits Dice is 0.001–0.018 lower than with image-level splits, and the order
+of architectures is unchanged (`experiments/24_grouped_splits/RESULTS.md`).
+
 ```bash
 python scripts/prepare_conjunctiva_seg.py \
   --source "datasets/conjunctiva_seg/Eye Conjunctiva Segmentation Dataset" \
@@ -121,6 +139,7 @@ accuracy**, is what 547 varied smartphone images are worth here.
 | | |
 |---|---|
 | Source | https://www.kaggle.com/datasets/harshwardhanfartale/eyes-defy-anemia |
+| Licence | CC BY-SA 4.0, as listed on the Kaggle page (a re-upload; cite the original authors given there) |
 | Size | 654 MB (635 MB compressed) |
 | Contents | 218 subject folders across India and Italy; per subject a full-resolution photograph plus up to three annotation images |
 | Labels | **haemoglobin**, in `India.xlsx` and `Italy.xlsx` |
@@ -152,6 +171,16 @@ its own bounding box, so `extent = area / bbox_area` is ≈1.0 against a median 
 **101 pairs from 101 distinct subjects**.
 
 Its haemoglobin labels are usable independently of the mask problem.
+
+**The Italian set is two capture batches** (experiment 26). Patients 1–31 have
+files named `1.jpg` … `31.jpg` and were photographed on five days between 28 May
+and 12 July 2019; patients 32–123 have files named `T_<n>_<date>_<time>.jpg` and
+were photographed on eight days between 6 and 14 June 2019. The first batch is
+older (mean age 66 against 44) and more anaemic (mean Hb 11.5 against 14.6), and
+the device's white plastic shows its light was less red. Any Italian analysis
+that pools the two should model the batch. All photographs, both sites, come
+from a Samsung Galaxy S6 (SM-G920F in Italy, SM-G920I in India) with white
+balance set to manual and no flash.
 
 ## 3. CP-AnemiC — *haemoglobin*
 

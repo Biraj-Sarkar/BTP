@@ -13,7 +13,7 @@ from typing import Optional
 import numpy as np
 import torch
 
-from .config import PreprocessConfig, QualityConfig
+from .config import PreprocessConfig, QualityConfig, white_balance_from_record
 from .data import anemia_threshold
 from .imaging import read_rgb
 from .linear_model import LinearModel
@@ -63,10 +63,15 @@ class AnemiaPredictor:
         self.device = torch.device(device) if device else torch.device("cpu")
         self.model = self.checkpoint.build(self.device)
 
+        # The colour correction is read from the training config stored in the
+        # checkpoint; checkpoints saved before `white_balance` existed fall back
+        # to their `gray_world` switch.
+        recorded = (self.checkpoint.config or {}).get("preprocess")
         self.preprocess_config = PreprocessConfig(
             work_size=tuple(self.checkpoint.work_size),
             model_size=tuple(self.checkpoint.model_size),
-            gray_world=self.checkpoint.gray_world,
+            white_balance=white_balance_from_record(
+                recorded, "gray_world" if self.checkpoint.gray_world else "none"),
         )
         self.quality_config = quality or QualityConfig()
 
@@ -148,7 +153,7 @@ class LinearPredictor:
         self.model = LinearModel.load(Path(model_path))
         self.preprocess_config = PreprocessConfig(
             work_size=tuple(self.model.work_size),
-            gray_world=self.model.gray_world,
+            white_balance=self.model.white_balance,
         )
         self.quality_config = quality or QualityConfig()
 

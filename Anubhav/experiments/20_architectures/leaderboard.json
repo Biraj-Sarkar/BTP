@@ -171,6 +171,33 @@
       "test_images": 129,
       "empty_masks": 0,
       "params_m": 6.329682
+    },
+    "linknet": {
+      "test_dice": 0.8004459828831428,
+      "test_iou": 0.6784202118021573,
+      "val_dice": 0.8093252748019936,
+      "best_epoch": 38,
+      "test_images": 129,
+      "empty_masks": 0,
+      "params_m": 4.210257
+    },
+    "fpn": {
+      "test_dice": 0.8270216471003008,
+      "test_iou": 0.7129813624444858,
+      "val_dice": 0.8369040299755658,
+      "best_epoch": 40,
+      "test_images": 129,
+      "empty_masks": 0,
+      "params_m": 5.80155
+    },
+    "pspnet": {
+      "test_dice": 0.760042360124662,
+      "test_iou": 0.6254842745703321,
+      "val_dice": 0.7757568941559903,
+      "best_epoch": 38,
+      "test_images": 129,
+      "empty_masks": 0,
+      "params_m": 4.098964
     }
   },
   "shipped": {

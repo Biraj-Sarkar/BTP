@@ -140,7 +140,10 @@ def main() -> int:
             mask = cv2.resize(mask.astype(np.uint8), size,
                               interpolation=cv2.INTER_NEAREST) > 0
 
-        # One capture per subject, so `<stem>_0` keeps `subject_of` correct.
+        # The files carry no subject id, so `<stem>_0` makes each file its own
+        # subject for `subject_of`. Many are repeat shots of one person; those
+        # are grouped separately (experiments/23_duplicates/groups.csv) and the
+        # trainer reads the groups with `--groups`.
         cv2.imwrite(str(out_images / f"{stem}_0.png"), photo)
         cv2.imwrite(str(out_masks / f"{stem}_0.png"), mask.astype(np.uint8) * 255)
         kept.append({"stem": stem, "coverage": round(coverage, 5),

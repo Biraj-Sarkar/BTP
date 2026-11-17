@@ -349,14 +349,13 @@ def cmd_stages(args: argparse.Namespace) -> None:
     from .imaging import (
         apply_mask,
         build_overlay,
-        gray_world_white_balance,
         pad_to_square,
         read_rgb,
         redness_index,
         resize,
         tight_bbox,
     )
-    from .preprocess import assess_quality
+    from .preprocess import assess_quality, colour_correct, segmenter_input
     from .segment import get_extractor
 
     segmenter = get_extractor(args.extractor, args.segmenter)
@@ -367,6 +366,8 @@ def cmd_stages(args: argparse.Namespace) -> None:
     scores_probability = hasattr(segmenter, "probability")
     preprocess = PreprocessConfig()
     quality_config = QualityConfig()
+    colour_label = {"white_patch": "white-patch", "gray_world": "gray-world",
+                    "none": "uncorrected"}[preprocess.white_balance]
 
     if args.image:
         files = [args.image]
@@ -393,26 +394,32 @@ def cmd_stages(args: argparse.Namespace) -> None:
         # Stage 1: resize to the working resolution the pipeline operates at.
         resized = resize(rgb, preprocess.work_size)
 
-        # Stage 2: gray-world white balance neutralises the illuminant.
-        balanced = gray_world_white_balance(resized)
+        # Stage 2: the frame the extractor is shown — gray-world for the
+        # classical chain and for extractors trained on it, raw pixels for
+        # extractors trained on those (the same rule as `prepare()`).
+        shown = segmenter_input(resized, segmenter, preprocess)
+        shown_label = "gray-world" if shown is not resized else "raw pixels"
 
         # Stage 3: what the extractor actually scores.
         if scores_probability:
             # Absolute 0-1, so the colours mean the same thing on every capture
             # — unlike the redness map below, which is stretched per image.
-            probability = segmenter.probability(balanced)
+            probability = segmenter.probability(shown)
             score_u8 = np.clip(probability * 255, 0, 255).astype(np.uint8)
             score_label = "03  conjunctiva probability"
         else:
-            redness = redness_index(balanced)
+            redness = redness_index(shown)
             spread = float(np.ptp(redness)) or 1.0
             score_u8 = np.clip((redness - redness.min()) / spread * 255, 0, 255).astype(np.uint8)
             score_label = "03  redness map (a*-0.5b*)"
         redness_view = cv2.cvtColor(
             cv2.applyColorMap(score_u8, cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
 
-        # Stage 4-5: segmentation, as raw mask and as overlay.
-        mask, backend = segmenter(balanced)
+        # Stage 4-5: segmentation, as raw mask and as overlay. The overlay is
+        # drawn on the colour-corrected frame, which white-patch can only
+        # compute once the mask exists.
+        mask, backend = segmenter(shown)
+        balanced = colour_correct(resized, mask, preprocess.white_balance)
         overlay = build_overlay(balanced, mask)
 
         # Stage 6: everything outside the mask blacked out.
@@ -435,10 +442,10 @@ def cmd_stages(args: argparse.Namespace) -> None:
         stages = [
             (rgb, "00  original capture"),
             (resized, "01  resized to 512x512"),
-            (balanced, "02  gray-world white balance"),
+            (shown, f"02  extractor input {shown_label}"),
             (redness_view, score_label),
             (mask, "04  segmentation mask"),
-            (overlay, "05  mask over photo"),
+            (overlay, f"05  mask over {colour_label} frame"),
             (masked, "06  outside mask removed"),
             (cropped, "07  tight crop"),
             (letterboxed, "08  letterboxed to square"),
@@ -473,9 +480,9 @@ def cmd_stages(args: argparse.Namespace) -> None:
 
     print(f"\nDone. One sheet per capture: <name>_stages.jpg")
     print("Panels read left to right, top to bottom:")
-    print(f"  original -> resized -> white balance -> "
+    print(f"  original -> resized -> extractor input -> "
           f"{'probability map' if scores_probability else 'redness map'} -> mask ->")
-    print("  overlay -> masked -> crop -> letterbox -> model input")
+    print(f"  overlay on the {colour_label} frame -> masked -> crop -> letterbox -> model input")
     print("Pass --separate to also write each stage as its own file.")
 
 
@@ -522,7 +529,7 @@ def cmd_fit_linear(args: argparse.Namespace) -> None:
     # The DEPLOYED model is fitted on every patient — standard practice, since
     # the shipped model should use all available data.
     model = fit_linear_model(X, y, args.representation, args.alpha,
-                             preprocess.work_size, preprocess.gray_world,
+                             preprocess.work_size, preprocess.white_balance,
                              args.extractor)
     in_sample = np.array([model.predict_features(row) for row in X])
     fitted = regression_metrics(in_sample, y, baseline=float(y.mean()))

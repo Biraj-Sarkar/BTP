@@ -42,11 +42,13 @@ The output is deliberately two-part:
 ```
 photo
   │
-  ├─ 1. white balance ─────────── neutralise the illuminant
+  ├─ 0. resize to 512×512 ─────── the whole frame, squashed to a square
   │
-  ├─ 2. segmentation ──────────── find the conjunctiva, discard everything else
+  ├─ 1. segmentation ──────────── find the conjunctiva, discard everything else
   │
-  ├─ 3. crop + letterbox ──────── square the ROI without distorting it
+  ├─ 2. white balance ─────────── neutralise the light, on the full frame
+  │
+  ├─ 3. crop + letterbox ──────── square the ROI without distorting it further
   │
   ├─ 4. quality control ───────── reject unusable captures (gate, not a note)
   │
@@ -66,14 +68,57 @@ invisible to tests.
 
 ## 3. Stage by stage
 
-### 3.1 Lighting normalisation — `imaging.gray_world_white_balance`
+### 3.1 Lighting normalisation — `imaging.white_patch_white_balance`
 
 Ward lighting varies wildly (fluorescent, tungsten, daylight through a window),
 and every phone's image processor applies its own colour correction. Both shift
 the image's white point, and that shift is large enough to swamp the pallor
 signal we are trying to measure.
 
-**Gray-world assumption:** averaged over a whole scene, the world is grey. So
+`PreprocessConfig.white_balance` chooses the correction: `"white_patch"` (the
+default since 17 Nov 2026), `"gray_world"` (the default before then) or
+`"none"`. Every saved model records the one it was fitted with and is served
+with that, so changing the default changes only new crops and new models.
+
+The correction is computed on the **full 512×512 frame**, and the crop is cut
+from the corrected frame. It runs **after** segmentation (§3.2), because
+white-patch needs the mask to find the lower lid. The segmenter's own input is
+set separately: a learned extractor is shown the kind of frame it was trained
+on, and the classical extractors are shown gray-world frames, as they were
+tuned on. Their masks are therefore the same whichever correction is chosen.
+
+**White-patch assumption (default):** the brightest surface in the frame is
+white, so its colour is the colour of the light. Scale the channels until it
+is neutral.
+
+```
+usable  = pixels with no channel ≥ 250, nor next to one (5×5),
+          and no more than 10 px below the conjunctiva's lower edge
+white   = mean RGB of the brightest 1% of usable pixels, by R+G+B
+scale_c = mean(white) / white_c
+```
+
+Each rule fixes a failure measured on the clinical photographs
+(`experiments/26_correction_prechecks/`):
+
+- **Clipped pixels are left out.** In 96% of the photographs all three channels
+  reach 255 somewhere, so the plain maximum per channel is (255, 255, 255) and
+  corrects nothing.
+- **Pixels below the lower lid are left out.** Otherwise the brightest pixels
+  fall on the capture device's white plastic in about half the photographs.
+- **A mean over the top 1%, not one pixel,** so a single bright speck cannot set
+  the white.
+
+The scale keeps the white's mean brightness, so only colour changes. If fewer
+than 50 pixels qualify, the frame is left as it is.
+
+| Advantages | Limitations |
+|---|---|
+| Closest estimate of the light measured: median 0.8–1.5° from the device's white plastic, against about 5° for gray-world | **Its effect on haemoglobin error has not been tested** |
+| Not pulled by framing: the share of tissue, iris and skin in the frame does not enter | The brightest pixels lie mostly on the sclera, which yellows with age. In India this makes older patients read about 0.47 g/dL per decade lower |
+| No calibration object | Removes about 0.15–0.18 of the conjunctiva's haemoglobin slope (the plastic, which records only the light, removes 0.10–0.16) |
+
+**Gray-world assumption (the default before 17 Nov 2026):** averaged over a whole scene, the world is grey. So
 compute each channel's mean, and scale the channels until those means agree.
 
 ```
@@ -189,7 +234,16 @@ micro-vasculature and corrupts the spatial density of vessels — one of the cue
 the network can use.
 
 So: tight bounding box around the mask (with 8% padding), **pad symmetrically
-with black to 1:1**, *then* resize. Aspect ratio is preserved throughout.
+with black to 1:1**, *then* resize. Aspect ratio is preserved from this step on.
+
+**But not before it.** `prepare()` first squashes the whole photograph to
+512×512, so a 3:4 portrait capture (97% of the training photographs) reaches this
+step already stretched 1.33× sideways. The crop is also cut from that 512 frame,
+where its box is a median 156×58 pixels, so the 224×224 input is an enlargement.
+Experiment 22 measured the cost: cutting the same crop from the original
+photograph keeps 1.5–2.4 times the detail at feature sizes of 2–8 pixels and
+removes the stretch. Colour is barely affected (2–4% of the spread between
+people). Not changed yet; see `experiments/22_resolution/RESULTS.md`.
 
 **CLAHE is deliberately not applied.** Local histogram equalisation next to the
 black letterbox creates severe boundary artefacts, and — more importantly — it
@@ -200,9 +254,9 @@ contrast would destroy the signal.
 
 | Advantages | Limitations |
 |---|---|
-| Aspect ratio preserved, so vessel spacing and density are not corrupted | Black padding wastes input pixels — a 3:1 crescent fills only a third of the square |
+| Aspect ratio preserved from the 512 frame on, so this step adds no distortion | Black padding wastes input pixels — a 3:1 crescent fills only a third of the square |
 | Deterministic and identical at train and serve time | The network must learn to ignore the padding, which costs a little capacity |
-| No interpolation artefacts from stretching | Fixed 224×224 discards resolution on close captures |
+| No interpolation artefacts from stretching | The crop is cut from the already-squashed 512 frame, so fine detail is lost and the 1.33× stretch remains (experiment 22) |
 
 ### 3.4 Quality control — `preprocess.assess_quality`
 

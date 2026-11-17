@@ -4,9 +4,26 @@ Run: `python scripts/select_architecture.py --archs unet unetplusplus attention`
 then `python scripts/select_architecture.py --ship`
 Outputs: `leaderboard.json`, `bundles/<arch>.pt`, `results.json`.
 
-**Result: Attention U-Net is selected.** It is the only architecture whose
-advantage over the current U-Net is statistically resolved (+0.0105 Dice,
-95% CI [+0.003, +0.020], p = 0.007). It is not distinguishable from UNet++.
+**Result: Attention U-Net is selected.** On this split it is the only
+architecture whose advantage over the current U-Net is statistically resolved
+(+0.0105 Dice, 95% CI [+0.003, +0.020], p = 0.007). It is not distinguishable
+from UNet++. LinkNet, FPN and PSPNet, added later, are all significantly worse
+than it; a published claim that LinkNet beats the others is not reproduced on
+this data.
+
+> **Repeated over five splits (experiment 21), the advantage over U-Net does not
+> hold:** U-Net, UNet++ and Attention U-Net are tied (mean Dice 0.8445–0.8464,
+> all p > 0.5), and this split was the most favourable of the five to Attention
+> U-Net. FPN, LinkNet and PSPNet rank below the three in every split, and
+> LinkNet's deficit against U-Net, UNet++ and FPN holds. Attention U-Net remains
+> selected because nothing beats it, not because it beats U-Net. See
+> `experiments/21_repeated_splits/RESULTS.md`.
+>
+> **On person-safe splits (experiment 24)** the order is the same, but LinkNet's
+> gaps to U-Net, UNet++ and FPN shrink and are no longer significant. The
+> per-image p-values below are also overconfident, because many test images had
+> a repeat shot of the same subject in training (experiment 23). See
+> `experiments/24_grouped_splits/RESULTS.md`.
 
 ## The question
 
@@ -86,8 +103,10 @@ Two notes on why this set rather than a single number:
    bootstrap interval, rather than by comparing two means from unrelated samples.
    The count of images each architecture wins is reported beside the mean.
 
-Split: 648 annotated images from 648 subjects — 390 train, 129 validation, 129
-test. Identical seed, augmentation (`rotation`), encoder and 40 epochs
+Split: 648 annotated images treated as 648 subjects — 390 train, 129 validation,
+129 test. *Later found:* the 547 Mendeley images are repeat shots of at most 199
+subjects, so most test images had a same-subject photograph in training, and the
+per-image tests below treat related images as independent (experiment 23). Identical seed, augmentation (`rotation`), encoder and 40 epochs
 throughout, so the decoder is the only variable.
 
 ## Two stages: select, then ship
@@ -193,6 +212,107 @@ the incumbent is statistically resolved.
 The win counts are worth reading beside the means: Attention U-Net wins 75 of 129
 images and loses 54. This is a consistent small edge, not a large gain on a few
 images.
+
+**Later qualified.** This per-image test treats the two trained models as fixed:
+it says *this* Attention U-Net beats *this* U-Net on *these* 129 images. Repeating
+the whole comparison over five splits (experiment 21) found the U-Net − Attention
+U-Net difference to be −0.0104, −0.0039, +0.0021, +0.0004 and +0.0024 — this split
+was the most favourable of the five, and on average the two are tied.
+
+## Three more architectures: LinkNet, FPN, PSPNet
+
+A published comparison reported **LinkNet ahead of U-Net, UNet++, FPN and PSPNet**.
+All three missing networks were added from `segmentation_models_pytorch` at its
+default configuration and trained through the leaderboard on the same split
+(fingerprint `9469ace99470b6b1`: same 390 / 129 / 129 subjects, seed, encoder,
+augmentation and 40 epochs). `python experiments/20_architectures/compare.py`.
+
+| architecture | params | Dice | IoU | precision | recall | HD95 px | worst image |
+|---|---|---|---|---|---|---|---|
+| **Attention U-Net** | 6.33M | **0.8476** | **0.7427** | **0.8320** | 0.8737 | 2.5 | **0.544** |
+| UNet++ | 6.61M | 0.8446 | 0.7379 | 0.8266 | 0.8746 | **2.2** | 0.541 |
+| U-Net | 6.30M | 0.8372 | 0.7288 | 0.8239 | 0.8637 | 2.8 | 0.363 |
+| FPN | 5.80M | 0.8263 | 0.7119 | 0.7849 | 0.8846 | 3.0 | 0.470 |
+| LinkNet | 4.21M | 0.8011 | 0.6794 | 0.7232 | **0.9250** | 3.2 | 0.374 |
+| PSPNet | 4.10M | 0.7593 | 0.6245 | 0.7042 | 0.8492 | 4.2 | 0.377 |
+
+### Comparisons fixed in advance, Holm-corrected within each family
+
+With six architectures there are fifteen pairs; testing all of them, or testing
+against whichever wins on this test set, would find differences by chance.
+
+**The paper's claim — LinkNet against the four it reportedly beat:**
+
+| pair | mean Dice difference | 95% CI | p (Holm) | images won |
+|---|---|---|---|---|
+| LinkNet − U-Net | −0.0360 | [−0.046, −0.025] | < 0.0001 | 28 / 101 |
+| LinkNet − UNet++ | −0.0435 | [−0.053, −0.034] | < 0.0001 | 29 / 100 |
+| LinkNet − FPN | −0.0251 | [−0.034, −0.017] | < 0.0001 | 40 / 89 |
+| LinkNet − PSPNet | +0.0418 | [+0.031, +0.053] | < 0.0001 | 102 / 27 |
+
+**Not reproduced.** LinkNet is significantly worse than U-Net, UNet++ and FPN, and
+beats only PSPNet.
+
+**Does anything beat the current choice, Attention U-Net?**
+
+| pair | mean Dice difference | 95% CI | p (Holm) |
+|---|---|---|---|
+| U-Net − Attention U-Net | −0.0105 | [−0.020, −0.003] | 0.015 |
+| UNet++ − Attention U-Net | −0.0030 | [−0.008, +0.002] | 0.155 |
+| LinkNet − Attention U-Net | −0.0465 | [−0.057, −0.037] | < 0.0001 |
+| FPN − Attention U-Net | −0.0214 | [−0.028, −0.015] | < 0.0001 |
+| PSPNet − Attention U-Net | −0.0883 | [−0.102, −0.075] | < 0.0001 |
+
+**No.** Attention U-Net stays the choice; UNet++ remains statistically tied with it.
+The U-Net comparison still resolves after the correction (p 0.015, was 0.007) on
+this split, but not across five (experiment 21: −0.0019, p 0.66).
+
+### Why the three new networks lose: they spill
+
+The losers fail in the same direction. Their **recall is high and their precision
+low** — LinkNet finds 92.5% of the conjunctiva but only 72.3% of what it marks is
+conjunctiva, FPN 88.5% against 78.5%, PSPNet 84.9% against 70.4% — and their
+boundaries are worse in the same order (HD95 3.0, 3.2, 4.2 px against 2.2–2.8).
+Their masks overflow onto the surrounding tissue. That is the error direction that
+matters most here, because spill contaminates the colour read inside the mask.
+
+> Experiment 25 scored the person-safe models of experiment 24 with F0.5, which
+> weights precision twice as much as recall. Much of this spill turns out to be
+> where the 0.5 threshold falls: with a threshold chosen on validation images
+> (about 0.97), LinkNet's precision rises from 0.77 to 0.88 and its F0.5 gap to
+> Attention U-Net shrinks from −0.043 to −0.014. It is still never first.
+
+It matches how each is built. FPN and PSPNet predict at 1/4 and 1/8 resolution and
+recover the boundary by upsampling alone; PSPNet also has no skip connections from
+shallow layers. LinkNet keeps full-resolution skips but **adds** them to the decoder
+features rather than concatenating them, with a much lighter decoder, which gives
+the decoder less room to use fine edge detail. The three U-Net-family decoders
+concatenate full-resolution features and keep the outline tight.
+
+### Why this can differ from the published result
+
+Not established, but the obvious differences: a different dataset and annotation
+style (children photographed in one hospital, against adult public data); a
+different encoder (the paper used DenseNet-121 for all five networks, we use
+EfficientNet-B0); different framing (its figures show tight crops of the lid, with
+conjunctiva covering 8–30% of the frame, against about 1.4% in our full
+photographs); and training length (200 epochs against 40). The paper also reports
+one split and one run, so its 0.11-point Dice lead over U-Net and UNet++ has no
+spread attached. Its other weak points are collected in `REPORT_POINTS.md`. On the last point there is a
+specific warning sign: **LinkNet, FPN and PSPNet peaked at epochs 38–40, the end of
+the 40-epoch budget**, while the U-Net family peaked at 30–36. They may still have
+been improving. This is a fair comparison at equal training budget, not necessarily
+at each model's best. Across the five splits of experiment 21 the worry mostly
+dissolves: FPN peaked at epochs 23–40 (median 34) and PSPNet at 28–38 (median 33),
+like the U-Net family. Only LinkNet peaks consistently late (33–39), and it would
+need about +0.026 Dice to draw level with U-Net.
+
+### PSPNet on the Mac GPU
+
+PSPNet first crashed: PyTorch's MPS backend cannot adaptively pool its 40×40 feature
+map into 3×3 or 6×6 grids. Pooling has no parameters, so `architectures.py` computes
+that one operation on the CPU when the sizes do not divide; the output is identical
+(max difference ~1e-10) and the weights load into a stock `smp.PSPNet`.
 
 ## Shipped model
 
@@ -344,9 +464,18 @@ p = 3.7e-05 — the gap between what the pipeline was doing (trained raw, served
 gray-world) and the matched configuration.
 
 > **The bug cost more than the architecture upgrade gained.** Switching U-Net to
-> Attention U-Net is worth +0.0105 Dice. Removing white balance from the
+> Attention U-Net is worth +0.0105 Dice on this split, and about nothing on
+> average over five (experiment 21). Removing white balance from the
 > segmenter's input is worth +0.0116 on its own. The cheapest improvement
 > available was not a better decoder.
+
+Both answers come from this one split. The mismatch cost compares one trained
+model served two kinds of input, so split-to-split variation in training touches
+it less. The matched comparison is two separately trained models, the same kind
+of evidence as the architecture comparison that did not hold up over five splits;
+treat +0.0069 as provisional until it is repeated.
+
+> The repeat over five splits is not planned; see experiment 21, point 5.
 
 The two mismatched cells also fail in opposite, legible directions. Serving a
 raw-trained model balanced images raises precision to 0.8444 and drops recall to

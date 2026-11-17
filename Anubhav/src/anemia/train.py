@@ -329,7 +329,10 @@ def train_fold(
         backbone=reg.backbone,
         model_size=config.preprocess.model_size,
         work_size=config.preprocess.work_size,
-        gray_world=config.preprocess.gray_world,
+        # The checkpoint's own field is a True/False switch and cannot express
+        # white-patch. The method itself travels in `config` (preprocess ->
+        # white_balance), which is what `AnemiaPredictor` reads.
+        gray_world=config.preprocess.white_balance == "gray_world",
         metrics={"regression": final["metrics"], "screening": screening},
         config=config.to_dict(),
     )
