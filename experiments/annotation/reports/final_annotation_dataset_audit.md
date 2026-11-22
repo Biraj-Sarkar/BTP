@@ -1,0 +1,128 @@
+# Final Manual Annotation Dataset Audit
+
+This is the current audit generated from the active manifest and filesystem. It is distinct from the archived 30-image pilot audit.
+
+## Counts
+- Source images: **288**
+- Manifest rows: **288**
+- Verified: **288**
+- Draft: **0**
+- Pending: **0**
+
+## Checks
+### Duplicate image IDs
+Count: 0
+### Missing source images
+Count: 0
+### Manifest images not found
+Count: 0
+### Missing verified masks
+Count: 0
+### Unreadable masks
+Count: 0
+### Image-mask dimension mismatches
+Count: 89
+- {"image_id": "0115H-569", "mask_file": "masks/verified/0115H-569.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0118H-572", "mask_file": "masks/verified/0118H-572.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "019-3551", "mask_file": "masks/verified/019-3551.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0269-1", "mask_file": "masks/verified/0269-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0325-3424", "mask_file": "masks/verified/0325-3424.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0328-3427", "mask_file": "masks/verified/0328-3427.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0332-3431", "mask_file": "masks/verified/0332-3431.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0416-3514", "mask_file": "masks/verified/0416-3514.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0417-3515", "mask_file": "masks/verified/0417-3515.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0418-3516", "mask_file": "masks/verified/0418-3516.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "054H-664", "mask_file": "masks/verified/054H-664.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "055H-665", "mask_file": "masks/verified/055H-665.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "058H-513", "mask_file": "masks/verified/058H-513.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "063H-518", "mask_file": "masks/verified/063H-518.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "064H-519", "mask_file": "masks/verified/064H-519.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "065H-520", "mask_file": "masks/verified/065H-520.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "066H-521", "mask_file": "masks/verified/066H-521.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "067H-522", "mask_file": "masks/verified/067H-522.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "070H-525", "mask_file": "masks/verified/070H-525.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "073H-528", "mask_file": "masks/verified/073H-528.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "075H-530", "mask_file": "masks/verified/075H-530.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "076H-531", "mask_file": "masks/verified/076H-531.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "077H-532", "mask_file": "masks/verified/077H-532.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "0808-1", "mask_file": "masks/verified/0808-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "080H-535", "mask_file": "masks/verified/080H-535.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "097H-552", "mask_file": "masks/verified/097H-552.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "098-2", "mask_file": "masks/verified/098-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "098H-553", "mask_file": "masks/verified/098H-553.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "100-3632", "mask_file": "masks/verified/100-3632.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "101-3633", "mask_file": "masks/verified/101-3633.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "103H-558", "mask_file": "masks/verified/103H-558.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "104H-559", "mask_file": "masks/verified/104H-559.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "105H-560", "mask_file": "masks/verified/105H-560.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "106H-561", "mask_file": "masks/verified/106H-561.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "107H-562", "mask_file": "masks/verified/107H-562.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "108H-563", "mask_file": "masks/verified/108H-563.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "112-3643", "mask_file": "masks/verified/112-3643.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "117-3648", "mask_file": "masks/verified/117-3648.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "121-3652", "mask_file": "masks/verified/121-3652.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "123H-577", "mask_file": "masks/verified/123H-577.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "125H-725", "mask_file": "masks/verified/125H-725.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "129H-729", "mask_file": "masks/verified/129H-729.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "143H-597", "mask_file": "masks/verified/143H-597.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "148H-602", "mask_file": "masks/verified/148H-602.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "149H-603", "mask_file": "masks/verified/149H-603.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "150H-604", "mask_file": "masks/verified/150H-604.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "151H-605", "mask_file": "masks/verified/151H-605.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "212-3411", "mask_file": "masks/verified/212-3411.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "222-2", "mask_file": "masks/verified/222-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "232-3431", "mask_file": "masks/verified/232-3431.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "235-3434", "mask_file": "masks/verified/235-3434.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "240-3439", "mask_file": "masks/verified/240-3439.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "252-3351", "mask_file": "masks/verified/252-3351.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "256-3355", "mask_file": "masks/verified/256-3355.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "275-3374", "mask_file": "masks/verified/275-3374.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "287-1981", "mask_file": "masks/verified/287-1981.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "30002-1", "mask_file": "masks/verified/30002-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "308-3407", "mask_file": "masks/verified/308-3407.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "3142-2", "mask_file": "masks/verified/3142-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "322-2", "mask_file": "masks/verified/322-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "344-3873", "mask_file": "masks/verified/344-3873.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "345-3874", "mask_file": "masks/verified/345-3874.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "420-3518", "mask_file": "masks/verified/420-3518.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "43071-2", "mask_file": "masks/verified/43071-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "4380-2", "mask_file": "masks/verified/4380-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "51H-661", "mask_file": "masks/verified/51H-661.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "52H-662", "mask_file": "masks/verified/52H-662.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "5398-1", "mask_file": "masks/verified/5398-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "53H-663", "mask_file": "masks/verified/53H-663.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "5497-1", "mask_file": "masks/verified/5497-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "690-2", "mask_file": "masks/verified/690-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "7664-1", "mask_file": "masks/verified/7664-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "7664-2", "mask_file": "masks/verified/7664-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "7708-2", "mask_file": "masks/verified/7708-2.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "8007-1", "mask_file": "masks/verified/8007-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "84H-539", "mask_file": "masks/verified/84H-539.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "85H-540", "mask_file": "masks/verified/85H-540.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "86H-541", "mask_file": "masks/verified/86H-541.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "87H-542", "mask_file": "masks/verified/87H-542.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "88H-543", "mask_file": "masks/verified/88H-543.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "89H-544", "mask_file": "masks/verified/89H-544.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "913-1", "mask_file": "masks/verified/913-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "91H-546", "mask_file": "masks/verified/91H-546.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "92H-547", "mask_file": "masks/verified/92H-547.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "9494-3", "mask_file": "masks/verified/9494-3.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "95H-550", "mask_file": "masks/verified/95H-550.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "97061-1", "mask_file": "masks/verified/97061-1.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "Example", "mask_file": "masks/verified/Example.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+- {"image_id": "OPGESU0034", "mask_file": "masks/verified/OPGESU0034.png", "mask_shape": [4096, 3072], "image_shape": [3072, 4096]}
+### Non-binary masks
+Count: 0
+### Empty masks
+Count: 0
+### Orphan mask files
+Count: 0
+### Duplicate mask stems
+Count: 0
+
+## Conclusion
+- All 288 source images present: **yes**
+- All 288 manifest entries verified: **yes**
+- All verified masks present and structurally valid: **no**
+
+The archived pilot reports are historical and are not used for this conclusion.

@@ -1,0 +1,21 @@
+{
+  "architecture": "vgg16",
+  "seed": 20261117,
+  "status": "completed",
+  "best_epoch": 2,
+  "validation_metrics": {
+    "mae": 1.06489767030228,
+    "rmse": 1.3983681623527096,
+    "r2": 0.2153482523194361,
+    "bias": -0.12093721434127452,
+    "median_absolute_error": 0.779693603515625,
+    "maximum_absolute_error": 3.3688859939575195,
+    "bland_altman_mean_difference": -0.12093721434127452,
+    "bland_altman_loa_low": -2.8837846769137108,
+    "bland_altman_loa_high": 2.6419102482311616
+  },
+  "runtime_seconds": 310.69873309135437,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\vgg16\\vgg16_seed_20261117_best.pt",
+  "tail_unfrozen": [],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()"
+}

@@ -1,0 +1,31 @@
+{
+  "manifest": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\data_audit\\hb_dataset_manifest.csv",
+  "manifest_rows": 288,
+  "eligible_rows": 279,
+  "split_counts": {
+    "test": 41,
+    "train": 195,
+    "validation": 43
+  },
+  "train_validation_rows_returned": 238,
+  "registration_overlap": 0,
+  "all_train_validation_roi_paths_readable": true,
+  "target_mean_g_dl": 11.376410256410255,
+  "target_std_g_dl": 1.8684581428786886,
+  "test_rows_counted_from_metadata_only": true,
+  "test_targets_loaded": false,
+  "test_images_loaded": false,
+  "test_predictions_generated": false,
+  "test_used_for_selection": false,
+  "experiment": "Phase 7.2 multi-seed stability",
+  "architectures": [
+    "densenet121",
+    "vgg16",
+    "mobilenet_v3_large"
+  ],
+  "seeds": [
+    20261116,
+    20261117,
+    20261118
+  ]
+}

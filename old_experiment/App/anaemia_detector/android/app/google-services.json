@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "517213547856",
+    "project_id": "anemia-f68a4",
+    "storage_bucket": "anemia-f68a4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:517213547856:android:f13083da6f0b629e9a1055",
+        "android_client_info": {
+          "package_name": "com.example.anaemia_detector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6KpLDc09sERtEfzK_Bk3wmQHBEVlKWgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

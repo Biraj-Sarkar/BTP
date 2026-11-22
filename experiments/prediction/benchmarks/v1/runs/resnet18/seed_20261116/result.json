@@ -1,0 +1,27 @@
+{
+  "architecture": "resnet18",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 15,
+  "best_validation_mae": 1.1138312982958416,
+  "validation_metrics": {
+    "mae": 1.1138312982958416,
+    "rmse": 1.533033182678375,
+    "r2": 0.05694504343704032,
+    "bias": 0.057353241499080214,
+    "median_absolute_error": 0.8443050384521484,
+    "maximum_absolute_error": 5.162590980529785,
+    "bland_altman_mean_difference": 0.057353241499080214,
+    "bland_altman_loa_low": -2.9808237529356867,
+    "bland_altman_loa_high": 3.0955302359338472
+  },
+  "runtime_seconds": 403.4865770339966,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression\\resnet18\\resnet18_seed_20261116_best.pt",
+  "training_history": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\resnet18\\seed_20261116\\training_history.csv",
+  "validation_predictions": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\resnet18\\seed_20261116\\validation_predictions.csv",
+  "target_mean_g_dl": 11.376410256410255,
+  "target_std_g_dl": 1.8684581428786886,
+  "epochs_ran": 22,
+  "pretrained_weights": "ImageNet",
+  "freeze_strategy": "Classifier/head trained first; limited tail unfrozen after epoch 10"
+}

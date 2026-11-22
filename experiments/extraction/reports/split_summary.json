@@ -1,0 +1,10 @@
+{
+  "seed": 20261116,
+  "patient_grouping_key": "RegistrationNo",
+  "counts": {
+    "train": 202,
+    "validation": 43,
+    "test": 43
+  },
+  "overlap_count": 0
+}

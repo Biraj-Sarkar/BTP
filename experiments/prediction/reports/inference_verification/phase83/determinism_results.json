@@ -1,0 +1,54 @@
+[
+  {
+    "image_id": "103H-558",
+    "split": "train",
+    "orientation": 6,
+    "runs": [
+      12.923935890197754,
+      12.923935890197754,
+      12.923935890197754,
+      12.923935890197754
+    ],
+    "max_absolute_difference": 0.0,
+    "is_deterministic": true
+  },
+  {
+    "image_id": "5806",
+    "split": "train",
+    "orientation": 0,
+    "runs": [
+      12.063318252563477,
+      12.063318252563477,
+      12.063318252563477,
+      12.063318252563477
+    ],
+    "max_absolute_difference": 0.0,
+    "is_deterministic": true
+  },
+  {
+    "image_id": "5811",
+    "split": "validation",
+    "orientation": 0,
+    "runs": [
+      11.172517776489258,
+      11.172517776489258,
+      11.172517776489258,
+      11.172517776489258
+    ],
+    "max_absolute_difference": 0.0,
+    "is_deterministic": true
+  },
+  {
+    "image_id": "065H-520",
+    "split": "validation",
+    "orientation": 6,
+    "runs": [
+      10.998977661132812,
+      10.998977661132812,
+      10.998977661132812,
+      10.998977661132812
+    ],
+    "max_absolute_difference": 0.0,
+    "is_deterministic": true
+  }
+]

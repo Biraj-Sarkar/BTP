@@ -1,0 +1,20 @@
+{
+  "dataset_sample_shape": [
+    3,
+    320,
+    320
+  ],
+  "mask_shape": [
+    1,
+    320,
+    320
+  ],
+  "output_shape": [
+    1,
+    1,
+    320,
+    320
+  ],
+  "loss": 1.7245206832885742,
+  "checkpoint_reload": true
+}

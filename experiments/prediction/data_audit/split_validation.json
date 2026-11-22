@@ -1,0 +1,31 @@
+{
+  "generated_at_utc": "2026-11-18T04:12:46.328660+00:00",
+  "split_source": "existing extraction split manifests",
+  "seed": 20261116,
+  "grouping_key": "RegistrationNo",
+  "counts": {
+    "train": 202,
+    "validation": 43,
+    "test": 43
+  },
+  "eligible_counts": {
+    "train": 195,
+    "validation": 43,
+    "test": 41
+  },
+  "excluded_counts": {
+    "train": 7,
+    "validation": 0,
+    "test": 2
+  },
+  "overlap_counts": {
+    "train_vs_validation": 0,
+    "train_vs_test": 0,
+    "validation_vs_test": 0
+  },
+  "patient_overlap_count": 0,
+  "eligible_records_assigned_exactly_once": true,
+  "total_records_assigned_exactly_once": true,
+  "splits_regenerated": false,
+  "test_used_for_training_or_model_selection": false
+}

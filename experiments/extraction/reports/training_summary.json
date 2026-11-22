@@ -1,0 +1,12 @@
+{
+  "epochs_completed": 25,
+  "best_validation_dice": 0.8300779542388951,
+  "best_checkpoint": "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_best.pt",
+  "final_checkpoint": "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_final.pt",
+  "seed": 20261116,
+  "batch_size": 2,
+  "best_epoch": 18,
+  "train_count": 202,
+  "validation_count": 43,
+  "test_count": 43
+}

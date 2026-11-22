@@ -1,0 +1,98 @@
+[
+  {
+    "test_id": "test_1_lifespan_context_execution",
+    "description": "FastAPI lifespan startup and shutdown hooks execute cleanly",
+    "passed": true,
+    "details": "Verified actual lifespan startup initializes models and shutdown completes without error"
+  },
+  {
+    "test_id": "test_2_singleton_caching_guarantee",
+    "description": "Models are initialized once and cached application-wide",
+    "passed": true,
+    "details": "Verified init_pipeline() and get_pipeline() return identical cached instance"
+  },
+  {
+    "test_id": "test_3_health_readiness_ready",
+    "description": "Health check reports HTTP 200 and models_loaded=True when ready",
+    "passed": true,
+    "details": "Status 'healthy', models_loaded=True, HTTP 200, disclaimer present"
+  },
+  {
+    "test_id": "test_4_actual_startup_constructor_failure",
+    "description": "Actual constructor exception during lifespan startup handled safely",
+    "passed": true,
+    "details": "Lifespan captured constructor failure, set models_loaded=False, /api/health returned 503, inference returned 503 without leaking paths"
+  },
+  {
+    "test_id": "test_5_inference_service_unavailable_503",
+    "description": "Inference rejects requests with HTTP 503 when models are unloaded",
+    "passed": true,
+    "details": "Rejected with HTTP 503: Inference service is temporarily unavailable. Models are not loaded."
+  },
+  {
+    "test_id": "test_6_7_handler_level_overlapping_concurrency_429",
+    "description": "Handler-level overlapping request rejected with HTTP 429 while first holds lock",
+    "passed": true,
+    "details": "Verified Request 2 received HTTP 429 while Request 1 was actively executing under lock"
+  },
+  {
+    "test_id": "test_8_first_request_completion",
+    "description": "First overlapping request completes successfully with HTTP 200",
+    "passed": true,
+    "details": "Request 1 returned predicted Hb = 12.0633 g/dL"
+  },
+  {
+    "test_id": "test_9_lock_released_after_completion",
+    "description": "Inference lock is cleanly released after execution",
+    "passed": true,
+    "details": "Verified _inference_lock is released upon completion"
+  },
+  {
+    "test_id": "test_10_subsequent_request_succeeds",
+    "description": "Subsequent inference request succeeds normally after overlapping test",
+    "passed": true,
+    "details": "Verified third request returned HTTP 200 successfully"
+  },
+  {
+    "test_id": "test_11_12_internal_exception_safety",
+    "description": "Internal exceptions are logged server-side and never leaked to users (HTTP 500)",
+    "passed": true,
+    "details": "HTTP 500 returned safe message without paths or stack traces; exception logged server-side"
+  },
+  {
+    "test_id": "test_13_input_validation_clarity",
+    "description": "Input validation rejection messages remain clear and informative (HTTP 400)",
+    "passed": true,
+    "details": "Verified distinct, clear HTTP 400 validation messages for missing, invalid format, empty, and corrupt inputs"
+  },
+  {
+    "test_id": "test_14_extraction_failure_422",
+    "description": "Extraction failure on black image returns HTTP 422 with structured failure",
+    "passed": true,
+    "details": "Rejected with HTTP 422: No conjunctiva detected: predicted segmentation mask is empty."
+  },
+  {
+    "test_id": "test_15_schema_compatibility",
+    "description": "Response schema matches existing frontend expectations exactly",
+    "passed": true,
+    "details": "All 10 fields present; base64 artifacts properly prefixed"
+  },
+  {
+    "test_id": "test_16_exact_numeric_parity_jpg_png",
+    "description": "Exact numeric inference parity preserved for JPG and PNG (delta < 1e-8 g/dL)",
+    "passed": true,
+    "details": "JPG delta = 0.0000000000 g/dL, PNG delta = 0.0000000000 g/dL (Hb: 12.0633 g/dL)"
+  },
+  {
+    "test_id": "test_17_academic_disclaimer_presence",
+    "description": "Academic prototype disclaimer present across all UI and API responses",
+    "passed": true,
+    "details": "Verified disclaimer in HTML UI and all HTTP 200, 400, 422, 429, 500, 503 responses"
+  },
+  {
+    "test_id": "test_18_checkpoint_integrity",
+    "description": "Attention U-Net and DenseNet checkpoints and metadata unchanged",
+    "passed": true,
+    "details": "Bit-exact match verified for all 3 protected artifact hashes"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "architecture": "convnext_tiny",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 4,
+  "validation_metrics": {
+    "mae": 1.0645947567252225,
+    "rmse": 1.3988093047468713,
+    "r2": 0.2148531069654942,
+    "bias": 0.28758452659429506,
+    "median_absolute_error": 0.9199819564819336,
+    "maximum_absolute_error": 3.260432243347168,
+    "bland_altman_mean_difference": 0.28758452659429506,
+    "bland_altman_loa_low": -2.4272671968587956,
+    "bland_altman_loa_high": 3.002436250047386
+  },
+  "runtime_seconds": 340.53653955459595,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\convnext_tiny\\convnext_tiny_seed_20261116_best.pt",
+  "tail_unfrozen": [
+    "features[-1]",
+    "features[-2]"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()"
+}

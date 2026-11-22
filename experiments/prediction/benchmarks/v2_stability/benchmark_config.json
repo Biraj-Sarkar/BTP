@@ -1,0 +1,31 @@
+{
+  "phase": "7.2",
+  "architectures": [
+    "densenet121",
+    "vgg16",
+    "mobilenet_v3_large"
+  ],
+  "seeds": [
+    20261116,
+    20261117,
+    20261118
+  ],
+  "new_seeds_trained": [
+    20261117,
+    20261118
+  ],
+  "existing_seed_reused": 20261116,
+  "source_v2_script": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\scripts\\hb_benchmark_v2.py",
+  "batch_size": 8,
+  "max_epochs": 40,
+  "patience": 7,
+  "freeze_epochs": 10,
+  "head_learning_rate": 0.001,
+  "backbone_learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "test_evaluation": false,
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "torch": "2.13.0+cpu",
+  "cuda_available": false,
+  "platform": "Windows-11-10.0.26300-SP0"
+}

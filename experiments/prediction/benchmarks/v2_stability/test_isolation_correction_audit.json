@@ -1,0 +1,44 @@
+{
+  "manifest": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\data_audit\\hb_dataset_manifest.csv",
+  "metadata_stage": {
+    "columns_loaded": [
+      "image_id",
+      "registration_no",
+      "hb_inclusion_status",
+      "extraction_split"
+    ],
+    "rows_loaded": 288,
+    "purpose": "row, eligibility, and split-count validation",
+    "target_columns_loaded": false,
+    "roi_paths_loaded": false
+  },
+  "train_validation_stage": {
+    "columns_loaded": [
+      "image_id",
+      "registration_no",
+      "original_hb_unit",
+      "hb_g_dl",
+      "roi_crop_path",
+      "extraction_split"
+    ],
+    "rows_loaded": 238,
+    "rows_by_split": {
+      "train": 195,
+      "validation": 43
+    },
+    "purpose": "target validation and ROI readability validation"
+  },
+  "test_stage": {
+    "rows_counted_from_metadata_only": 41,
+    "target_columns_loaded": false,
+    "roi_paths_loaded": false,
+    "images_loaded": false
+  },
+  "audit_fields": {
+    "test_rows_counted_from_metadata_only": true,
+    "test_targets_loaded": false,
+    "test_images_loaded": false,
+    "test_predictions_generated": false,
+    "test_used_for_selection": false
+  }
+}

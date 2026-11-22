@@ -1,0 +1,24 @@
+{
+  "architecture": "Attention U-Net",
+  "encoder": "EfficientNet-B0",
+  "encoder_weights": "ImageNet",
+  "input_size": [320, 320],
+  "loss": "BCEWithLogitsLoss + Soft Dice Loss, equal weighting",
+  "optimizer": "AdamW",
+  "device": "cpu",
+  "batch_size": 2,
+  "epochs": 30,
+  "early_stopping_patience": 7,
+  "seed": 20261116,
+  "normalization_mean": [0.485, 0.456, 0.406],
+  "normalization_std": [0.229, 0.224, 0.225],
+  "image_orientation": "Pillow ImageOps.exif_transpose",
+  "mask_orientation": "No EXIF transform; single-channel grayscale",
+  "image_resize_interpolation": "bilinear",
+  "mask_resize_interpolation": "nearest",
+  "augmentation": {
+    "horizontal_flip_probability": 0.5,
+    "rotation_degrees": 8,
+    "brightness_scale": [0.9, 1.1]
+  }
+}

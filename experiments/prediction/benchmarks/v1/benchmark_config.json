@@ -1,0 +1,23 @@
+{
+  "seed": 20261116,
+  "input_size": [
+    224,
+    224
+  ],
+  "rgb": true,
+  "batch_size": 8,
+  "optimizer": "AdamW",
+  "head_learning_rate": 0.001,
+  "backbone_learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "loss": "SmoothL1Loss",
+  "primary_selection_metric": "validation_mae",
+  "early_stopping_metric": "validation_mae",
+  "early_stopping_patience": 7,
+  "max_epochs": 40,
+  "freeze_epochs": 10,
+  "target_standardization": "training-set mean/std only",
+  "test_evaluation": "not performed during Stage A",
+  "color_correction": "none",
+  "pretrained_weights": "ImageNet"
+}

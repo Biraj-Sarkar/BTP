@@ -1,0 +1,29 @@
+{
+  "architecture": "densenet121",
+  "seed": 20261118,
+  "test_records": 41,
+  "model": {
+    "mae": 1.345157611660841,
+    "rmse": 1.700511279718206,
+    "r2": 0.20971738016447417,
+    "bias": 0.40778824178183953,
+    "median_absolute_error": 1.0661640167236328,
+    "maximum_absolute_error": 4.500303268432617,
+    "bland_altman_mean_difference": 0.40778824178183953,
+    "bland_altman_loa_low": -2.868159033700391,
+    "bland_altman_loa_high": 3.68373551726407
+  },
+  "training_mean_baseline": {
+    "mae": 1.3713070878511373,
+    "rmse": 1.9149335379150683,
+    "r2": -0.002145562282297231,
+    "bias": 0.088605129475738,
+    "median_absolute_error": 0.676410447145118,
+    "maximum_absolute_error": 5.276409874940528,
+    "bland_altman_mean_difference": 0.088605129475738,
+    "bland_altman_loa_low": -3.707220952589682,
+    "bland_altman_loa_high": 3.884431211541158
+  },
+  "training_mean_g_dl": 11.376410256410255,
+  "test_used_for_selection": false
+}

@@ -1,0 +1,17 @@
+{
+  "baseline": "training_set_mean",
+  "training_mean_g_dl": 11.376410256410255,
+  "split": "validation",
+  "count": 43,
+  "metrics": {
+    "mae": 1.2223136553369114,
+    "rmse": 1.6193454824239566,
+    "r2": -0.052235364132311,
+    "bias": -0.3607990459153267,
+    "median_absolute_error": 0.8764102564102547,
+    "maximum_absolute_error": 4.923589743589746,
+    "bland_altman_mean_difference": -0.3607990459153267,
+    "bland_altman_loa_low": -3.4915514383340662,
+    "bland_altman_loa_high": 2.7699533465034127
+  }
+}

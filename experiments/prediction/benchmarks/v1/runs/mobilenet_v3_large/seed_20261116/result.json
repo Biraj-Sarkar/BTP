@@ -1,0 +1,27 @@
+{
+  "architecture": "mobilenet_v3_large",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 5,
+  "best_validation_mae": 1.0391794692638308,
+  "validation_metrics": {
+    "mae": 1.0391794692638308,
+    "rmse": 1.3844321872210175,
+    "r2": 0.23090981847319914,
+    "bias": 0.17415454775788064,
+    "median_absolute_error": 0.7245635986328125,
+    "maximum_absolute_error": 3.808577537536621,
+    "bland_altman_mean_difference": 0.17415454775788064,
+    "bland_altman_loa_low": -2.5496356118704546,
+    "bland_altman_loa_high": 2.8979447073862157
+  },
+  "runtime_seconds": 68.03998231887817,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression\\mobilenet_v3_large\\mobilenet_v3_large_seed_20261116_best.pt",
+  "training_history": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\mobilenet_v3_large\\seed_20261116\\training_history.csv",
+  "validation_predictions": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\mobilenet_v3_large\\seed_20261116\\validation_predictions.csv",
+  "target_mean_g_dl": 11.376410256410255,
+  "target_std_g_dl": 1.8684581428786886,
+  "epochs_ran": 12,
+  "pretrained_weights": "ImageNet",
+  "freeze_strategy": "Classifier/head trained first; limited tail unfrozen after epoch 10"
+}

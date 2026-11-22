@@ -1,0 +1,7 @@
+architecture,seed,status,best_epoch,validation_mae,validation_rmse,validation_r2,runtime_seconds,checkpoint
+densenet121,20261116,completed,11,0.9392473309539086,1.3372085172925117,0.2824830586623942,569.348673582077,D:\BTP\archive\prediction_models\hb_regression_v2\densenet121\densenet121_seed_20261116_best.pt
+mobilenet_v3_large,20261116,completed,5,0.95311845735062,1.3232685233297088,0.2973648767828069,99.60315775871277,D:\BTP\archive\prediction_models\hb_regression_v2\mobilenet_v3_large\mobilenet_v3_large_seed_20261116_best.pt
+efficientnet_b0,20261116,completed,10,0.9612296126609625,1.3414434330324483,0.2779311351843411,251.49487376213074,D:\BTP\archive\prediction_models\hb_regression_v2\efficientnet_b0\efficientnet_b0_seed_20261116_best.pt
+vgg16,20261116,completed,5,0.9921912259833757,1.2704718981638605,0.35231473350025,777.6206138134003,D:\BTP\archive\prediction_models\hb_regression_v2\vgg16\vgg16_seed_20261116_best.pt
+resnet18,20261116,completed,20,1.0277400793031204,1.3173865126854232,0.30359750710167177,398.1407063007355,D:\BTP\archive\prediction_models\hb_regression_v2\resnet18\resnet18_seed_20261116_best.pt
+convnext_tiny,20261116,completed,4,1.0645947567252225,1.3988093047468713,0.2148531069654942,340.53653955459595,D:\BTP\archive\prediction_models\hb_regression_v2\convnext_tiny\convnext_tiny_seed_20261116_best.pt

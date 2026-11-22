@@ -1,0 +1,781 @@
+{
+  "task_a_valid_images": {
+    "status": "PASS",
+    "total_tested": 15,
+    "train_tested": 8,
+    "val_tested": 7,
+    "records": [
+      {
+        "image_id": "5806",
+        "split": "train",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.063318252563477,
+        "bbox": [
+          547,
+          1623,
+          1046,
+          1826
+        ],
+        "mask_area_pixels": 38362,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "6369",
+        "split": "train",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 10.766205787658691,
+        "bbox": [
+          929,
+          1143,
+          1329,
+          1357
+        ],
+        "mask_area_pixels": 28982,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "182",
+        "split": "train",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.510489463806152,
+        "bbox": [
+          745,
+          1337,
+          1214,
+          1581
+        ],
+        "mask_area_pixels": 45010,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "2426",
+        "split": "train",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 11.868812561035156,
+        "bbox": [
+          837,
+          1490,
+          1413,
+          1775
+        ],
+        "mask_area_pixels": 72339,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "537",
+        "split": "train",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 10.882588386535645,
+        "bbox": [
+          952,
+          1276,
+          1352,
+          1438
+        ],
+        "mask_area_pixels": 21383,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "103H-558",
+        "split": "train",
+        "stored_size": [
+          4096,
+          3072
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 6,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.923935890197754,
+        "bbox": [
+          892,
+          2208,
+          1969,
+          2811
+        ],
+        "mask_area_pixels": 278373,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "0328-3427",
+        "split": "train",
+        "stored_size": [
+          4096,
+          3072
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 6,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 11.86980152130127,
+        "bbox": [
+          1104,
+          2131,
+          1787,
+          2491
+        ],
+        "mask_area_pixels": 106555,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "0808-1",
+        "split": "train",
+        "stored_size": [
+          4096,
+          3072
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 6,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 10.953535079956055,
+        "bbox": [
+          1008,
+          1990,
+          1902,
+          2350
+        ],
+        "mask_area_pixels": 128195,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "5811",
+        "split": "validation",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 11.172517776489258,
+        "bbox": [
+          631,
+          1990,
+          1099,
+          2213
+        ],
+        "mask_area_pixels": 24262,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "1342",
+        "split": "validation",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.394057273864746,
+        "bbox": [
+          761,
+          1857,
+          1298,
+          2111
+        ],
+        "mask_area_pixels": 56882,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "220",
+        "split": "validation",
+        "stored_size": [
+          2448,
+          3264
+        ],
+        "oriented_size": [
+          2448,
+          3264
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.10448932647705,
+        "bbox": [
+          669,
+          1551,
+          1160,
+          1836
+        ],
+        "mask_area_pixels": 61533,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "1692",
+        "split": "validation",
+        "stored_size": [
+          3072,
+          4096
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 0,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 11.498359680175781,
+        "bbox": [
+          1344,
+          1324,
+          2036,
+          2913
+        ],
+        "mask_area_pixels": 87339,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "065H-520",
+        "split": "validation",
+        "stored_size": [
+          4096,
+          3072
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 6,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 10.998977661132812,
+        "bbox": [
+          979,
+          2643,
+          1912,
+          3041
+        ],
+        "mask_area_pixels": 123526,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "84H-539",
+        "split": "validation",
+        "stored_size": [
+          4096,
+          3072
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 6,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.759575843811035,
+        "bbox": [
+          1200,
+          2310,
+          2065,
+          2657
+        ],
+        "mask_area_pixels": 135429,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      },
+      {
+        "image_id": "101-3633",
+        "split": "validation",
+        "stored_size": [
+          4096,
+          3072
+        ],
+        "oriented_size": [
+          3072,
+          4096
+        ],
+        "orientation": 6,
+        "success": true,
+        "extraction_success": true,
+        "predicted_hb_g_dl": 12.723857879638672,
+        "bbox": [
+          1075,
+          2220,
+          1950,
+          2619
+        ],
+        "mask_area_pixels": 141449,
+        "valid_bbox": true,
+        "is_finite_hb": true,
+        "is_numeric": true,
+        "has_artifacts": true,
+        "consistent_status": true
+      }
+    ]
+  },
+  "task_b_exif_orientation": {
+    "status": "PASS",
+    "pass_count": 4,
+    "inconclusive_count": 2,
+    "fail_count": 0,
+    "records": [
+      {
+        "type": "real_image_exif_6",
+        "image_id": "103H-558",
+        "original_stored_dimensions": [
+          4096,
+          3072
+        ],
+        "exif_orientation_value": 6,
+        "effective_dimensions_after_orientation_correction": [
+          3072,
+          4096
+        ],
+        "pipeline_outcome": "SUCCESS",
+        "predicted_hb_g_dl": 12.923935890197754,
+        "bounding_box": [
+          892,
+          2208,
+          1969,
+          2811
+        ],
+        "bounding_box_valid": true,
+        "orientation_consistency": true,
+        "status": "PASS",
+        "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+      },
+      {
+        "type": "real_image_exif_0",
+        "image_id": "5806",
+        "original_stored_dimensions": [
+          2448,
+          3264
+        ],
+        "exif_orientation_value": 0,
+        "effective_dimensions_after_orientation_correction": [
+          2448,
+          3264
+        ],
+        "pipeline_outcome": "SUCCESS",
+        "predicted_hb_g_dl": 12.063318252563477,
+        "bounding_box": [
+          547,
+          1623,
+          1046,
+          1826
+        ],
+        "bounding_box_valid": true,
+        "orientation_consistency": true,
+        "status": "PASS",
+        "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+      },
+      {
+        "type": "synthetic_sensor_orientation_tag_1",
+        "image_id": "5806_tag1",
+        "original_stored_dimensions": [
+          2448,
+          3264
+        ],
+        "exif_orientation_value": 1,
+        "effective_dimensions_after_orientation_correction": [
+          2448,
+          3264
+        ],
+        "pipeline_outcome": "SUCCESS",
+        "predicted_hb_g_dl": 11.48303508758545,
+        "bounding_box": [
+          539,
+          1612,
+          1038,
+          1826
+        ],
+        "bounding_box_valid": true,
+        "orientation_consistency": true,
+        "status": "PASS",
+        "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+      },
+      {
+        "type": "synthetic_sensor_orientation_tag_3",
+        "image_id": "5806_tag3",
+        "original_stored_dimensions": [
+          2448,
+          3264
+        ],
+        "exif_orientation_value": 3,
+        "effective_dimensions_after_orientation_correction": [
+          2448,
+          3264
+        ],
+        "pipeline_outcome": "SUCCESS",
+        "predicted_hb_g_dl": 11.543832778930664,
+        "bounding_box": [
+          539,
+          1612,
+          1038,
+          1826
+        ],
+        "bounding_box_valid": true,
+        "orientation_consistency": true,
+        "status": "PASS",
+        "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+      },
+      {
+        "type": "synthetic_sensor_orientation_tag_6",
+        "image_id": "5806_tag6",
+        "original_stored_dimensions": [
+          3264,
+          2448
+        ],
+        "exif_orientation_value": 6,
+        "effective_dimensions_after_orientation_correction": [
+          2448,
+          3264
+        ],
+        "pipeline_outcome": "EMPTY_MASK (No conjunctiva detected: predicted segmentation mask is empty.)",
+        "predicted_hb_g_dl": null,
+        "bounding_box": null,
+        "bounding_box_valid": null,
+        "orientation_consistency": true,
+        "status": "INCONCLUSIVE",
+        "classification": "INCONCLUSIVE_EMPTY_MASK"
+      },
+      {
+        "type": "synthetic_sensor_orientation_tag_8",
+        "image_id": "5806_tag8",
+        "original_stored_dimensions": [
+          3264,
+          2448
+        ],
+        "exif_orientation_value": 8,
+        "effective_dimensions_after_orientation_correction": [
+          2448,
+          3264
+        ],
+        "pipeline_outcome": "EMPTY_MASK (No conjunctiva detected: predicted segmentation mask is empty.)",
+        "predicted_hb_g_dl": null,
+        "bounding_box": null,
+        "bounding_box_valid": null,
+        "orientation_consistency": true,
+        "status": "INCONCLUSIVE",
+        "classification": "INCONCLUSIVE_EMPTY_MASK"
+      }
+    ]
+  },
+  "task_c_invalid_inputs": {
+    "status": "PASS",
+    "records": [
+      {
+        "scenario": "nonexistent_file",
+        "success": false,
+        "predicted_hb": null,
+        "stage": "extraction",
+        "error_message": "Failed to load image: Image file not found: C:\\Users\\Biraj\\AppData\\Local\\Temp\\tmptbsyypfk\\does_not_exist.jpg",
+        "passed": true
+      },
+      {
+        "scenario": "unsupported_txt_file",
+        "success": false,
+        "predicted_hb": null,
+        "stage": "extraction",
+        "error_message": "Failed to load image: cannot identify image file 'C:\\\\Users\\\\Biraj\\\\AppData\\\\Local\\\\Temp\\\\tmptbsyypfk\\\\dummy.txt'",
+        "passed": true
+      },
+      {
+        "scenario": "corrupted_jpeg_file",
+        "success": false,
+        "predicted_hb": null,
+        "stage": "extraction",
+        "error_message": "Failed to load image: cannot identify image file 'C:\\\\Users\\\\Biraj\\\\AppData\\\\Local\\\\Temp\\\\tmptbsyypfk\\\\corrupted.jpg'",
+        "passed": true
+      },
+      {
+        "scenario": "empty_zero_byte_file",
+        "success": false,
+        "predicted_hb": null,
+        "stage": "extraction",
+        "error_message": "Failed to load image: cannot identify image file 'C:\\\\Users\\\\Biraj\\\\AppData\\\\Local\\\\Temp\\\\tmptbsyypfk\\\\empty.jpg'",
+        "passed": true
+      },
+      {
+        "scenario": "invalid_python_type_input",
+        "success": false,
+        "predicted_hb": null,
+        "stage": "extraction",
+        "error_message": "Failed to load image: Expected file path or PIL.Image.Image, got int",
+        "passed": true
+      },
+      {
+        "scenario": "pipeline_usability_recovery_after_failures",
+        "success": true,
+        "predicted_hb": 12.063318252563477,
+        "passed": true
+      }
+    ]
+  },
+  "task_d_extraction_failure": {
+    "status": "PASS",
+    "records": [
+      {
+        "scenario": "test_spy_baseline_normal_call",
+        "success": true,
+        "densenet_forward_calls": 1,
+        "expected_calls": 1,
+        "densenet_bypassed": false,
+        "passed": true,
+        "stage": null,
+        "error_message": null
+      },
+      {
+        "scenario": "natural_empty_mask_pure_black",
+        "success": false,
+        "extraction_success": false,
+        "predicted_hb": null,
+        "densenet_forward_calls": 0,
+        "expected_calls": 0,
+        "densenet_bypassed": true,
+        "stage": "extraction",
+        "mask_area": 0,
+        "error_message": "No conjunctiva detected: predicted segmentation mask is empty.",
+        "passed": true
+      },
+      {
+        "scenario": "natural_empty_mask_pure_white",
+        "success": false,
+        "extraction_success": false,
+        "predicted_hb": null,
+        "densenet_forward_calls": 0,
+        "expected_calls": 0,
+        "densenet_bypassed": true,
+        "stage": "extraction",
+        "mask_area": 0,
+        "error_message": "No conjunctiva detected: predicted segmentation mask is empty.",
+        "passed": true
+      },
+      {
+        "scenario": "simulated_extraction_failure_test_double",
+        "success": false,
+        "predicted_hb": null,
+        "densenet_forward_calls": 0,
+        "expected_calls": 0,
+        "densenet_bypassed": true,
+        "stage": "extraction",
+        "error_message": "Simulated extraction model failure.",
+        "passed": true
+      },
+      {
+        "scenario": "simulated_extraction_exception_test_double",
+        "success": false,
+        "predicted_hb": null,
+        "densenet_forward_calls": 0,
+        "expected_calls": 0,
+        "densenet_bypassed": true,
+        "stage": "extraction",
+        "error_message": "Extraction stage encountered an unexpected exception: Unexpected extraction internal CUDA/CPU error",
+        "passed": true
+      }
+    ]
+  },
+  "task_e_determinism": {
+    "status": "PASS",
+    "records": [
+      {
+        "image_id": "103H-558",
+        "split": "train",
+        "orientation": 6,
+        "runs": [
+          12.923935890197754,
+          12.923935890197754,
+          12.923935890197754,
+          12.923935890197754
+        ],
+        "max_absolute_difference": 0.0,
+        "is_deterministic": true
+      },
+      {
+        "image_id": "5806",
+        "split": "train",
+        "orientation": 0,
+        "runs": [
+          12.063318252563477,
+          12.063318252563477,
+          12.063318252563477,
+          12.063318252563477
+        ],
+        "max_absolute_difference": 0.0,
+        "is_deterministic": true
+      },
+      {
+        "image_id": "5811",
+        "split": "validation",
+        "orientation": 0,
+        "runs": [
+          11.172517776489258,
+          11.172517776489258,
+          11.172517776489258,
+          11.172517776489258
+        ],
+        "max_absolute_difference": 0.0,
+        "is_deterministic": true
+      },
+      {
+        "image_id": "065H-520",
+        "split": "validation",
+        "orientation": 6,
+        "runs": [
+          10.998977661132812,
+          10.998977661132812,
+          10.998977661132812,
+          10.998977661132812
+        ],
+        "max_absolute_difference": 0.0,
+        "is_deterministic": true
+      }
+    ]
+  },
+  "task_f_integrity": {
+    "status": "PASS",
+    "details": {
+      "attention_unet_checkpoint": {
+        "path": "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_best.pt",
+        "expected_sha256": "1F53832F8DC2A8FFBFCBEEBD426B8A53F8C9EC69B0A9229C21A4D7F66AD86AF3",
+        "initial_sha256": "1F53832F8DC2A8FFBFCBEEBD426B8A53F8C9EC69B0A9229C21A4D7F66AD86AF3",
+        "final_sha256": "1F53832F8DC2A8FFBFCBEEBD426B8A53F8C9EC69B0A9229C21A4D7F66AD86AF3",
+        "matched_expected": true,
+        "unchanged_throughout": true,
+        "status": "PASS"
+      },
+      "densenet121_checkpoint": {
+        "path": "D:\\BTP\\BTP-Anemia-Final\\models\\predictors\\densenet121_seed_20261118_best.pt",
+        "expected_sha256": "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+        "initial_sha256": "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+        "final_sha256": "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+        "matched_expected": true,
+        "unchanged_throughout": true,
+        "status": "PASS"
+      },
+      "attention_unet_metadata": {
+        "path": "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0.metadata.json",
+        "expected_sha256": "EE23E2FBB1BCD683056090F804B95282DF2EC026D7473D569EDBE7D881C0A2BB",
+        "initial_sha256": "EE23E2FBB1BCD683056090F804B95282DF2EC026D7473D569EDBE7D881C0A2BB",
+        "final_sha256": "EE23E2FBB1BCD683056090F804B95282DF2EC026D7473D569EDBE7D881C0A2BB",
+        "matched_expected": true,
+        "unchanged_throughout": true,
+        "status": "PASS"
+      }
+    }
+  }
+}

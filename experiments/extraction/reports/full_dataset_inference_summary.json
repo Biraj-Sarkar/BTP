@@ -1,0 +1,12 @@
+﻿{
+    "requested":  288,
+    "successful_masks":  288,
+    "failed":  [
+
+               ],
+    "empty_predicted_masks":  0,
+    "checkpoint":  "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_best.pt",
+    "generated_masks":  288,
+    "generated_overlays":  288,
+    "generated_roi_crops":  288
+}

@@ -1,0 +1,22 @@
+{
+  "architecture": "mobilenet_v3_large",
+  "head": [
+    "weight",
+    "bias"
+  ],
+  "tail_unfrozen": [],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()",
+  "final_parameter_audit": {
+    "trainable_parameter_names": [
+      "classifier.3.weight",
+      "classifier.3.bias"
+    ],
+    "head_trainable_parameter_names": [
+      "classifier.3.weight",
+      "classifier.3.bias"
+    ],
+    "frozen_parameter_count": 172,
+    "trainable_parameter_count": 2,
+    "frozen_batchnorm_modules_eval": true
+  }
+}

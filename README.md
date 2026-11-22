@@ -1,23 +1,57 @@
-# BTP Anemia Model Suite
+# BTP Anemia
 
-This directory is a combined, reviewable copy of the anemia and haemoglobin
-prediction work. The individual algorithm directories are kept separate so
-their source files and training instructions remain easy to inspect.
+This project contains the anemia image-processing application, datasets, models,
+experiments, and reports. Original hospital images, captured metadata, manifests,
+splits, extraction models, prediction models, backend files, and Flutter files are
+preserved.
 
-## Contents
+## Project layout
 
-- `App/` – Flutter mobile client for anemia detection.
-- `Backend/` – Server-side FastAPI inference service and model loading.
-- `extractor/` – Conjunctival ROI extraction using pretrained U-Net and quality control.
-- `predictor/` – Production hemoglobin prediction pipeline supporting ResNet, VGG, and MobileNet.
-- `algorithms/Anubhav/` – Retained experimental reference pipeline.
-- `Models/` – U-Net segmentation checkpoint (`Models/UNet_extractor/unet.pt`) and trained predictor weights.
-- `ROI/` – Pre-extracted 224x224 conjunctiva ROIs and manifest.
-- `datasets/` – Clinical captures, metadata CSV, and reference images.
+```text
+backend/
+datasets/
+  manifests/
+  processed/
+  raw/hospital/images/
+  raw/hospital/captured_data.csv
+  splits/
+docs/
+experiments/
+  annotation/
+    scripts/
+    masks/drafts/
+    masks/verified/
+    masks/reports/
+  extraction/
+  prediction/
+flutter_app/
+models/
+  annotation/
+  extraction/
+  prediction/
+reports/
+requirements.txt
+```
 
-## Architecture & Workflows
+## Annotation
 
-1. **Extraction (`extractor/`)**: Eye image → Color balancing → U-Net inference → Mask morphological refinement → Quality checks → 224x224 ROI crop.
-2. **Prediction (`predictor/`)**: ROI → Preprocessing & Augmentation → ResNet / VGG / MobileNet Regressor → Standardized score denormalization → Hb prediction (g/dL).
-3. **Backend (`Backend/`)**: FastAPI server orchestrating extraction, prediction, and WHO threshold-based anemia classification.
+Manual annotation is the only active annotation workflow. The verified masks in
+`experiments/annotation/masks/verified/` are the ground-truth labels, and the
+active GUI manifest is
+`experiments/annotation/masks/reports/annotation_manifest.csv`.
 
+Old model-assisted predictions, model-selection reports, and pilot annotation
+reports have been archived under `D:\BTP\archive\annotation\`. The Attention
+U-Net belongs to the extraction/segmentation phase; it is not part of the active
+manual annotation workflow.
+
+See [`experiments/annotation/README.md`](experiments/annotation/README.md) for
+the active GUI workflow and current audit.
+
+The extraction phase uses a fresh EXIF-aware Attention U-Net with an ImageNet
+EfficientNet-B0 encoder. Its training, evaluation, prediction, and ROI outputs
+are kept under `experiments/extraction/`; it does not modify manual masks.
+See [`experiments/extraction/README.md`](experiments/extraction/README.md).
+
+The annotation cleanup did not start training; extraction training is documented
+separately in `experiments/extraction/README.md`.

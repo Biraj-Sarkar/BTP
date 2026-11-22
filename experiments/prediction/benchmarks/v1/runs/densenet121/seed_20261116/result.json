@@ -1,0 +1,27 @@
+{
+  "architecture": "densenet121",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 4,
+  "best_validation_mae": 1.043359024580135,
+  "validation_metrics": {
+    "mae": 1.043359024580135,
+    "rmse": 1.405375176635737,
+    "r2": 0.20746500505176957,
+    "bias": 0.28398773282073264,
+    "median_absolute_error": 0.846038818359375,
+    "maximum_absolute_error": 3.9495697021484375,
+    "bland_altman_mean_difference": 0.28398773282073264,
+    "bland_altman_loa_low": -2.4456497670016155,
+    "bland_altman_loa_high": 3.013625232643081
+  },
+  "runtime_seconds": 190.23008561134338,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression\\densenet121\\densenet121_seed_20261116_best.pt",
+  "training_history": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\densenet121\\seed_20261116\\training_history.csv",
+  "validation_predictions": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\densenet121\\seed_20261116\\validation_predictions.csv",
+  "target_mean_g_dl": 11.376410256410255,
+  "target_std_g_dl": 1.8684581428786886,
+  "epochs_ran": 11,
+  "pretrained_weights": "ImageNet",
+  "freeze_strategy": "Classifier/head trained first; limited tail unfrozen after epoch 10"
+}

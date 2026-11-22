@@ -1,0 +1,29 @@
+{
+  "manifest": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\data_audit\\hb_dataset_manifest.csv",
+  "metadata_columns_loaded": [
+    "image_id",
+    "registration_no",
+    "hb_inclusion_status",
+    "extraction_split"
+  ],
+  "test_target_columns_loaded": [
+    "image_id",
+    "registration_no",
+    "original_hb_unit",
+    "hb_g_dl",
+    "roi_crop_path",
+    "extraction_split"
+  ],
+  "test_rows_loaded": 41,
+  "test_predictions_generated": 41,
+  "duplicate_test_records": false,
+  "patient_overlap_train": 0,
+  "patient_overlap_validation": 0,
+  "training_operations_called": false,
+  "optimizer_created": false,
+  "backward_called": false,
+  "weights_changed": [],
+  "batchnorm_buffers_changed": [],
+  "single_record_smoke_test": true,
+  "test_used_for_selection": false
+}

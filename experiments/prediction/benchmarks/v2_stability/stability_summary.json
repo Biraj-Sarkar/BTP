@@ -1,0 +1,67 @@
+{
+  "generated_at": "2026-11-18T09:20:11.212109+00:00",
+  "architectures": [
+    "densenet121",
+    "vgg16",
+    "mobilenet_v3_large"
+  ],
+  "seeds": [
+    20261116,
+    20261117,
+    20261118
+  ],
+  "summary": {
+    "densenet121": {
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "validation_mae_mean": 0.8760468239007994,
+      "validation_mae_std": 0.08949055133180182,
+      "validation_rmse_mean": 1.2529628865354523,
+      "validation_rmse_std": 0.08378430851957488,
+      "validation_r2_mean": 0.368165990228914,
+      "validation_r2_std": 0.08431159274469754,
+      "best_epoch_mean": 10.0,
+      "runtime_seconds_mean": 357.7529667218526
+    },
+    "vgg16": {
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "validation_mae_mean": 1.00187329728474,
+      "validation_mae_std": 0.05878441652052998,
+      "validation_rmse_mean": 1.3034578282818374,
+      "validation_rmse_std": 0.08345859723274147,
+      "validation_r2_mean": 0.31638243073654154,
+      "validation_r2_std": 0.08870538259855672,
+      "best_epoch_mean": 4.666666666666667,
+      "runtime_seconds_mean": 542.8455599149069
+    },
+    "mobilenet_v3_large": {
+      "seeds": [
+        20261116,
+        20261117,
+        20261118
+      ],
+      "validation_mae_mean": 0.9877992674361827,
+      "validation_mae_std": 0.030073846208117296,
+      "validation_rmse_mean": 1.354467452282301,
+      "validation_rmse_std": 0.036400762337275495,
+      "validation_r2_mean": 0.26348753917957296,
+      "validation_r2_std": 0.03975007332148445,
+      "best_epoch_mean": 4.0,
+      "runtime_seconds_mean": 61.16216850280762
+    }
+  },
+  "test_isolation": {
+    "test_rows_counted_from_metadata_only": true,
+    "test_targets_loaded": false,
+    "test_images_loaded": false,
+    "test_predictions_generated": false,
+    "test_used_for_selection": false
+  }
+}

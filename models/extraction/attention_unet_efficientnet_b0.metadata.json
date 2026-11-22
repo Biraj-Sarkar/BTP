@@ -1,0 +1,24 @@
+{
+  "architecture": "Attention U-Net",
+  "encoder": "EfficientNet-B0",
+  "encoder_weights": "ImageNet",
+  "checkpoint": "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_best.pt",
+  "input_size": [
+    320,
+    320
+  ],
+  "orientation": "Pillow ImageOps.exif_transpose",
+  "normalization_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalization_std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "seed": 20261116,
+  "best_epoch": 18,
+  "best_validation_dice": 0.8300779542388951
+}

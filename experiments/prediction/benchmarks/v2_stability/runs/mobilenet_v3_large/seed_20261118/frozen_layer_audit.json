@@ -1,0 +1,55 @@
+{
+  "architecture": "mobilenet_v3_large",
+  "head": [
+    "weight",
+    "bias"
+  ],
+  "tail_unfrozen": [
+    "features[-1]",
+    "features[-2]",
+    "features[-3]"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()",
+  "final_parameter_audit": {
+    "trainable_parameter_names": [
+      "features.14.block.0.0.weight",
+      "features.14.block.0.1.weight",
+      "features.14.block.0.1.bias",
+      "features.14.block.1.0.weight",
+      "features.14.block.1.1.weight",
+      "features.14.block.1.1.bias",
+      "features.14.block.2.fc1.weight",
+      "features.14.block.2.fc1.bias",
+      "features.14.block.2.fc2.weight",
+      "features.14.block.2.fc2.bias",
+      "features.14.block.3.0.weight",
+      "features.14.block.3.1.weight",
+      "features.14.block.3.1.bias",
+      "features.15.block.0.0.weight",
+      "features.15.block.0.1.weight",
+      "features.15.block.0.1.bias",
+      "features.15.block.1.0.weight",
+      "features.15.block.1.1.weight",
+      "features.15.block.1.1.bias",
+      "features.15.block.2.fc1.weight",
+      "features.15.block.2.fc1.bias",
+      "features.15.block.2.fc2.weight",
+      "features.15.block.2.fc2.bias",
+      "features.15.block.3.0.weight",
+      "features.15.block.3.1.weight",
+      "features.15.block.3.1.bias",
+      "features.16.0.weight",
+      "features.16.1.weight",
+      "features.16.1.bias",
+      "classifier.3.weight",
+      "classifier.3.bias"
+    ],
+    "head_trainable_parameter_names": [
+      "classifier.3.weight",
+      "classifier.3.bias"
+    ],
+    "frozen_parameter_count": 143,
+    "trainable_parameter_count": 31,
+    "frozen_batchnorm_modules_eval": true
+  }
+}

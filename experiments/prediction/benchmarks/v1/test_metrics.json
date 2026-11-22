@@ -1,0 +1,11 @@
+{
+  "mae": 1.2252477901737864,
+  "rmse": 1.6283113483923641,
+  "r2": 0.2754000558789319,
+  "bias": 0.35855359565920947,
+  "median_absolute_error": 0.8770790100097656,
+  "maximum_absolute_error": 5.0703582763671875,
+  "bland_altman_mean_difference": 0.35855359565920947,
+  "bland_altman_loa_low": -2.7932751655014725,
+  "bland_altman_loa_high": 3.5103823568198917
+}

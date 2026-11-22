@@ -1,0 +1,68 @@
+[
+  {
+    "epoch": 1,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 2,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 3,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 4,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 5,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 6,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 7,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 8,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 9,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 10,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  },
+  {
+    "epoch": 11,
+    "frozen_batchnorm_eval": true,
+    "frozen_batchnorm_buffers_unchanged": true,
+    "changed_buffers": []
+  }
+]

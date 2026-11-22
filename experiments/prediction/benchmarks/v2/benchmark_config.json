@@ -1,0 +1,36 @@
+{
+  "version": "V2",
+  "seed": 20261116,
+  "architectures": [
+    "resnet18",
+    "vgg16",
+    "densenet121",
+    "efficientnet_b0",
+    "mobilenet_v3_large",
+    "convnext_tiny"
+  ],
+  "input_size": [
+    224,
+    224
+  ],
+  "batch_size": 8,
+  "max_epochs": 40,
+  "early_stopping_patience": 7,
+  "freeze_epochs": 10,
+  "optimizer": "AdamW",
+  "loss": "SmoothL1Loss",
+  "head_learning_rate": 0.001,
+  "backbone_learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "augmentation": "resize, mild rotation 5 degrees, horizontal flip, brightness/contrast 0.05",
+  "target_standardization": "training targets only",
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after every train()",
+  "test_access": false,
+  "v1_reference": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1",
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "torch": "2.13.0+cpu",
+  "torchvision": "0.28.0+cpu",
+  "cuda_available": false,
+  "cpu_count": 12,
+  "platform": "Windows-11-10.0.26300-SP0"
+}

@@ -1,0 +1,30 @@
+{
+  "selected_checkpoint": {
+    "path": "D:\\BTP\\BTP-Anemia-Final\\models\\predictors\\densenet121_seed_20261118_best.pt",
+    "before_sha256": "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+    "after_sha256": "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+    "unchanged": true,
+    "model_state_changed": [],
+    "batchnorm_buffers_changed": []
+  },
+  "protected_extraction_artifacts": {
+    "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0.metadata.json": {
+      "before_sha256": "EE23E2FBB1BCD683056090F804B95282DF2EC026D7473D569EDBE7D881C0A2BB",
+      "after_sha256": "EE23E2FBB1BCD683056090F804B95282DF2EC026D7473D569EDBE7D881C0A2BB",
+      "unchanged": true
+    },
+    "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_best.pt": {
+      "before_sha256": "1F53832F8DC2A8FFBFCBEEBD426B8A53F8C9EC69B0A9229C21A4D7F66AD86AF3",
+      "after_sha256": "1F53832F8DC2A8FFBFCBEEBD426B8A53F8C9EC69B0A9229C21A4D7F66AD86AF3",
+      "unchanged": true
+    },
+    "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_final.pt": {
+      "before_sha256": "959CCF4EF94E93EFB5CBC83926CB537A764D55E21C071597541B62881A70AD9E",
+      "after_sha256": "959CCF4EF94E93EFB5CBC83926CB537A764D55E21C071597541B62881A70AD9E",
+      "unchanged": true
+    }
+  },
+  "v1_outputs_modified": false,
+  "v2_outputs_modified": false,
+  "stability_outputs_modified": false
+}

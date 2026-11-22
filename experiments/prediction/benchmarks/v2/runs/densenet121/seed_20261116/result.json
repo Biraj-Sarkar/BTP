@@ -1,0 +1,24 @@
+{
+  "architecture": "densenet121",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 11,
+  "validation_metrics": {
+    "mae": 0.9392473309539086,
+    "rmse": 1.3372085172925117,
+    "r2": 0.2824830586623942,
+    "bias": 0.22228354077006496,
+    "median_absolute_error": 0.5519046783447266,
+    "maximum_absolute_error": 3.474222183227539,
+    "bland_altman_mean_difference": 0.22228354077006496,
+    "bland_altman_loa_low": -2.392766838101368,
+    "bland_altman_loa_high": 2.8373339196414973
+  },
+  "runtime_seconds": 569.348673582077,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\densenet121\\densenet121_seed_20261116_best.pt",
+  "tail_unfrozen": [
+    "features.denseblock4",
+    "features.norm5"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()"
+}

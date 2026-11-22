@@ -1,0 +1,9 @@
+{
+  "loader": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v2_stability\\test_isolation_correction_audit.json",
+  "test_rows_counted_from_metadata_only": true,
+  "test_targets_loaded": false,
+  "test_images_loaded": false,
+  "test_predictions_generated": false,
+  "test_used_for_selection": false,
+  "test_metrics_generated": false
+}

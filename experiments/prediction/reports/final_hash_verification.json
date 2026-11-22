@@ -1,0 +1,140 @@
+﻿{
+    "verified_at":  "2026-11-18T16:21:29.4153780+05:30",
+    "expected_artifacts":  21,
+    "found_artifacts":  21,
+    "missing_hashes":  [
+
+                       ],
+    "unexpected_hashes":  [
+
+                          ],
+    "all_hashes_unchanged":  true,
+    "artifacts":  [
+                      {
+                          "artifact":  "attention_unet_efficientnet_b0.metadata.json",
+                          "path":  "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0.metadata.json",
+                          "sha256":  "EE23E2FBB1BCD683056090F804B95282DF2EC026D7473D569EDBE7D881C0A2BB",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "attention_unet_efficientnet_b0_best.pt",
+                          "path":  "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_best.pt",
+                          "sha256":  "1F53832F8DC2A8FFBFCBEEBD426B8A53F8C9EC69B0A9229C21A4D7F66AD86AF3",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "attention_unet_efficientnet_b0_final.pt",
+                          "path":  "D:\\BTP\\BTP-Anemia-Final\\models\\extraction\\attention_unet_efficientnet_b0_final.pt",
+                          "sha256":  "959CCF4EF94E93EFB5CBC83926CB537A764D55E21C071597541B62881A70AD9E",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "convnext_tiny_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression\\convnext_tiny\\convnext_tiny_seed_20261116_best.pt",
+                          "sha256":  "53E5CF165DD76998EA9672BAF31508168C44CD0A80E1DC22A20CBF59125B3D7C",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "convnext_tiny_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\convnext_tiny\\convnext_tiny_seed_20261116_best.pt",
+                          "sha256":  "7B12E4588772D043C7A7D2DC1B245A9BE29309431C0028F68341628AC1E5B633",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "densenet121_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression\\densenet121\\densenet121_seed_20261116_best.pt",
+                          "sha256":  "79187B83CE6014E6355886514168DD87EB209EC9E4328AA046A90CBF762CD59F",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "densenet121_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\densenet121\\densenet121_seed_20261116_best.pt",
+                          "sha256":  "E8DBB02938CE01C11F784CA6BB4BDBE133633F1A40CAE8C1DB7B327E13B74CCF",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "densenet121_seed_20261117_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\densenet121\\densenet121_seed_20261117_best.pt",
+                          "sha256":  "AB2368921E54DD1D5E87622770DB2A0A6E4DAAB32FC296F51CF7AE5ABDED6672",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "densenet121_seed_20261118_best.pt",
+                          "path":  "D:\\BTP\\BTP-Anemia-Final\\models\\predictors\\densenet121_seed_20261118_best.pt",
+                          "sha256":  "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "efficientnet_b0_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression\\efficientnet_b0\\efficientnet_b0_seed_20261116_best.pt",
+                          "sha256":  "732AC4FEA5345E5B6F349B290B0F21F2836B5922193F6652DBA4C0188C5D3AA5",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "efficientnet_b0_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\efficientnet_b0\\efficientnet_b0_seed_20261116_best.pt",
+                          "sha256":  "64D2136D53DF309CE3A3CC95C24EAD0DECD968D58A0D9142ECB7B27C5B234FA5",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "mobilenet_v3_large_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression\\mobilenet_v3_large\\mobilenet_v3_large_seed_20261116_best.pt",
+                          "sha256":  "893BFB5C8D3EFB4129569D85A08D0579BB5EA18B8A620EAEEEC25F08513A14B4",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "mobilenet_v3_large_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\mobilenet_v3_large\\mobilenet_v3_large_seed_20261116_best.pt",
+                          "sha256":  "F338C2C4B04B1E6B932FA56F618688E458B900E839F1BA8E8E9A5FF41163C672",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "mobilenet_v3_large_seed_20261117_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\mobilenet_v3_large\\mobilenet_v3_large_seed_20261117_best.pt",
+                          "sha256":  "06F8D94D6B247783EA5ADA997A2E0D0A9D63D0D2503B4E9920FBE301A062E7C9",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "mobilenet_v3_large_seed_20261118_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\mobilenet_v3_large\\mobilenet_v3_large_seed_20261118_best.pt",
+                          "sha256":  "61C4DC80616404731B822126203B8D743CF1B7BF81BC0891B87E1A08926D4DC4",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "resnet18_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression\\resnet18\\resnet18_seed_20261116_best.pt",
+                          "sha256":  "DF2AF9AA326973D35C5AF883D43D3E220F4065B4F01C3C4F1B458874E15904DE",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "resnet18_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\resnet18\\resnet18_seed_20261116_best.pt",
+                          "sha256":  "80E5A712ADF329854EE31937C5B17FF930B8BB41FAB27DCE4CB9F309AE80CC48",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "vgg16_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression\\vgg16\\vgg16_seed_20261116_best.pt",
+                          "sha256":  "7329DCC1FE4943CCD7C7D9A33F932FD980D27CCDCA7A57D971139A874BC905BC",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "vgg16_seed_20261116_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\vgg16\\vgg16_seed_20261116_best.pt",
+                          "sha256":  "594AF3781F39E0780B770867798A86EDF2CC3DEAA99FCCA06F85955CB4A6144D",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "vgg16_seed_20261117_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\vgg16\\vgg16_seed_20261117_best.pt",
+                          "sha256":  "B95B8635CF311926E212EE08C598B92734484DBB45F517DD5572D36AA16C209E",
+                          "unchanged":  true
+                      },
+                      {
+                          "artifact":  "vgg16_seed_20261118_best.pt",
+                          "path":  "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\vgg16\\vgg16_seed_20261118_best.pt",
+                          "sha256":  "7257F8CD314D0820F4E5A8DDBE9B1A6B53247DF5DC2A79404DA342833E8AE994",
+                          "unchanged":  true
+                      }
+                  ]
+}

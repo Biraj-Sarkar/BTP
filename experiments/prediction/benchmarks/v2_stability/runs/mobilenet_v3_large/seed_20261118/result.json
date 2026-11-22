@@ -1,0 +1,25 @@
+{
+  "architecture": "mobilenet_v3_large",
+  "seed": 20261118,
+  "status": "completed",
+  "best_epoch": 5,
+  "validation_metrics": {
+    "mae": 1.0066782707391784,
+    "rmse": 1.3944592438901593,
+    "r2": 0.2197288624221262,
+    "bias": 0.00649946789408839,
+    "median_absolute_error": 0.7952709197998047,
+    "maximum_absolute_error": 4.102588653564453,
+    "bland_altman_mean_difference": 0.00649946789408839,
+    "bland_altman_loa_low": -2.758956590337194,
+    "bland_altman_loa_high": 2.7719555261253706
+  },
+  "runtime_seconds": 48.151517391204834,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression_v2_stability\\mobilenet_v3_large\\mobilenet_v3_large_seed_20261118_best.pt",
+  "tail_unfrozen": [
+    "features[-1]",
+    "features[-2]",
+    "features[-3]"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()"
+}

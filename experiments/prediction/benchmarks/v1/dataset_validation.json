@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-11-18T05:22:45.287037+00:00",
+  "manifest": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\data_audit\\hb_dataset_manifest.csv",
+  "manifest_rows": 288,
+  "eligible_rows": 279,
+  "split_counts": {
+    "test": 41,
+    "train": 195,
+    "validation": 43
+  },
+  "eligible_split_counts": {
+    "test": 41,
+    "train": 195,
+    "validation": 43
+  },
+  "training_target_mean_g_dl": 11.376410256410255,
+  "training_target_std_g_dl": 1.8684581428786886,
+  "registration_overlap": 0,
+  "image_format": "existing RGB ROI JPEG",
+  "input_size": [
+    224,
+    224
+  ],
+  "augmentation": "resize, mild rotation 5 degrees, horizontal flip, brightness/contrast 0.05",
+  "test_untouched_in_stage_a": true
+}

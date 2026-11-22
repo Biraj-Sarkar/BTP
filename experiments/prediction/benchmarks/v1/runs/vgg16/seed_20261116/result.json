@@ -1,0 +1,27 @@
+{
+  "architecture": "vgg16",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 11,
+  "best_validation_mae": 1.0095109274221021,
+  "validation_metrics": {
+    "mae": 1.0095109274221021,
+    "rmse": 1.2927791583422827,
+    "r2": 0.3293706207014183,
+    "bias": -0.15879169730252998,
+    "median_absolute_error": 0.8039789199829102,
+    "maximum_absolute_error": 3.48897647857666,
+    "bland_altman_mean_difference": -0.15879169730252998,
+    "bland_altman_loa_low": -2.703212280264518,
+    "bland_altman_loa_high": 2.3856288856594583
+  },
+  "runtime_seconds": 1381.2247228622437,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression\\vgg16\\vgg16_seed_20261116_best.pt",
+  "training_history": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\vgg16\\seed_20261116\\training_history.csv",
+  "validation_predictions": "D:\\BTP\\BTP-Anemia-Final\\experiments\\prediction\\benchmarks\\v1\\runs\\vgg16\\seed_20261116\\validation_predictions.csv",
+  "target_mean_g_dl": 11.376410256410255,
+  "target_std_g_dl": 1.8684581428786886,
+  "epochs_ran": 18,
+  "pretrained_weights": "ImageNet",
+  "freeze_strategy": "Classifier/head trained first; limited tail unfrozen after epoch 10"
+}

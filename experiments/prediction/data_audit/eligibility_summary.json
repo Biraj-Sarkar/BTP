@@ -1,0 +1,22 @@
+{
+  "generated_at_utc": "2026-11-18T04:12:46.326191+00:00",
+  "source_sha256": "1FD1519AB27E09B338242887BCFC86CFBDADE315ACA19D2D3611EE67E7AF7A2B",
+  "total_records": 288,
+  "eligible_records": 279,
+  "excluded_records": 9,
+  "eligible_by_split": {
+    "train": 195,
+    "validation": 43,
+    "test": 41
+  },
+  "excluded_by_split": {
+    "train": 7,
+    "validation": 0,
+    "test": 2
+  },
+  "eligible_unit_counts": {
+    "gm/dL": 279
+  },
+  "no_conversion_applied": true,
+  "imputation_applied": false
+}

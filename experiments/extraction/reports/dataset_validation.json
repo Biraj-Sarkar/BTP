@@ -1,0 +1,18 @@
+{
+  "source_images": 288,
+  "manifest_rows": 288,
+  "verified_rows": 288,
+  "draft_rows": 0,
+  "pending_rows": 0,
+  "readable_images": 288,
+  "readable_masks": 288,
+  "binary_masks": 288,
+  "non_empty_masks": 288,
+  "missing_masks": 0,
+  "orphan_masks": 0,
+  "duplicate_image_ids": 0,
+  "duplicate_mask_stems": 0,
+  "oriented_dimension_mismatches": 0,
+  "unique_registration_numbers": 288,
+  "mapping_method": "exact embedded EXIF capture timestamp to captured_data.csv"
+}

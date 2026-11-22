@@ -1,0 +1,24 @@
+{
+  "architecture": "densenet121",
+  "seed": 20261118,
+  "status": "completed",
+  "best_epoch": 9,
+  "validation_metrics": {
+    "mae": 0.7736452235731968,
+    "rmse": 1.1696476491856156,
+    "r2": 0.45103583469246833,
+    "bias": 0.024350632068722747,
+    "median_absolute_error": 0.49405670166015625,
+    "maximum_absolute_error": 3.5404233932495117,
+    "bland_altman_mean_difference": 0.024350632068722747,
+    "bland_altman_loa_low": -2.294787247936895,
+    "bland_altman_loa_high": 2.3434885120743405
+  },
+  "runtime_seconds": 240.55910325050354,
+  "checkpoint": "D:\\BTP\\BTP-Anemia-Final\\models\\predictors\\densenet121_seed_20261118_best.pt",
+  "tail_unfrozen": [
+    "features.denseblock4",
+    "features.norm5"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()"
+}

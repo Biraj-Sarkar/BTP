@@ -1,0 +1,142 @@
+[
+  {
+    "type": "real_image_exif_6",
+    "image_id": "103H-558",
+    "original_stored_dimensions": [
+      4096,
+      3072
+    ],
+    "exif_orientation_value": 6,
+    "effective_dimensions_after_orientation_correction": [
+      3072,
+      4096
+    ],
+    "pipeline_outcome": "SUCCESS",
+    "predicted_hb_g_dl": 12.923935890197754,
+    "bounding_box": [
+      892,
+      2208,
+      1969,
+      2811
+    ],
+    "bounding_box_valid": true,
+    "orientation_consistency": true,
+    "status": "PASS",
+    "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+  },
+  {
+    "type": "real_image_exif_0",
+    "image_id": "5806",
+    "original_stored_dimensions": [
+      2448,
+      3264
+    ],
+    "exif_orientation_value": 0,
+    "effective_dimensions_after_orientation_correction": [
+      2448,
+      3264
+    ],
+    "pipeline_outcome": "SUCCESS",
+    "predicted_hb_g_dl": 12.063318252563477,
+    "bounding_box": [
+      547,
+      1623,
+      1046,
+      1826
+    ],
+    "bounding_box_valid": true,
+    "orientation_consistency": true,
+    "status": "PASS",
+    "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+  },
+  {
+    "type": "synthetic_sensor_orientation_tag_1",
+    "image_id": "5806_tag1",
+    "original_stored_dimensions": [
+      2448,
+      3264
+    ],
+    "exif_orientation_value": 1,
+    "effective_dimensions_after_orientation_correction": [
+      2448,
+      3264
+    ],
+    "pipeline_outcome": "SUCCESS",
+    "predicted_hb_g_dl": 11.48303508758545,
+    "bounding_box": [
+      539,
+      1612,
+      1038,
+      1826
+    ],
+    "bounding_box_valid": true,
+    "orientation_consistency": true,
+    "status": "PASS",
+    "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+  },
+  {
+    "type": "synthetic_sensor_orientation_tag_3",
+    "image_id": "5806_tag3",
+    "original_stored_dimensions": [
+      2448,
+      3264
+    ],
+    "exif_orientation_value": 3,
+    "effective_dimensions_after_orientation_correction": [
+      2448,
+      3264
+    ],
+    "pipeline_outcome": "SUCCESS",
+    "predicted_hb_g_dl": 11.543832778930664,
+    "bounding_box": [
+      539,
+      1612,
+      1038,
+      1826
+    ],
+    "bounding_box_valid": true,
+    "orientation_consistency": true,
+    "status": "PASS",
+    "classification": "SUCCESSFUL_ORIENTATION_INFERENCE"
+  },
+  {
+    "type": "synthetic_sensor_orientation_tag_6",
+    "image_id": "5806_tag6",
+    "original_stored_dimensions": [
+      3264,
+      2448
+    ],
+    "exif_orientation_value": 6,
+    "effective_dimensions_after_orientation_correction": [
+      2448,
+      3264
+    ],
+    "pipeline_outcome": "EMPTY_MASK (No conjunctiva detected: predicted segmentation mask is empty.)",
+    "predicted_hb_g_dl": null,
+    "bounding_box": null,
+    "bounding_box_valid": null,
+    "orientation_consistency": true,
+    "status": "INCONCLUSIVE",
+    "classification": "INCONCLUSIVE_EMPTY_MASK"
+  },
+  {
+    "type": "synthetic_sensor_orientation_tag_8",
+    "image_id": "5806_tag8",
+    "original_stored_dimensions": [
+      3264,
+      2448
+    ],
+    "exif_orientation_value": 8,
+    "effective_dimensions_after_orientation_correction": [
+      2448,
+      3264
+    ],
+    "pipeline_outcome": "EMPTY_MASK (No conjunctiva detected: predicted segmentation mask is empty.)",
+    "predicted_hb_g_dl": null,
+    "bounding_box": null,
+    "bounding_box_valid": null,
+    "orientation_consistency": true,
+    "status": "INCONCLUSIVE",
+    "classification": "INCONCLUSIVE_EMPTY_MASK"
+  }
+]

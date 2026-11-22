@@ -1,0 +1,33 @@
+{
+  "architecture": "vgg16",
+  "head": [
+    "weight",
+    "bias"
+  ],
+  "tail_unfrozen": [
+    "features[-1]",
+    "features[-2]",
+    "features[-3]",
+    "features[-4]",
+    "features[-5]",
+    "features[-6]"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()",
+  "final_parameter_audit": {
+    "trainable_parameter_names": [
+      "features.26.weight",
+      "features.26.bias",
+      "features.28.weight",
+      "features.28.bias",
+      "classifier.6.weight",
+      "classifier.6.bias"
+    ],
+    "head_trainable_parameter_names": [
+      "classifier.6.weight",
+      "classifier.6.bias"
+    ],
+    "frozen_parameter_count": 26,
+    "trainable_parameter_count": 6,
+    "frozen_batchnorm_modules_eval": true
+  }
+}

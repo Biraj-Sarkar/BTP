@@ -1,0 +1,23 @@
+{
+  "architecture": "resnet18",
+  "seed": 20261116,
+  "status": "completed",
+  "best_epoch": 20,
+  "validation_metrics": {
+    "mae": 1.0277400793031204,
+    "rmse": 1.3173865126854232,
+    "r2": 0.30359750710167177,
+    "bias": -0.30464908688567405,
+    "median_absolute_error": 0.7750358581542969,
+    "maximum_absolute_error": 3.5540637969970703,
+    "bland_altman_mean_difference": -0.30464908688567405,
+    "bland_altman_loa_low": -2.846466055350232,
+    "bland_altman_loa_high": 2.2371678815788836
+  },
+  "runtime_seconds": 398.1407063007355,
+  "checkpoint": "D:\\BTP\\archive\\prediction_models\\hb_regression_v2\\resnet18\\resnet18_seed_20261116_best.pt",
+  "tail_unfrozen": [
+    "layer4"
+  ],
+  "batchnorm_policy": "all BatchNorm running statistics frozen; eval mode restored after train()"
+}

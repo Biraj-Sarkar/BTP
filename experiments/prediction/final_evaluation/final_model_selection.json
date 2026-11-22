@@ -1,0 +1,25 @@
+{
+  "architecture": "densenet121",
+  "selected_seed": 20261118,
+  "selection_metric": "validation_mae",
+  "checkpoint": "D:\\BTP\\BTP-Anemia-Final\\models\\predictors\\densenet121_seed_20261118_best.pt",
+  "checkpoint_sha256": "57EA961A29524563059F5293147E962945AE9BDB1042E357570057F4C533288B",
+  "best_epoch": 9,
+  "validation_metrics": {
+    "mae": 0.7736452235731968,
+    "rmse": 1.1696476491856156,
+    "r2": 0.4510358346924683
+  },
+  "configuration": {
+    "input_size": [
+      224,
+      224
+    ],
+    "rgb": true,
+    "preprocessing": "resize 224x224, ImageNet normalization; no color correction",
+    "target_standardization": "training-target mean/std from selected checkpoint",
+    "batch_size": 8,
+    "batchnorm_policy": "frozen running statistics; model eval during inference"
+  },
+  "test_selection_used": false
+}
