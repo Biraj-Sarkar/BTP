@@ -1,0 +1,839 @@
+% BTP-I joint report: IEEE conference format (IEEEtran), 6-8 pages.
+%
+% A GENERATED FIRST DRAFT. Each author rewrites the prose of their own part in
+% their own words until Turnitin's AI score is below 20%; the numbers, tables,
+% equations and references stay. Status 22 Nov: V and VI rewritten by Anubhav
+% (a note above each rewritten subsection lists the edits and added facts).
+% 23 Nov: merged with Biraj's version (VII, VIII, hospital details in III and the
+% acknowledgment, abstract and conclusion edits, Figs. 4, 5 and 7). Changes made
+% while merging, to keep the report consistent and within 8 pages:
+%  - V-B: removed the redness-index sentences (no experiment in the report backs
+%    them) and the attention-gate description (its channel width is not the one
+%    in the extraction code, which uses half the skip channels).
+%  - VI-C: removed the hospital-transfer paragraph (kept out of this report;
+%    "five-fold cross-validation" was also not the protocol used).
+%  - VII-A: removed pixel accuracy and specificity (V-C explains why accuracy is
+%    not used for masks).
+%  - VII-D: the predicted-vs-measured and residual plots repeat Fig. 6 (a) and
+%    (b), so only the absolute-error histogram is kept; text points to Fig. 6.
+%  - III: removed the EXIF sentence (VII-A already says it).
+%  Later on 23 Nov Biraj sent reworded VII-VIII; that text replaced the earlier
+%  one, with the same removals re-applied (listed at the start of VII).
+%  - Figure widths reduced: Figs. 2, 3, 4, 5 and 7. Lines starting with % are notes and never
+% appear in the PDF. Red [TODO] marks are facts only the authors can supply.
+%
+% Parts:  shared            title, abstract, I-IV, IX, X, acknowledgment
+%         extraction        V, VI
+%         Hb model and app  VII, VIII
+%
+% Overleaf: upload main.tex, refs.bib and the figures listed in README.md into a
+% folder called figures/. A figure that is not uploaded yet compiles as a box
+% naming the file, so the document always builds.
+%
+% PAGE BUDGET (8 pages, references included; each section's budget includes its
+% own tables and figures):
+%   title + abstract 0.3 | I 0.4 | II 0.3 | III 0.25 | IV 0.25   front    1.5
+%   V 1.0 | VI 1.5                                                extract  2.5
+%   VII 1.5 | VIII 1.5                                            Hb + app 3.0
+%   IX 0.35 | X 0.15                                              closing  0.5
+%   references                                                             0.5
+
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{url}
+
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+% \fig{width}{file}: the figure if present (figures/ on Overleaf, ../figures/
+% when compiled inside the repository), otherwise a labelled box.
+\newcommand{\fig}[2]{%
+  \IfFileExists{figures/#2}{\includegraphics[width=#1]{figures/#2}}{%
+  \IfFileExists{../figures/#2}{\includegraphics[width=#1]{../figures/#2}}{%
+  \fbox{\parbox[c][2.6cm][c]{\dimexpr#1-2\fboxsep-2\fboxrule\relax}{\centering
+  \footnotesize Figure to add:\\ \texttt{\detokenize{#2}}}}}}}
+
+\begin{document}
+
+\title{Anaemia Screening from Smartphone Photographs\\ of the Palpebral Conjunctiva}
+
+\author{
+\IEEEauthorblockN{Anubhav Jindal}
+\IEEEauthorblockA{Department of Computer Science and Engineering\\ Indian Institute of
+Technology Guwahati, Guwahati, India\\ j.anubhav@iitg.ac.in}
+\and
+\IEEEauthorblockN{Biraj Sarkar}
+\IEEEauthorblockA{Department of Computer Science and Engineering\\ Indian Institute of
+Technology Guwahati, Guwahati, India\\ s.biraj@iitg.ac.in}
+}
+
+\maketitle
+% No figure or table at the top of the first page (IEEE practice).
+\suppressfloats[t]
+
+% ============================================================ ABSTRACT (shared)
+\begin{abstract}
+% Assembled by Claude (23 Nov) from Anubhav's own sentences in Sections I and
+% VI (the anaemia definition, "We use a phone photo...", "much better than the
+% rule-based ones", "too small a range to decide a winner", "can make a
+% difference look real when it is not", "the white patch gives ... the best"),
+% with the numbers added. The hospital and Hb sentence is condensed from the
+% earlier abstract and Section VII (AI-written).
+Anaemia is the condition where the haemoglobin (Hb) level in the blood drops
+below a certain threshold, and confirming it needs a blood sample. We use a
+phone photo to assign a number to the redness of the palpebral conjunctiva, the
+inner lining of the lower eyelid. In an independent study on two public
+datasets, learned extractors were much better than rule-based ones, with a Dice
+score of 0.83 against 0.48 on close-ups of people not seen in training. The top
+three of six architectures are within 0.007 Dice of each other, too small a
+range to decide a winner, and a single split can make a difference look real
+when it is not. Against a white plastic edge present in every photograph, the
+white patch gives the best estimate of the light (median 1.5$^\circ$ and
+0.8$^\circ$, against about 5$^\circ$ for gray-world). The segmenter selected on
+the basis of this study, an Attention U-Net, reaches a Dice of 0.83 on 43
+held-out hospital patients, and a DenseNet-121 estimates Hb with a mean
+absolute error of 1.35~g/dL on 41 patients, against 1.37~g/dL for predicting
+the training mean. A mobile application returns the estimate with a screening
+flag.
+\end{abstract}
+
+\begin{IEEEkeywords}
+anaemia, palpebral conjunctiva, semantic segmentation, U-Net, colour
+constancy, haemoglobin estimation, mobile health
+\end{IEEEkeywords}
+
+% ============================================================ I. INTRODUCTION (shared)
+% NFHS-5 national figures: check 57.0% (women 15-49) and 67.1% (children
+% 6-59 months) against the fact sheet before submitting.
+\section{Introduction}
+% Written by Anubhav (23 Nov, second version). Edits: capitals, "the World
+% Health Organization", "threshold ... is below 13.0" -> "is 13.0" (anaemia is
+% below it), "introduce ... to" -> "expose ... to", "pulling the eyelid down",
+% "causing it to become significantly paler" -> "so it turns noticeably paler
+% when Hb is low" (the vessels are why its colour follows Hb), "Few issues" ->
+% "There are a few issues", citations. Wording taken from Claude's fact sheet:
+% "confirming it needs a blood sample ... is hard" and the three issue bullets.
+% Contributions: Anubhav's wording from his first version, shortened by Claude
+% to one sentence each. The section-map sentence at the end is Claude's.
+Anaemia is the condition where the haemoglobin (Hb) level in the blood drops
+below a certain threshold. This threshold, as defined by the World Health
+Organization (WHO), is 13.0~g/dL for men, 12.0~g/dL for non-pregnant women, and
+11.0~g/dL for pregnant women and children aged 6--59 months~\cite{who2011}. In
+India specifically, the fifth National Family Health Survey (NFHS-5) found
+anaemia in 57.0\% of women aged 15--49 and 67.1\% of children aged 6--59
+months~\cite{nfhs5}. But confirming it needs a blood sample and a lab or a
+haemoglobin meter, so screening outside clinics is hard. Also, taking blood can
+expose health workers to blood-borne diseases.
+
+Doctors have been using the inner lining of the lower eyelid, called the
+palpebral conjunctiva, by pulling the eyelid down slightly and checking its
+paleness to predict the presence of anaemia. This tissue has no skin over it
+and it is rich in blood vessels, so it turns noticeably paler when Hb is low.
+But this judgement is subjective. We use a phone photo to assign a number to
+the redness of this tissue. There are a few issues:
+\begin{itemize}
+  \item the tissue has to be found precisely, because lid skin, sclera or glare
+    inside it changes the colour;
+  \item the colour depends on the light and on the camera's processing;
+  \item labelled data is small, and repeat photos of the same person can end up
+    in both training and testing.
+\end{itemize}
+
+The main contributions of this work are as follows:
+\begin{itemize}
+  \item We conduct an independent study of conjunctiva extraction, comparing a
+    rule-based approach with learned extraction methods and evaluating six
+    segmentation architectures on individuals not included in the training
+    data, which guides our choice of segmentation model.
+  \item We examine the evaluation methodology through repeated train-test
+    splits that keep each individual on one side of every split, a corrected
+    significance test and the $F_{0.5}$ score, which reveal limitations in
+    conclusions drawn from a single split.
+  \item We compare different approaches for estimating illumination in an image
+    against a white reference present in every photograph.
+  \item We introduce a hospital dataset of 288 patients at ESIC Medical College
+    and Hospital, Beltola, with manually annotated conjunctiva masks and
+    haemoglobin measurements, used to train the deployed segmentation model and
+    a DenseNet-121 model for haemoglobin estimation.
+  \item We develop a mobile application, EyeCheck, and a supporting server that
+    return an estimated haemoglobin level and a screening flag whose threshold
+    takes age, sex and pregnancy status into account.
+\end{itemize}
+Section~II reviews related work and Section~III the data. Section~IV outlines
+the system, Sections~V--VI cover extraction, Section~VII Hb estimation and
+Section~VIII the application. Section~IX discusses limitations.
+
+% ============================================================ II. RELATED WORK (shared)
+\section{Related Work}
+% Written by Claude at Anubhav's request (23 Nov), shorter than the draft it
+% replaces. Counts as AI-written text. Sources: papers/conjunctiva-anemia/01-07.
+\subsection{Haemoglobin from Conjunctival Photographs}
+Collings et~al.~\cite{collings2016} related the redness of the conjunctiva in
+digital photographs to Hb, with a colour card in every frame. Suner
+et~al.~\cite{suner2021} estimated Hb from colour features of a selected region
+in smartphone photographs, and Zhao et~al.~\cite{zhao2024} turned this into a
+real-time application. Kato et~al.~\cite{kato2024} applied machine and deep
+learning to conjunctival photographs, mostly of children. Mannino
+et~al.~\cite{mannino2018} used fingernail photographs and showed that
+calibrating to each person improves accuracy. Most of this work controls the
+light with a card or raw capture, or selects the region by hand.
+
+\subsection{Segmenting the Conjunctiva}
+Kasiviswanathan et~al.~\cite{kasiviswanathan2020} trained segmentation networks
+to find the conjunctiva. Dhalla et~al.~\cite{dhalla2023} compared U-Net,
+UNet++, FPN, PSPNet and LinkNet on a DenseNet-121 encoder, using 324
+photographs of 162 children, and chose LinkNet; their three best models were
+within 0.11 percentage points of Dice on a single split, and augmentation before
+the split may have put copies of test images into training. We test whether
+such rankings hold on repeated, person-safe splits.
+person-safe splits.
+
+% ============================================================ III. DATA (shared)
+\section{Data}
+\begin{table}[t]
+\caption{Datasets}
+\label{tab:data}
+\centering
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Dataset & Subjects & Images & Masks used & Hb \\
+\midrule
+Eyes-Defy-Anemia \cite{dimauro2023} & 218 & 218 & 101 & 217 \\
+Mendeley \cite{rahman_mendeley} & $\le$199 & 547 & 547 & -- \\
+Hospital (this work) & 288 & 288 & 288 & 279 \\
+\bottomrule
+\end{tabular}
+\end{table}
+% Assembled by Claude (23 Nov). Anubhav's own sentences from V-C, V-D and VI-A:
+% the device with a white plastic edge, white balance fixed and no flash, "many
+% images of the same person's eyes, taken from different angles", full-face
+% photographs. Counts and licences are facts. The hospital paragraph is
+% Biraj's text (AI-written by his account), shortened. The split sentence is
+% from his revised VII-A (23 Nov), verbatim.
+Table~\ref{tab:data} lists the three datasets. The
+\emph{Eyes-Defy-Anemia}~\cite{dimauro2023} pictures were taken with a device
+that has a white plastic edge below the eye; the camera's white balance was
+fixed and no flash was used. It has one photograph each of 218 people from
+India and Italy, with an Hb value for 217. Many of its annotations are
+rectangles, so we used only the 101 traced masks. The Italian photographs come
+from two capture batches that differ in age, Hb and light.
+\emph{Mendeley}~\cite{rahman_mendeley} has many images of the same person's
+eyes, taken from different angles, and many are full-face photographs. Each of
+its 547 images has two annotators and no Hb, and a duplicate search puts them at
+no more than 199 people. Both public sets are openly licensed (CC~BY-SA~4.0 and
+CC~BY~4.0).
+
+The \emph{hospital} cohort has one photograph and a recorded Hb for each of 288
+patients at ESIC Medical College and Hospital, Beltola, Guwahati, taken between
+September and November 2026 on Xiaomi and Motorola smartphones without flash,
+under informed patient consent and the clinical oversight of Dr.~Sandip Paul,
+with Hb from the hospital's automated haematology analyser. Every conjunctiva
+was outlined by hand. Nine records had no valid Hb, leaving 279 (mean
+11.4~g/dL; 106, or 38\%, below 11.0~g/dL). Patients were split by patient registration number into
+training (202), validation (43) and test (43) sets, so no patient appears in
+more than one set.
+
+% ============================================================ IV. SYSTEM OVERVIEW (shared)
+\section{System Overview}
+\begin{figure*}[t]
+\centering
+\fig{0.9\textwidth}{pipeline.png}
+\caption{The deployed pipeline. The application sends a photograph to the
+server, which segments the conjunctiva, crops the mask's bounding box and
+regresses Hb from the crop.}
+\label{fig:pipeline}
+\end{figure*}
+% Condensed by Claude (23 Nov) from the existing text (AI-written); "pulling
+% the eyelid down" is Anubhav's phrase from Section I. The JPEG sentence is
+% from Biraj's revised VII-A (23 Nov), verbatim.
+Fig.~\ref{fig:pipeline} shows the pipeline. A photograph of the lower eyelid,
+pulled down, is taken in the application and sent to the server. An Attention
+U-Net segments the conjunctiva, and the mask's bounding box with a 20-pixel
+margin is cut from the full-resolution photograph. It is then JPEG-encoded in
+memory at quality 90, so that it matches the compression of the training crops.
+A DenseNet-121 estimates Hb from this crop, and the
+application shows the estimate with a screening flag. Sections~V--VI are an
+independent study of conjunctiva extraction on the public datasets; the deployed
+segmenter is the architecture selected there, an Attention U-Net with an
+EfficientNet-B0 encoder, trained separately on the hospital masks
+(Sections~VII--VIII).
+
+% ============================================================ V. EXTRACTION (part: extraction)
+\section{Conjunctiva Extraction}
+\subsection{Quality Control}
+% Written by Anubhav (Q&A, 22 Nov). Edits: grammar, tense, LaTeX. Facts added
+% by Claude: the public-photo range for colour cast (measured on all 764
+% public photographs with preprocess.cast_ratio), what the coloured-light range
+% was measured on (experiments/04), and "before any colour is measured".
+Because anaemia detection depends on colour, it becomes very important to
+check the quality of the image taken. A blurred picture or a picture clicked in
+a coloured light can give a wrong reading, which would be worse than getting no
+reading. So, to prevent wrong readings, each picture goes through four checks,
+namely:
+\begin{itemize}
+\item \emph{Focus}, which uses the Laplacian, an edge detector. A sharp picture
+has strong edges, leading to high variance, as its Laplacian values are spread
+widely. On the other hand, a blurred picture has weak edges and low variance.
+We reject images with variance below 35.
+\item \emph{Mask size}, where we check the percentage of the image the mask
+covers. If it covers almost nothing or almost everything, there is a high
+chance something is wrong. This can happen in cases where the eyelid was not
+pulled down or there is no eye in the picture. We reject images with mask size
+below 0.2\% or above 85\% of the frame.
+\item \emph{Clipping}, where a flash or a very bright light can turn pixel
+values in the image to pure white (all channels 255). More than 5\% of the frame
+is where we keep our limit. This is just a generous guess, as we could not find
+such a case to calibrate it.
+\item \emph{Colour cast}. In this, we divide the mean of the brightest colour
+channel by the mean of the dimmest. Normal photos usually score 1.02--2.04 (all 764 public photographs).
+Pictures under a strongly coloured light can score 22.6--206 (one volunteer's
+eye under five coloured lights). We use a limit of 3 to separate the two.
+\end{itemize}
+An image that fails any check is rejected, and the check it failed is returned,
+before any colour is measured.
+
+\subsection{Segmentation}
+% Written by Anubhav (Q&A, 22 Nov); edits: I->we, lists inline, citations, typos.
+We compared two types of extractor: rule-based and learned. The rule-based
+extractor finds the conjunctiva using rules, limits and thresholds on the
+colour of each pixel, refined with seeded GrabCut~\cite{rother2004grabcut}.
+Where it fails is that in anaemia the conjunctiva itself is
+very pale, and if we define rules to find such pale tissue, the extractor might
+leak into the sclera and skin. Because colour is the most important signal for
+estimating the Hb level, we assume that precision matters more than recall, so
+rule-based extractors were deemed not ideal for this task.
+
+For the learned extractor, we tested six decoders:
+U-Net~\cite{ronneberger2015}, UNet++~\cite{zhou2018unetpp}, Attention
+U-Net~\cite{oktay2018}, LinkNet~\cite{chaurasia2017}, FPN~\cite{lin2017fpn} and
+PSPNet~\cite{zhao2017pspnet}. All six used the same ImageNet-pretrained
+EfficientNet-B0 encoder~\cite{tan2019efficientnet}, so only the decoder differed
+between them. For training, we used the publicly available
+Eyes-Defy-Anemia~\cite{dimauro2023} and Mendeley~\cite{rahman_mendeley}
+datasets. From Eyes-Defy-Anemia we used the 101 traced masks (Section~III); for
+Mendeley, where every image has two annotators, we used the intersection of
+their masks, the region both marked as conjunctiva. Each model was trained for
+40 epochs at $320 \times 320$ pixels with AdamW (learning rate $3 \times
+10^{-4}$, cosine schedule, batch size 8) on binary cross-entropy plus Dice loss,
+with random crops, flips, rotations of up to $45^\circ$ and colour jitter, and
+the epoch with the best validation Dice was kept.
+% Facts filled in by Claude (22 Nov, at Anubhav's request): shared-encoder
+% sentence, masks sentence, training-settings sentence. Sources:
+% scripts/train_segmenter.py defaults, experiments/24 run.py (rotation
+% augmentation, 40 epochs), scripts/prepare_conjunctiva_seg.py (intersection).
+
+\subsection{Evaluation Protocol}
+% Written by Anubhav (Q&A, 22 Nov). Edits: grammar, LaTeX, equation references.
+% Facts added by Claude: "only", "pixel", the buffer sentence, SD (not
+% variance), the statistical-test sentence, the fixed-weight sentence.
+To measure the correctness of a mask, we use $P$, the predicted mask, and $T$,
+the annotated mask. The mask is then scored with metrics like Dice and IoU (1).
+These both count only the conjunctiva and rank models in the same way, but IoU
+is stricter. Precision (2) is the share of the predicted mask that is actually
+the conjunctiva. Low precision means there is a spill. Recall is the share of
+the annotated conjunctiva that was found. Low recall means the mask is too
+small. HD95 is the 95th-percentile distance between the two outlines in pixels.
+It tells us whether the outline is in the right place. The 95th percentile is
+used rather than the maximum so that a few outlier pixels do not dominate the
+result. We are not using pixel accuracy, because the conjunctiva covers only
+about 1.4\% of the frame, so predicting everything as background already gives
+98.6\% accuracy.
+\begin{equation}
+\mathrm{Dice} = \frac{2\,|P \cap T|}{|P| + |T|}, \qquad
+\mathrm{IoU} = \frac{|P \cap T|}{|P \cup T|}
+\end{equation}
+\begin{equation}
+\mathrm{Precision} = \frac{|P \cap T|}{|P|}, \qquad
+\mathrm{Recall} = \frac{|P \cap T|}{|T|}
+\end{equation}
+\begin{equation}
+F_{0.5} = \frac{1.25\,|P \cap T|}{1.25\,|P \cap T| + 0.25\,|T \setminus P| + |P \setminus T|}
+\end{equation}
+
+The Mendeley dataset has many images of the same person's eyes, taken from
+different angles, so while making the split, we needed to make sure the same
+person's images remain together, either in training, validation or testing.
+This is because if the split causes the same person's eye to be present in both
+training and testing, this could cause the model to score higher. To prevent
+this, Mendeley is dealt out in blocks of 24 consecutive files, because
+neighbouring groups are often the same person's other eye. Files within four
+numbers of a test image are also removed from training. Each dataset gives
+20\% of its images to testing, 20\% to validation to find the optimal number of
+epochs, and the rest to training. This is repeated over five splits, and the
+mean and standard deviation of the scores are reported. Differences are tested
+with the corrected resampled $t$-test~\cite{nadeau2003}, because the splits
+share most of their training images, with Holm's correction~\cite{holm1979}
+when several comparisons are made together.
+
+As stated in Section~V-B, we assume precision matters more than recall, so we
+also evaluated the models with $F_{0.5}$ (3)~\cite{vanrijsbergen1979}.
+$F_{0.5}$ gives more weight to precision compared to recall, twice as much. The
+weight was fixed before any model was scored. Each model's threshold is chosen
+on its own validation images, because one model never gave any pixel a
+probability above 0.53.
+
+\subsection{Colour Correction}
+% Written by Anubhav (Q&A, 22 Nov). Edits: grammar, method names and citations,
+% "proposed" -> "compared" (gray-world and white-patch are existing methods).
+% Facts added by Claude: where the sclera reference is taken, "so the
+% segmenter's input and masks are unchanged", the gains sentence, the figure
+% reference, and why the plastic is left out of the white patch.
+In this section, we talk about the colour correction methods we compared. The
+colour correction part is kept in the preprocessing of the image because it
+requires the whole image. The error in colour of the image is detected from the
+surroundings, like the entire frame or the eye. This cannot be done after
+cropping, because in that case everything else is marked as background and
+removed. The methods compared are:
+\begin{itemize}
+\item \emph{Gray-world}~\cite{buchsbaum1980}, where we assume the whole picture
+averages to grey.
+\item \emph{White-patch}~\cite{land1971} assumes the brightest pixels in the
+picture are white. The plain version (max-RGB) changes nothing here, because in
+96\% of photos every channel reaches 255 somewhere (clipped). Ours takes the
+brightest 1\% of unclipped pixels (any channel at 250 or above is skipped), and
+only above the lower lid, a region found using the mask.
+\item The \emph{sclera} method assumes the sclera of the eye is white; we take
+its brightest part, in a band above the conjunctiva.
+\end{itemize}
+This is applied to the entire picture after the segmentation, so the
+segmenter's input and masks are unchanged. Each method gives one gain per colour
+channel, chosen to keep the overall brightness.
+
+To check the correctness of the colour correction methods, we used the
+Eyes-Defy-Anemia pictures, which were taken with a device that has a white
+plastic edge below the eye (visible along the bottom of each photograph in
+Fig.~\ref{fig:light}). The camera's white balance was fixed and no flash was
+used, so the plastic's colour records the colour of the light only. The angle
+between the estimated light colour and the plastic's colour was measured to find
+the error. The angle ignores brightness, and a smaller angle is better. The
+white patch leaves out the plastic, since about half of the brightest pixels of
+the whole frame lie on it.
+
+\section{Extraction Results}
+\subsection{Rule-Based and Learned Extraction}
+\begin{table}[t]
+\caption{Rule-Based and Learned Extraction against Annotated Masks
+(Dice, Mean over Five Person-Safe Splits)}
+\label{tab:rules}
+\centering
+\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Extractor & Close-ups & Whole-face \\
+\midrule
+Rule-based (seeded GrabCut) & 0.476 $\pm$ 0.022 & 0.034 $\pm$ 0.021 \\
+U-Net & \textbf{0.832} & 0.825 \\
+Attention U-Net & \textbf{0.832} & \textbf{0.831} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{figure}[t]
+\centering
+\fig{0.85\columnwidth}{extractor_comparison.png}
+\caption{Rule-based (top) and learned U-Net (bottom) masks on three
+Eyes-Defy-Anemia photographs drawn at random from those never used in
+training, because their annotations were rectangles (CC~BY-SA~4.0).}
+\label{fig:extractors}
+\end{figure}
+% Written by Anubhav (Q&A, 22 Nov). Edits: grammar, table/figure references.
+% Facts added by Claude: "on all 100 test cases", "about" 0.83 (U-Net 0.825,
+% Attention U-Net 0.831; experiment 27), the closing caveat sentence.
+The images used to test both the extractors are the same
+(Table~\ref{tab:rules}). In the case of learned extractors, we test the models
+trained on the training split only. The results reported clearly showed the
+learned extractors to be much better than the rule-based ones. When tested on
+close-ups in the Eyes-Defy-Anemia dataset, the rules reach a Dice of 0.48
+against 0.83 for the networks (U-Net and Attention U-Net both). The network
+wins across all five splits, on all 100 test cases. We then noted the
+precision: the rule-based masks show around 0.46, meaning more than half the
+mask is actually not the conjunctiva. As discussed, spill is worse than
+missing. On the full-face photographs in Mendeley, the rules fail at 0.03. Their
+thresholds assume the picture to be mostly eye, so they grab skin on the face
+or a finger instead. The networks score about 0.83 there too.
+Fig.~\ref{fig:extractors} shows an example of masks on a few pictures. The rules
+do remain steadier when a photo is rotated or zoomed, which this comparison does
+not test.
+
+\subsection{Architecture Comparison}
+\begin{table}[t]
+\caption{Segmentation on People Not Seen in Training}
+\label{tab:arch}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Architecture & Dice & IoU & Prec. & Rec. & HD95 & Rank \\
+\midrule
+UNet++ & 0.833 $\pm$ 0.017 & 0.722 & 0.820 & 0.865 & 3.3 & 1.4 \\
+Attention U-Net & 0.831 $\pm$ 0.012 & 0.719 & 0.824 & 0.854 & 3.5 & 2.2 \\
+U-Net & 0.826 $\pm$ 0.018 & 0.712 & 0.825 & 0.844 & 3.4 & 2.8 \\
+FPN & 0.821 $\pm$ 0.018 & 0.704 & 0.806 & 0.855 & 3.4 & 4.0 \\
+LinkNet & 0.810 $\pm$ 0.021 & 0.689 & 0.767 & 0.880 & 3.6 & 4.6 \\
+PSPNet & 0.764 $\pm$ 0.029 & 0.631 & 0.730 & 0.829 & 5.5 & 6.0 \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+\parbox{\columnwidth}{\scriptsize Mean over five person-safe splits (118--140
+test images each), Dice with SD across splits. HD95 in pixels on the 320-pixel
+grid; Rank is the mean rank by Dice.}
+\end{table}
+% Written by Anubhav (Q&A, 22 Nov). Edits: grammar, "U-Net++" -> "UNet++" (as in
+% the table), citation style, "small" -> "not statistically significant" for the
+% p-values. Facts added by Claude: "FPN and LinkNet follow, and PSPNet is last in
+% every split"; recall 0.880 / precision 0.767; Holm-corrected; data and training
+% length as further differences (Dhalla: DenseNet-121, 200 epochs, 324 photos of
+% 162 children; ours: EfficientNet-B0, 40 epochs); SD 0.012 vs 0.017; F0.5 at
+% the default threshold (0.825). Source: experiment 24.
+We compared six architectures: U-Net, UNet++, Attention U-Net, FPN, LinkNet and
+PSPNet. They were trained and tested on all five person-safe splits. The mean
+and SD of Dice across the splits are shown in Table~\ref{tab:arch}.
+
+As recorded, the top three are within 0.007 Dice of each other, which is too
+small a range to decide a winner. FPN and LinkNet follow, and PSPNet is last in
+every split. Dhalla et~al.~\cite{dhalla2023} chose LinkNet, but in our setting
+it never came first in any of the splits. Even though LinkNet gives the highest
+recall (0.880), it gives lower precision (0.767), meaning that even though it
+grabs the conjunctiva, it also spills, which is the worse case for us. On the
+person-safe splits, its gap to the U-Net family is not statistically
+significant (Holm-corrected $p$ 0.18--0.43), and their data, encoder and
+training length differ from ours, so we say their result was `not reproduced'
+instead of calling it wrong.
+
+We decided to go with Attention U-Net because it ties for the best Dice, has the
+smallest spread across splits (SD 0.012 against 0.017 for UNet++) and has the
+highest $F_{0.5}$ at the default threshold (0.825).
+
+\subsection{Checks on the Evaluation}
+% Paragraphs 2-5 written by Anubhav (Q&A, 22 Nov). Edits: grammar, tense,
+% contractions, "color" -> "colour", "When Mendeley was split randomly" -> "When
+% the images were split randomly" (the 129 test images per split come from both
+% datasets). Added by Claude: the opening sentence, the italic labels, "of the
+% 129 ... in each split", "Holm-corrected", "on its validation images", the
+% test-F0.5 clause (29 of 30 models; experiment 25).
+% The last paragraph was written by Claude at the author's request, in the
+% author's plain style. Sources: experiment 22 (grid bound: 0.992 Mendeley,
+% 0.998 Eyes-Defy-Anemia); the 16 Sep annotator analysis (547 pairs: second
+% annotator larger in 99%, 98.1% of the smaller inside the larger).
+We ran four checks on our own evaluation, and each one changed a number we
+would otherwise have reported.
+
+\emph{One split against five.} On a single split, Attention U-Net beats U-Net
+by 0.0105 Dice, which is significant ($p = 0.007$). When we repeated the
+process over five splits, this advantage was reduced to 0.0019 ($p = 0.66$).
+That split was simply the lucky split, which can make a difference look real
+when it is not.
+
+\emph{Leakage.} When the images were split randomly, 83--93 of the 129 test
+images in each split were of a person whose other images were in the training
+set as well. The model had effectively seen the eye before. Person-safe
+splitting lowered Dice by only 0.001--0.018 and did not change the order. The
+difference it made was that LinkNet's losses were significant before
+(Holm-corrected $p$ 0.03--0.05) but not after.
+
+\emph{Train/serve mismatch.} The segmenter was trained on raw pictures, but
+when fed colour-corrected images, its Dice fell by 0.012. So the segmenter now
+operates on raw photos, and colour correction is done later.
+
+\emph{Threshold.} The network gives each pixel a probability, and 0.5 is the
+usual cutoff. Choosing each model's cutoff to maximise $F_{0.5}$ on its
+validation images moved it to about 0.97 and raised $F_{0.5}$ on the test
+images in all 29 models where it moved. Maximising $F_{0.5}$ caused precision
+to move up by 0.06--0.12, but cost 0.02--0.03 Dice. Choosing the cutoff for
+Dice gained nothing, so 0.5 is fine as a threshold when Dice is the goal.
+
+We also checked two things that affect how the scores should be read. First,
+the networks predict masks at $320 \times 320$ pixels, while the annotations
+are drawn on the full-size photograph. Even a perfect mask at $320 \times 320$
+would still score about 0.99 Dice against the full-size annotation (0.992 on
+Mendeley, 0.998 on Eyes-Defy-Anemia), so the smaller size costs very little
+compared to the 0.83 the networks reach. Second, the two Mendeley annotators
+agree with each other at only 0.736 Dice, which looks low. But their masks are
+nested: the second annotator's mask is the larger one in 99\% of the images,
+and 98\% of the smaller mask lies inside the larger one. So they agree on where
+the conjunctiva is, and only differ on how far its upper edge goes, since the
+conjunctiva has no sharp upper edge and fades into the fold behind the lid.
+This also means the intersection we train on (Section~V-B) is almost the same
+as the smaller of the two masks.
+
+\subsection{Estimating the Light}
+\begin{table}[t]
+\caption{Median Angle between Each Estimate of the Light and the Device
+Plastic}
+\label{tab:light}
+\centering
+\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Estimate & India (90) & Italy (120) \\
+\midrule
+None & 4.7$^\circ$ & 2.8$^\circ$ \\
+Gray-world & 4.9$^\circ$ & 5.2$^\circ$ \\
+White-patch, above the lower lid & \textbf{1.5$^\circ$} & \textbf{0.8$^\circ$} \\
+Sclera & 2.3$^\circ$ & 0.9$^\circ$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{figure*}[t]
+\centering
+\fig{0.75\textwidth}{white_balance_comparison_india_report.png}
+\caption{One Indian Eyes-Defy-Anemia photograph under each correction, with the
+same mask in all four. ``Plastic off grey'' is the device plastic's angle from
+neutral after correction (CC~BY-SA~4.0).}
+\label{fig:light}
+\end{figure*}
+% Written by Anubhav (Q&A, 22 Nov). Edits: grammar, "Grey-World" -> "Gray-world"
+% (as in Table IV and V-D), "averages out to Grey-World" -> "averages out to
+% grey", "a close-up of face or eye" -> "a close-up of the eye" (Table IV is
+% Eyes-Defy-Anemia close-ups only). Added by Claude: what the two arrows are,
+% "whatever its brightness", "(India/Italy)", the figure reference, the sentences
+% after "yellower with age" up to and including the default sentence, and
+% "(Section X)". Source: experiment 26 (sclera b* minus plastic b*, per decade,
+% Hb and sex held: +0.64 India, +0.62 Italy; sclera a* against Hb rho +0.51 /
+% +0.44; India, brightest 1% above the lid: older patients +0.47 g/dL per decade).
+To measure how close or far we are, we represent colours as vectors in 3-D
+space, with R, G and B as its axes. The score is measured by the angle between
+the two arrows, the estimated light and the plastic, and 0$^\circ$ represents
+exactly the same colour, whatever its brightness. Table~\ref{tab:light} gives
+the median angle on 90 photos from India and 120 from Italy (Eyes-Defy-Anemia).
+
+In the case of no correction, the recorded angle was 4.7$^\circ$/2.8$^\circ$
+(India/Italy). In the case of Gray-world, we recorded 4.9$^\circ$/5.2$^\circ$,
+worse than doing nothing. A possible explanation is that Gray-world assumes the
+photo averages out to grey, but a close-up of the eye would mostly have pink
+tissue and skin. The white patch gives 1.5$^\circ$/0.8$^\circ$, the best, and
+the sclera gives 2.3$^\circ$/0.9$^\circ$, the second best (Fig.~\ref{fig:light}).
+
+The sclera is not really perfectly white, though. It becomes yellower with age:
+measured against the plastic, its yellowness ($b^*$ in CIELAB) rises by 0.64
+(India) and 0.62 (Italy) per decade, comparing people with the same Hb and sex.
+Its redness ($a^*$) also follows Hb, so correcting by it removes some of the Hb
+signal too. Since the brightest pixels above the lid lie mostly on the sclera,
+the white patch inherits part of this: in India it would make older patients
+read lower by about 0.47~g/dL per decade. We still made the white patch the
+extractor's default, because it estimates the light most closely.
+
+We have not yet measured the effect of these corrections on the haemoglobin
+prediction. It is included in the future plans for this project (Section~X).
+
+% ============================================================ VII. HAEMOGLOBIN ESTIMATION (part: Hb model)
+\section{Haemoglobin Estimation}
+% VII-VIII: Biraj's text, his revised version of 23 Nov. Merged by Claude on 23 Nov
+% by deletion only, plus one "and": the patient split (in III), pixel specificity
+% and accuracy (V-C explains why accuracy is not used), the JPEG step (in IV and
+% VIII-A), target-standardisation constants, seed IDs, other models' MAEs, repeated
+% numbers, the predicted-vs-measured and residual plots (same as Fig. 6 a and b),
+% and server internals. Figure widths set to fit 8 pages.
+\subsection{Hospital Segmentation and Crops}
+All 288 hospital photographs were outlined by hand in an annotation tool we
+built for this purpose. Every mask starts blank and no model prediction is
+shown, so the annotator is not influenced by a model. Eighty-nine portrait
+photographs store their pixels rotated with an EXIF orientation flag, so we
+apply EXIF transposition when loading each image, before pairing it with its
+mask.
+Based on the architecture comparison in Sections~V--VI, we trained an Attention
+U-Net with an ImageNet-pretrained EfficientNet-B0 encoder on these clinical
+photographs at $320 \times 320$ resolution. The loss was binary cross-entropy
+plus soft Dice, and we used AdamW, batch size 2, horizontal flips, $\pm
+8^\circ$ rotation and $\pm 10\%$ brightness changes. Training was stopped early
+based on validation Dice (best epoch 18, 0.8301; Fig.~\ref{fig:training_curves}).
+On the 43 test patients, who were never seen during training, the clinical
+Attention U-Net reached a Dice of $0.8273 \pm 0.0694$, IoU $0.7112 \pm 0.0962$,
+precision $0.8180 \pm 0.1039$ and recall $0.8555 \pm 0.1123$.
+The crop given to the regressor is the bounding box of the predicted mask with a
+20-pixel margin on all four sides, cut from the full-resolution photograph.
+
+\begin{figure}[t]
+\centering
+\fig{0.9\linewidth}{training_curves.png}
+\caption{Training and validation loss and Dice coefficient across epochs for the selected segmentation model.}
+\label{fig:training_curves}
+\end{figure}
+
+\subsection{Regression Model}
+Each crop is resized to $224 \times 224$ and normalised with ImageNet
+statistics. No colour correction is applied. We compared six ImageNet-pretrained
+backbones: ResNet-18~\cite{he2016resnet}, VGG-16~\cite{simonyan2015vgg},
+DenseNet-121~\cite{huang2017densenet}, EfficientNet-B0~\cite{tan2019efficientnet},
+MobileNetV3-Large~\cite{howard2019mobilenetv3} and
+ConvNeXt-Tiny~\cite{liu2022convnext}. Each has a single-output linear regression
+head. The backbone is kept frozen for the first 10 epochs, and after that its
+final block is fine-tuned (learning rate $10^{-4}$ for the backbone and
+$10^{-3}$ for the head, AdamW, weight decay $10^{-4}$, batch size 8, Smooth L1
+loss, up to 40 epochs, with early stopping after 7 epochs without improvement in
+validation error). All BatchNorm statistics stay frozen, with the layers in
+evaluation mode, throughout training. The targets are standardised using the
+mean and standard deviation of the training split.
+Data augmentation consists of $\pm 5^\circ$ rotation, horizontal flips, and
+$\pm 5\%$ brightness and contrast changes.
+
+\subsection{Training and Evaluation}
+The 279 patients with a valid clinical Hb record were split 195/43/41 (training,
+validation, test), which matches the patient-wise segmentation split exactly. We
+compared the architectures on validation mean absolute error (MAE). The three
+best candidates (DenseNet-121, MobileNetV3-Large and VGG-16) were then run with
+three random seeds. DenseNet-121 had the lowest
+mean validation MAE at every seed ($0.8760 \pm 0.0895$~g/dL). We
+selected the checkpoint with the lowest validation MAE, which was epoch 9
+(validation MAE 0.7736~g/dL). The
+held-out test split was not used at all for choosing the architecture or tuning
+hyperparameters, and the final model was evaluated on it only once. The naive
+baseline predicts the training mean (11.3764~g/dL) for every patient. We report
+MAE, median absolute error (MedAE), RMSE, $R^2$, Pearson correlation $r$, the
+maximum absolute error, and Bland--Altman 95\% limits of agreement~\cite{bland1986}.
+
+\subsection{Results}
+\begin{table}[t]
+\caption{Haemoglobin Estimation Performance on Hospital Dataset}
+\label{tab:hb}
+\centering
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Model & MAE & MedAE & RMSE & $R^2$ \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Validation split, 43 patients (first seed 20261116)}} \\
+DenseNet-121 & \textbf{0.939} & 0.757 & 1.337 & 0.282 \\
+MobileNetV3-Large & 0.953 & 0.777 & 1.323 & 0.297 \\
+EfficientNet-B0 & 0.961 & 0.814 & 1.341 & 0.278 \\
+VGG-16 & 0.992 & 0.742 & \textbf{1.270} & \textbf{0.352} \\
+ResNet-18 & 1.028 & 0.835 & 1.317 & 0.304 \\
+ConvNeXt-Tiny & 1.065 & 0.841 & 1.399 & 0.215 \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Held-out test split, 41 patients (final evaluation)}} \\
+Training mean baseline & 1.371 & \textbf{0.676} & 1.915 & $-0.002$ \\
+DenseNet-121 (epoch 9) & \textbf{1.345} & 1.066 & \textbf{1.701} & \textbf{0.210} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{figure}[t]
+\centering
+\fig{0.65\columnwidth}{absolute_error_distribution.png}
+\caption{Distribution of absolute haemoglobin prediction errors on the held-out test set of 41 patients.}
+\label{fig:abs_error_dist}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\fig{\columnwidth}{bland_altman.png}
+\caption{DenseNet-121 on the 41 held-out test patients. (a) Predicted against
+measured Hb; dotted lines mark the 11.0~g/dL screening threshold. (b) Bland--Altman
+difference plot: mean bias of $+0.408$~g/dL (solid) and 95\% limits of agreement
+from $-2.868$ to $+3.684$~g/dL (dashed).}
+\label{fig:ba}
+\end{figure}
+Table~\ref{tab:hb} gives the results. On the 41 unseen test patients, it gave an MAE of 1.3452~g/dL, an
+RMSE of 1.7005~g/dL and an $R^2$ of 0.2097, with a statistically significant
+positive Pearson correlation ($r = 0.4705$, $p = 0.0019$).
+
+The drop in MAE is small ($-0.026$~g/dL), but the drop in RMSE is larger
+($-0.214$~g/dL). This suggests that the network mainly helps by limiting the
+very large errors: the maximum error went down from 5.276~g/dL for the baseline
+to 4.500~g/dL for DenseNet-121. The baseline actually has a lower median
+absolute error (0.676~g/dL against 1.066~g/dL), because the Hb values in the
+test cohort are mostly concentrated around 10.7--12.0~g/dL. However, the
+baseline cannot tell patients apart at all ($R^2 < 0$). The image-based
+predictions, on the other hand, correlate positively with laboratory Hb, which suggests that the conjunctival crop does carry
+some optical information related to haemoglobin concentration.
+
+The predicted-versus-measured plot (Fig.~\ref{fig:ba}a) shows that the
+predictions are fairly scattered and are pulled toward the training mean. They
+range from 9.42 to 13.45~g/dL, while the laboratory values span 6.10 to
+15.00~g/dL. The distribution of absolute errors
+on the test set is in Fig.~\ref{fig:abs_error_dist}. The Bland--Altman plot
+(Fig.~\ref{fig:ba}b) shows a positive mean bias of $+0.4078$~g/dL, with 95\% limits of agreement from $-2.8682$ to
+$+3.6837$~g/dL. At the WHO 11.0~g/dL screening threshold, 7 of the 15 anaemic
+test patients were correctly flagged and 22 of the 26 non-anaemic patients were
+classified as normal. The validation MAE (0.774~g/dL) should not be mistaken for
+how well the model generalises. The test MAE of 1.345~g/dL is the more honest
+number, and it shows that the system is at present a preliminary, non-invasive
+screening prototype and not a replacement for venous blood analysis.
+
+\section{Mobile Application}
+\subsection{Architecture}
+The mobile application is built in Flutter (supporting Android, iOS and Web) and
+talks to a production FastAPI backend that runs on a local or cloud server.
+When an image is uploaded, the server applies EXIF transposition, segments the
+conjunctiva, extracts the crop with the 20-pixel margin, compresses it in memory
+as JPEG at quality 90, and runs the DenseNet regression. It then returns a JSON
+response containing the predicted Hb (g/dL) and previews of both the isolated crop
+and the segmentation overlay.
+
+\subsection{Screening Output}
+The user interface (Fig.~\ref{fig:app}) gives step-by-step photo instructions
+(everting the eyelid, using ambient daylight, checking the focus) and shows the
+resulting Hb estimate along with previews of the tissue. The system keeps the Hb
+prediction separate from the risk assessment. First, the DenseNet-121 model uses
+no demographic inputs, and its Hb estimate (g/dL) is based only on the cropped
+RGB image of the conjunctiva. Second, the screening threshold is chosen on the
+client side from the demographics the patient reports, following WHO guidelines:
+12.0~g/dL for non-pregnant adult women (as shown for the 37-year-old female in
+Fig.~\ref{fig:app}), 13.0~g/dL for adult men, and 11.0~g/dL for pregnant women
+or when the demographic fields are left empty. Third, the screening flag is
+produced by comparing the predicted Hb directly with the chosen threshold
+($\widehat{\text{Hb}} < \text{Threshold}$ means there is a risk of anaemia). This
+tells the user to get a confirmatory clinical test.
+\begin{figure}[t]
+\centering
+\fig{0.45\linewidth}{eyecheck_application.png}
+\caption{EyeCheck mobile application interface showing the photo input, haemoglobin screening result, segmentation mask, and extracted conjunctiva region.}
+\label{fig:app}
+\end{figure}
+
+\section{Discussion and Limitations}
+% Assembled by Claude (23 Nov). Anubhav's own sentences from VI-D and V-A:
+% "We have not yet measured the effect of these corrections on the haemoglobin
+% prediction", "is not really perfectly white ... becomes yellower with age",
+% "just a generous guess, as we could not find such a case to calibrate it".
+% The rest is condensed from the earlier draft and Section VII (AI-written);
+% "pulled toward" and "7 of the 15" follow Biraj's revised VII-D (23 Nov).
+Our extraction and colour-correction results come from public photographs taken
+with other phones, and have not yet been repeated on the hospital phones. We
+have not yet measured the effect of these corrections on the haemoglobin
+prediction: the regressor is trained on uncorrected crops, and the sclera, on
+which the white patch partly lands, is not really perfectly white, as it
+becomes yellower with age. The clipping limit in quality control is just a
+generous guess, as we could not find such a case to calibrate it. The crop is a
+padded bounding box, so it contains lid skin and sclera. The regressor's
+predictions are pulled toward the training mean, and at 11.0~g/dL only 7 of the
+15 anaemic test patients were flagged. All datasets are small, and nothing here
+is clinically validated.
+
+% ============================================================ X. CONCLUSION (shared)
+\section{Conclusion and Future Work}
+% Assembled by Claude (23 Nov) from Anubhav's own sentences in VI-A to VI-D
+% ("clearly showed the learned extractors to be much better than the rule-based
+% ones", "too small a range to decide a winner", "can make a difference look
+% real when it is not", "the white patch gives ... the best"). The hospital, Hb
+% and future-work sentences are condensed from the earlier draft (AI-written).
+% Encoder sentence (23 Nov): Anubhav's idea ("using different encoders for
+% Networks"); the "since all six decoders..." clause is Claude's, from V-B.
+The results clearly showed the learned extractors to be much better than the
+rule-based ones (Dice 0.83 against 0.48 on close-ups). The top three
+architectures are within 0.007 Dice of each other, which is too small a range to
+decide a winner, and a single split can make a difference look real when it is
+not. Of the colour corrections, the white patch gives the best estimate of the
+light. The segmenter selected on the basis of this study reaches a Dice of 0.83
+on hospital photographs, and a DenseNet-121 estimates Hb with an MAE of
+1.35~g/dL, slightly better than predicting the mean. Next, we will retrain the
+Hb regressor on white-patch-corrected crops, repeat the extraction study on the
+hospital photographs, and evaluate on an independent cohort. We also plan to
+try different encoders for the networks, since all six decoders in our study
+shared the same EfficientNet-B0 encoder.
+
+\section*{Acknowledgment}
+We thank our supervisor, Amit Chintamani Awekar, for guidance throughout the
+project; Dr.~Sandip Paul, MBBS, MMST (IIT KGP), IMO (Grade~II) at ESIC Medical
+College and Hospital (ESICMCH), Beltola, Guwahati, for clinical facilitation, data
+acquisition, and medical oversight;
+and the authors of the Eyes-Defy-Anemia and Mendeley datasets for making them
+public.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}
